@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { categories, site } from "@/data/products";
+import { CartButton } from "@/components/cart/CartButton";
 import { MobileMenu } from "./MobileMenu";
 import styles from "./Header.module.css";
 
@@ -31,16 +32,7 @@ export function Header() {
         </nav>
 
         <div className={styles.actions}>
-          {/* The cart drawer arrives in phase 3; the button reserves its place. */}
-          <button type="button" className={styles.iconButton} aria-label="Varukorg, 0 varor" disabled>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 8h14l-1.2 12H6.2L5 8Z" stroke="currentColor" strokeWidth="1.4" />
-              <path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="currentColor" strokeWidth="1.4" />
-            </svg>
-            <span className={styles.count} aria-hidden="true">
-              0
-            </span>
-          </button>
+          <CartButton />
         </div>
       </div>
     </header>

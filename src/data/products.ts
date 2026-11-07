@@ -8,6 +8,7 @@
 import type {
   Category,
   CategoryId,
+  FaqItem,
   OptionValue,
   Product,
   ProductImage,
@@ -91,7 +92,7 @@ export const products: Product[] = [
     name: "Halo bordslampa",
     tagline: "Mjukt, bländfritt ljus för sidobordet.",
     description:
-      "En bordslampa med kupad skärm som riktar ljuset nedåt och bort från ögonen. Dimbar i tre steg med en tryckknapp i foten.",
+      "Halo är en bordslampa med kupad skärm som riktar ljuset nedåt, mot boken eller bordsskivan, och bort från ögonen. Den dimras i tre steg med en tryckknapp i foten och finns i två storlekar: den lilla för sängbordet, den stora för sideboarden eller fönstret.",
     category: "belysning",
     badges: ["bestseller"],
     options: [
@@ -118,10 +119,36 @@ export const products: Product[] = [
     ),
     defaultVariantId: "grafit-s",
     features: [
-      { id: "ljus", title: "Ljus som inte bländar", body: "Skärmen döljer ljuskällan från alla vanliga betraktningsvinklar." },
-      { id: "dimmer", title: "Tre ljuslägen", body: "Tryck på foten för att växla mellan 100, 50 och 15 procent." },
-      { id: "material", title: "Pulverlackerat stål", body: "Tålig yta som inte flagnar och är lätt att torka av." },
+      {
+        id: "ljus",
+        title: "Ljus som inte bländar",
+        body: "Skärmens kant går ner under ljuskällan, så du ser aldrig glödlampan när du sitter eller ligger bredvid. Ljuset hamnar där du behöver det.",
+        image: images("halo-bordslampa", "krita", "Halo bordslampa")[1],
+      },
+      {
+        id: "dimmer",
+        title: "Tre ljuslägen i foten",
+        body: "Tryck en gång för fullt ljus, två för hälften och tre för ett svagt nattljus på 15 procent. Lampan minns inte läget, så den startar alltid på fullt.",
+        image: images("halo-bordslampa", "grafit", "Halo bordslampa")[2],
+      },
+      {
+        id: "material",
+        title: "Pulverlackerat stål",
+        body: "Skärm och fot är gjorda i stål med en matt pulverlack som tål stötar och är lätt att torka av. Foten är tung nog att stå stadigt även med den stora skärmen.",
+        image: images("halo-bordslampa", "dimbla", "Halo bordslampa")[1],
+      },
     ],
+    comparison: {
+      columns: [{ label: "Liten" }, { label: "Stor", highlight: true }],
+      rows: [
+        { label: "Höjd", values: ["32 cm", "46 cm"] },
+        { label: "Skärmens diameter", values: ["24 cm", "32 cm"] },
+        { label: "Passar", values: ["Sängbord, skrivbord", "Sideboard, fönsterbänk"] },
+        { label: "Tre ljuslägen", values: [true, true] },
+        { label: "Rekommenderad lampa", values: ["E14, 4–5 W", "E14, 5–6 W"] },
+        { label: "Pris", values: ["1 495 kr", "1 995 kr"] },
+      ],
+    },
     specs: [
       { label: "Höjd", value: "32 cm (liten) / 46 cm (stor)" },
       { label: "Skärmens diameter", value: "24 cm / 32 cm" },
@@ -134,6 +161,8 @@ export const products: Product[] = [
     faq: [
       { question: "Ingår glödlampa?", answer: "Nej. Lampan tar en E14-sockel och vi rekommenderar en varmvit LED på max 6 W." },
       { question: "Fungerar dimmern med alla lampor?", answer: "Den fungerar med dimbara LED-lampor. Vanliga LED-lampor kan flimra i de lägre lägena." },
+      { question: "Vilken storlek ska jag välja?", answer: "Den lilla (32 cm) passar på ett sängbord eller skrivbord. Den stora (46 cm) ger mer ljus och syns bättre på en sideboard eller i ett fönster." },
+      { question: "Hur lång är sladden?", answer: "Två meter, i grå textil med stickpropp." },
     ],
     addOns: [{ slug: "led-glodlampa", bundleDiscount: 3000 }],
     featured: true,
@@ -143,7 +172,7 @@ export const products: Product[] = [
     name: "Ovo vas",
     tagline: "Handdrejad stengodsvas med smal hals.",
     description:
-      "En äggformad vas i glaserat stengods. Den smala halsen håller några få stjälkar upprätt, eller står vacker helt tom.",
+      "Ovo är en äggformad vas i glaserat stengods. Den smala halsen håller några få stjälkar upprätta, så en enda kvist räcker för att den ska se färdig ut, och den står lika bra helt tom.",
     category: "vaser",
     badges: ["new"],
     options: [
@@ -170,16 +199,41 @@ export const products: Product[] = [
     ),
     defaultVariantId: "terrakotta-s",
     features: [
-      { id: "handgjord", title: "Handdrejad", body: "Varje vas formas för hand, så små variationer är en del av uttrycket." },
-      { id: "tat", title: "Vattentät glasyr", body: "Glaserad både in- och utvändigt." },
+      {
+        id: "handgjord",
+        title: "Handdrejad",
+        body: "Varje vas formas för hand på drejskiva. Små skillnader i form och glasyr mellan två vaser är en del av uttrycket, inte ett fel.",
+        image: images("ovo-vas", "krita", "Ovo vas")[1],
+      },
+      {
+        id: "tat",
+        title: "Vattentät glasyr",
+        body: "Vasen är glaserad både in- och utvändigt, så den tål vatten utan att lämna ringar på bordet.",
+        image: images("ovo-vas", "olivgron", "Ovo vas")[2],
+      },
     ],
     specs: [
       { label: "Höjd", value: "18 cm / 26 cm" },
+      { label: "Största diameter", value: "10 cm / 14 cm" },
+      { label: "Halsens öppning", value: "3 cm / 4 cm" },
       { label: "Material", value: "Glaserat stengods" },
       { label: "Diskmaskin", value: "Nej, diska för hand" },
     ],
+    comparison: {
+      columns: [{ label: "Liten" }, { label: "Mellan", highlight: true }],
+      rows: [
+        { label: "Höjd", values: ["18 cm", "26 cm"] },
+        { label: "Passar", values: ["1–2 stjälkar", "3–5 stjälkar eller kvistar"] },
+        { label: "Vattentät", values: [true, true] },
+        { label: "Pris", values: ["595 kr", "795 kr"] },
+      ],
+    },
     inTheBox: ["Vas"],
-    faq: [{ question: "Är vasen vattentät?", answer: "Ja, den är glaserad invändigt och tål vatten." }],
+    faq: [
+      { question: "Är vasen vattentät?", answer: "Ja, den är glaserad invändigt och tål vatten." },
+      { question: "Ser alla vaser likadana ut?", answer: "Nästan. Eftersom de drejas för hand kan formen och glasyren skilja sig lite mellan två exemplar." },
+      { question: "Hur rengör jag den?", answer: "Diska för hand med varmt vatten och lite diskmedel. En flaskborste når ner genom halsen." },
+    ],
     addOns: [{ slug: "skotselduk", bundleDiscount: 2000 }],
     featured: true,
   },
@@ -187,15 +241,26 @@ export const products: Product[] = [
     slug: "rund-pall",
     name: "Rund pall",
     tagline: "En pall som också fungerar som sidobord.",
-    description: "Tre ben och en rund sits i massivt trä. Lätt att flytta, stabil att sitta på.",
+    description:
+      "Tre ben och en rund sits i massiv ask. Rund pall är låg nog att sitta på vid köksön eller i hallen och stabil nog att ställa en lampa och en bok på bredvid soffan.",
     category: "mobler",
     badges: [],
     options: [{ id: "color", label: "Färg", values: [color.grafit, color.sand] }],
     variants: variants("rund-pall", "PALL", "Rund pall", ["grafit", "sand"], [{ id: "", price: 249500 }]),
     defaultVariantId: "sand",
     features: [
-      { id: "massiv", title: "Massiv ask", body: "Sits och ben i massivt askträ, oljat eller betsat." },
-      { id: "stabil", title: "Stabil på ojämna golv", body: "Tre ben står alltid stadigt." },
+      {
+        id: "massiv",
+        title: "Massiv ask",
+        body: "Sits och ben är gjorda i massivt askträ, oljat i Sand eller betsat i Grafit. Ytan går att slipa och olja om efter några år.",
+        image: images("rund-pall", "sand", "Rund pall")[1],
+      },
+      {
+        id: "stabil",
+        title: "Stabil på ojämna golv",
+        body: "Tre ben står alltid stadigt, även på gamla trägolv där en fyrbent pall skulle vicka.",
+        image: images("rund-pall", "grafit", "Rund pall")[2],
+      },
     ],
     specs: [
       { label: "Höjd", value: "45 cm" },
@@ -204,7 +269,10 @@ export const products: Product[] = [
       { label: "Maxbelastning", value: "120 kg" },
     ],
     inTheBox: ["Sits", "3 ben", "Monteringsanvisning"],
-    faq: [{ question: "Behöver den monteras?", answer: "Benen skruvas fast för hand på några minuter. Inga verktyg behövs." }],
+    faq: [
+      { question: "Behöver den monteras?", answer: "Benen skruvas fast för hand på några minuter. Inga verktyg behövs." },
+      { question: "Hur sköter jag träet?", answer: "Torka av med en lätt fuktad trasa. Olja ytan med möbelolja en gång om året, eller när den känns torr." },
+    ],
     addOns: [{ slug: "skotselduk", bundleDiscount: 2000 }],
     featured: true,
   },
@@ -212,7 +280,8 @@ export const products: Product[] = [
     slug: "lag-skal",
     name: "Låg skål",
     tagline: "Bred serveringsskål för fruktfat och sallad.",
-    description: "En låg, bred skål i stengods med matt utsida och blank insida.",
+    description:
+      "En låg, bred skål i stengods med matt utsida och blank insida. Stor nog för en sallad till fyra, och lika bra som fruktfat på köksbänken.",
     category: "bordsartiklar",
     badges: [],
     options: [{ id: "color", label: "Färg", values: [color.krita, color.grafit, color.dimbla] }],
@@ -220,14 +289,23 @@ export const products: Product[] = [
       dimbla: 0,
     }),
     defaultVariantId: "krita",
-    features: [{ id: "disk", title: "Tål diskmaskin", body: "Glasyren tål diskmaskin och mikrovågsugn." }],
+    features: [
+      {
+        id: "disk",
+        title: "Tål diskmaskin",
+        body: "Glasyren tål diskmaskin och mikrovågsugn, så skålen kan användas varje dag.",
+        image: images("lag-skal", "grafit", "Låg skål")[1],
+      },
+    ],
     specs: [
       { label: "Diameter", value: "28 cm" },
       { label: "Höjd", value: "9 cm" },
+      { label: "Volym", value: "2,5 liter" },
       { label: "Material", value: "Stengods" },
+      { label: "Diskmaskin", value: "Ja" },
     ],
     inTheBox: ["Skål"],
-    faq: [],
+    faq: [{ question: "Tål den ugn?", answer: "Den tål mikrovågsugn men inte vanlig ugn eller hastiga temperaturskiften." }],
     addOns: [],
     featured: true,
   },
@@ -235,7 +313,8 @@ export const products: Product[] = [
     slug: "klar-karaff",
     name: "Klar karaff",
     tagline: "Munblåst glaskaraff, 1 liter.",
-    description: "En enkel karaff i munblåst glas som häller utan att droppa.",
+    description:
+      "En enkel karaff i munblåst glas som rymmer en liter och häller utan att droppa. Rökgrå tillverkas i en mindre serie.",
     category: "bordsartiklar",
     badges: ["limited"],
     options: [{ id: "color", label: "Färg", values: [color.klar, color.rokgra] }],
@@ -243,34 +322,53 @@ export const products: Product[] = [
       rokgra: 6,
     }),
     defaultVariantId: "klar",
-    features: [{ id: "pip", title: "Droppfri pip", body: "Pipens kant är slipad så att den häller rent." }],
+    features: [
+      {
+        id: "pip",
+        title: "Droppfri pip",
+        body: "Pipens kant är slipad så att vattnet släpper rent och inte rinner ner längs utsidan.",
+        image: images("klar-karaff", "klar", "Klar karaff")[1],
+      },
+    ],
     specs: [
       { label: "Volym", value: "1 liter" },
       { label: "Höjd", value: "24 cm" },
       { label: "Material", value: "Munblåst glas" },
+      { label: "Diskmaskin", value: "Nej, diska för hand" },
     ],
     inTheBox: ["Karaff"],
-    faq: [],
+    faq: [{ question: "Tål den diskmaskin?", answer: "Vi rekommenderar handdisk. Munblåst glas kan bli matt av maskindisk med tiden." }],
     addOns: [],
     featured: false,
   },
   {
     slug: "pelare-ljusstake",
     name: "Pelare ljusstake",
-    tagline: "Tung ljusstake i massiv mässing eller lackerat stål.",
-    description: "En cylindrisk ljusstake för vanliga kronljus.",
+    tagline: "Tung ljusstake i pulverlackerat stål.",
+    description:
+      "En cylindrisk ljusstake för vanliga kronljus. Den tunga foten gör att den står kvar på bordet även när någon stöter till det.",
     category: "belysning",
     badges: [],
     options: [{ id: "color", label: "Färg", values: [color.sand, color.grafit] }],
     variants: variants("pelare-ljusstake", "PELARE", "Pelare ljusstake", ["sand", "grafit"], [{ id: "", price: 34500 }]),
     defaultVariantId: "sand",
-    features: [{ id: "tung", title: "Står stadigt", body: "Tung fot som inte välter." }],
+    features: [
+      {
+        id: "tung",
+        title: "Står stadigt",
+        body: "Ljusstaken väger 600 gram och har en filtad undersida som skyddar bordsskivan.",
+        image: images("pelare-ljusstake", "grafit", "Pelare ljusstake")[1],
+      },
+    ],
     specs: [
       { label: "Höjd", value: "12 cm" },
+      { label: "Diameter", value: "6 cm" },
       { label: "Passar", value: "Kronljus 2,2 cm" },
+      { label: "Material", value: "Pulverlackerat stål" },
+      { label: "Vikt", value: "600 g" },
     ],
     inTheBox: ["Ljusstake"],
-    faq: [],
+    faq: [{ question: "Passar den blockljus?", answer: "Nej, hållaren är gjord för vanliga kronljus med 2,2 cm diameter." }],
     addOns: [],
     featured: false,
   },
@@ -344,6 +442,29 @@ export const categories: Category[] = [
     image: images("lag-skal", "grafit", "Låg skål")[0],
   },
 ];
+
+/** Questions that apply to every product; answers come from the shop settings. */
+export function sharedFaq(): FaqItem[] {
+  const kr = (ore: number) => `${(ore / 100).toLocaleString("sv-SE")} kr`;
+  return [
+    {
+      question: "Hur lång är leveranstiden?",
+      answer: `Beställningar som läggs före kl. ${site.shippingCutoffHour} på vardagar skickas samma dag. Leveransen tar sedan ${site.deliveryDays.min}–${site.deliveryDays.max} vardagar. Det beräknade datumet visas vid köpknappen.`,
+    },
+    {
+      question: "Vad kostar frakten?",
+      answer: `Frakten kostar ${kr(site.shippingFee)} och är fri när du handlar för minst ${kr(site.freeShippingThreshold)}.`,
+    },
+    {
+      question: "Kan jag ångra mitt köp?",
+      answer: `Ja. Du har ${site.returnDays} dagars öppet köp från att du fått varan. Varan ska vara oanvänd och i originalförpackningen.`,
+    },
+    {
+      question: "Hur kan jag betala?",
+      answer: "Med kort (Visa, Mastercard) eller Klarna. Betalningen hanteras av Stripe. Det här är en portfoliodemo, så inga riktiga betalningar genomförs.",
+    },
+  ];
+}
 
 /* ---------- Lookups ---------- */
 

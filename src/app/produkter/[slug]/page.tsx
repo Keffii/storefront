@@ -2,15 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ComparisonTable } from "@/components/product/ComparisonTable";
+import { ProductView } from "@/components/product/ProductView";
+import { SectionNav, type SectionLink } from "@/components/product/SectionNav";
 import { Accordion } from "@/components/ui/Accordion";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { OptionPicker } from "@/components/ui/OptionPicker";
-import { Price } from "@/components/ui/Price";
 import { SpecRows } from "@/components/ui/SpecRows";
-import { FloatingBuyCard } from "@/components/patterns/FloatingBuyCard";
-import { getCategory, getDefaultVariant, getPriceRange, getProduct, products, site } from "@/data/products";
-import { formatPrice } from "@/lib/format";
+import { getCategory, getDefaultVariant, getPriceRange, getProduct, products, sharedFaq } from "@/data/products";
+import type { AddOnChoice } from "@/components/product/BuyBox";
 import styles from "./product.module.css";
 
 export function generateStaticParams() {
@@ -20,113 +18,129 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const product = getProduct((await params).slug);
   if (!product) return {};
-  return { title: product.name, description: product.tagline };
+  return { title: product.name, description: `${product.tagline} ${product.description}`.slice(0, 160) };
 }
 
-// Phase 1: a static layout of the product page using the core components.
-// Phase 2 makes the buy box interactive (variant state, stock, add-ons, delivery estimate).
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const product = getProduct((await params).slug);
   if (!product) notFound();
 
-  const variant = getDefaultVariant(product);
   const { min, max } = getPriceRange(product);
   const category = getCategory(product.category);
+  const faq = [...product.faq, ...sharedFaq()];
+
+  const addOns: AddOnChoice[] = product.addOns.flatMap((offer) => {
+    const p = getProduct(offer.slug);
+    if (!p) return [];
+    const v = getDefaultVariant(p);
+    return v.stock > 0 ? [{ product: p, variant: v, discount: offer.bundleDiscount }] : [];
+  });
+
+  const sections: SectionLink[] = [
+    product.features.length > 0 && { id: "funktioner", label: "Funktioner" },
+    { id: "specifikationer", label: "Specifikationer" },
+    product.comparison && { id: "jamfor", label: "Jämför" },
+    { id: "faq", label: "FAQ" },
+  ].filter((s): s is SectionLink => Boolean(s));
 
   return (
-    <div className="container">
-      <nav aria-label="Brödsmulor" className={styles.breadcrumbs}>
-        <ol role="list">
-          <li>
-            <Link href="/">Start</Link>
-          </li>
-          {category && (
+    <>
+      <div className="container">
+        <nav aria-label="Brödsmulor" className={styles.breadcrumbs}>
+          <ol role="list">
             <li>
-              <Link href={`/kollektion?kategori=${category.id}`}>{category.name}</Link>
+              <Link href="/">Start</Link>
             </li>
-          )}
-          <li aria-current="page">{product.name}</li>
-        </ol>
-      </nav>
+            {category && (
+              <li>
+                <Link href={`/kollektion?kategori=${category.id}`}>{category.name}</Link>
+              </li>
+            )}
+            <li aria-current="page">{product.name}</li>
+          </ol>
+        </nav>
 
-      <div className={styles.layout}>
-        <div className={styles.gallery}>
-          {variant.images.map((img, i) => (
-            <div key={img.src} className={styles.galleryItem}>
-              <Image
-                src={img.src}
-                alt={img.alt}
-                width={img.width}
-                height={img.height}
-                priority={i === 0}
-                sizes="(min-width: 960px) 30vw, 100vw"
-              />
-            </div>
-          ))}
-        </div>
-
-        <FloatingBuyCard>
-          {product.badges.length > 0 && (
-            <div className={styles.badges}>
-              {product.badges.map((b) => (
-                <Badge key={b} kind={b} />
-              ))}
-            </div>
-          )}
-          <div>
-            <h1 className={styles.name}>{product.name}</h1>
-            <p className={styles.tagline}>{product.tagline}</p>
-          </div>
-          <Price amount={variant.price} from={min !== max} size="lg" />
-          {product.options.map((o) => (
-            <OptionPicker key={o.id} option={o} defaultValue={variant.options[o.id]} />
-          ))}
-          <Button size="lg" fullWidth disabled>
-            Lägg i varukorgen
-          </Button>
-          <ul role="list" className={styles.trust}>
-            <li>Fri frakt över {formatPrice(site.freeShippingThreshold)}</li>
-            <li>{site.returnDays} dagars öppet köp</li>
-            <li>{site.warrantyYears} års garanti</li>
-          </ul>
-        </FloatingBuyCard>
+        <ProductView product={product} addOns={addOns} priceFrom={min !== max} />
       </div>
 
-      <section className={styles.section} aria-labelledby="about-heading">
-        <h2 id="about-heading" className={styles.sectionTitle}>
-          Om produkten
-        </h2>
-        <p className={styles.description}>{product.description}</p>
-      </section>
+      <SectionNav sections={sections} />
 
-      <section className={styles.section} aria-labelledby="specs-heading">
-        <h2 id="specs-heading" className={styles.sectionTitle}>
-          Specifikationer
-        </h2>
-        <SpecRows specs={product.specs} />
-      </section>
+      <div className="container">
+        <section className={styles.intro} aria-label="Om produkten">
+          <p>{product.description}</p>
+        </section>
 
-      <section className={styles.section} aria-labelledby="faq-heading">
-        <h2 id="faq-heading" className={styles.sectionTitle}>
-          Vanliga frågor
-        </h2>
-        <Accordion
-          items={[
-            {
-              id: "box",
-              title: "Vad ingår?",
-              content: (
-                <ul>
-                  {product.inTheBox.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              ),
-            },
-            ...product.faq.map((f, i) => ({ id: `faq-${i}`, title: f.question, content: <p>{f.answer}</p> })),
-          ]}
-        />
-      </section>
-    </div>
+        {product.features.length > 0 && (
+          <section id="funktioner" className={styles.section} aria-labelledby="funktioner-rubrik">
+            <h2 id="funktioner-rubrik" className="visually-hidden">
+              Funktioner
+            </h2>
+            <div className={styles.features}>
+              {product.features.map((f, i) => (
+                <article key={f.id} className={`${styles.feature} ${i % 2 === 1 ? styles.featureFlip : ""}`}>
+                  {f.image && (
+                    <div className={styles.featureMedia}>
+                      <Image
+                        src={f.image.src}
+                        alt={f.image.alt}
+                        width={f.image.width}
+                        height={f.image.height}
+                        sizes="(min-width: 960px) 50vw, 100vw"
+                      />
+                    </div>
+                  )}
+                  <div className={styles.featureText}>
+                    <p className="caption">{String(i + 1).padStart(2, "0")}</p>
+                    <h3 className={styles.featureTitle}>{f.title}</h3>
+                    <p>{f.body}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section id="specifikationer" className={styles.section} aria-labelledby="specifikationer-rubrik">
+          <div className={styles.twoCol}>
+            <div>
+              <h2 id="specifikationer-rubrik" className={styles.sectionTitle}>
+                Specifikationer
+              </h2>
+              <SpecRows specs={product.specs} />
+            </div>
+            <div>
+              <h2 className={styles.sectionTitle}>Vad ingår</h2>
+              <ul role="list" className={styles.box}>
+                {product.inTheBox.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {product.comparison && (
+          <section id="jamfor" className={styles.section} aria-labelledby="jamfor-rubrik">
+            <h2 id="jamfor-rubrik" className={styles.sectionTitle}>
+              Jämför storlekar
+            </h2>
+            <div className={styles.narrow}>
+              <ComparisonTable comparison={product.comparison} caption={`Jämförelse av storlekar för ${product.name}`} />
+            </div>
+          </section>
+        )}
+
+        <section id="faq" className={styles.section} aria-labelledby="faq-rubrik">
+          <h2 id="faq-rubrik" className={styles.sectionTitle}>
+            Vanliga frågor
+          </h2>
+          <div className={styles.narrow}>
+            <Accordion
+              items={faq.map((f, i) => ({ id: `faq-${i}`, title: f.question, content: <p>{f.answer}</p> }))}
+            />
+          </div>
+        </section>
+      </div>
+    </>
   );
 }

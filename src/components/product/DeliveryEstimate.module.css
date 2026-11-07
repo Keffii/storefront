@@ -1,0 +1,28 @@
+.box {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-plinth-cream);
+  min-height: 64px;
+}
+
+.icon {
+  flex: none;
+  margin-top: 2px;
+}
+
+.text {
+  display: grid;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.text strong {
+  font-weight: 500;
+}
+
+.sub {
+  color: var(--text-secondary);
+}

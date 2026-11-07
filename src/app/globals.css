@@ -113,7 +113,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--header-height) + var(--space-6));
+  /* Header + sticky section nav on product pages + breathing room. */
+  scroll-padding-top: calc(var(--header-height) + 56px + var(--space-5));
 }
 
 /* Lock page scroll while a modal drawer is open. */

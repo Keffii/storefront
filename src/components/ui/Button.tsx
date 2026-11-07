@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ComponentPropsWithRef, ReactNode } from "react";
 import styles from "./Button.module.css";
 
 type Variant = "primary" | "secondary" | "ghost" | "inverse";
@@ -13,7 +13,7 @@ interface CommonProps {
   className?: string;
 }
 
-type ButtonProps = CommonProps & Omit<ComponentPropsWithoutRef<"button">, "className"> & { href?: undefined };
+type ButtonProps = CommonProps & Omit<ComponentPropsWithRef<"button">, "className"> & { href?: undefined };
 type LinkProps = CommonProps & Omit<ComponentPropsWithoutRef<typeof Link>, "className" | "href"> & { href: string };
 
 function classes({ variant = "primary", size = "md", fullWidth, className }: Omit<CommonProps, "children">) {

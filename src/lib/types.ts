@@ -64,6 +64,15 @@ export interface FaqItem {
   answer: string;
 }
 
+/**
+ * A comparison table. Columns are things the shopper is choosing between
+ * (e.g. the product's own sizes); cells are text or yes/no.
+ */
+export interface Comparison {
+  columns: { label: string; highlight?: boolean }[];
+  rows: { label: string; values: (string | boolean)[] }[];
+}
+
 export type BadgeKind = "new" | "bestseller" | "limited";
 
 export interface Product {
@@ -80,6 +89,7 @@ export interface Product {
   defaultVariantId: string;
   features: Feature[];
   specs: Spec[];
+  comparison?: Comparison;
   inTheBox: string[];
   faq: FaqItem[];
   /** Slugs of add-on products offered as "Köp till och spara". */

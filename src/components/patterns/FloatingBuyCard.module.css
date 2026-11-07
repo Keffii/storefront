@@ -1,5 +1,7 @@
 .card {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--space-5);
   padding: var(--space-5) 0;
   background: var(--color-paper);

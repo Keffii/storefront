@@ -58,35 +58,6 @@
   gap: var(--space-1);
 }
 
-.iconButton {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  background: none;
-}
-
-.iconButton:disabled {
-  cursor: default;
-}
-
-.count {
-  position: absolute;
-  top: 6px;
-  right: 4px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: var(--radius-pill);
-  background: var(--color-graphite);
-  color: var(--color-paper);
-  font-size: 10px;
-  line-height: 16px;
-  text-align: center;
-}
-
 @media (min-width: 960px) {
   .inner {
     grid-template-columns: auto 1fr auto;

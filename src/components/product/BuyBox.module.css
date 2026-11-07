@@ -1,0 +1,168 @@
+.box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: calc(-1 * var(--space-2));
+}
+
+.titleBlock {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.name {
+  font-size: var(--text-2xl);
+}
+
+.tagline {
+  color: var(--text-secondary);
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.priceNote {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.stock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: calc(-1 * var(--space-2));
+  font-size: var(--text-sm);
+}
+
+.stockDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.in-stock {
+  color: var(--color-success);
+}
+.low {
+  color: var(--color-warning);
+}
+.sold-out {
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.addButton {
+  flex: 1;
+}
+
+.addOns {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.addOns legend {
+  margin-bottom: var(--space-3);
+  padding: 0;
+}
+
+.addOn {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 56px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px var(--color-hair-line);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.addOn:hover {
+  box-shadow: inset 0 0 0 1px var(--color-graphite);
+}
+
+.addOnChecked {
+  background: var(--color-plinth-cream);
+  box-shadow: inset 0 0 0 1px var(--color-graphite);
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-graphite);
+}
+
+.addOn:has(.checkbox:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.addOnImage {
+  display: block;
+  width: 56px;
+  height: 56px;
+  background: var(--color-plinth-cream);
+}
+
+.addOnText {
+  display: grid;
+  min-width: 0;
+}
+
+.addOnSub {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addOnPrice {
+  text-align: right;
+}
+
+.trust {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3) var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.trust li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.trust svg {
+  flex: none;
+  color: var(--text);
+}

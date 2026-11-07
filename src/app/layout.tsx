@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { ToastProvider } from "@/components/ui/Toast";
 import { site } from "@/data/products";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 // Free stand-ins for the reference's commercial faces:
@@ -27,11 +28,14 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: `${site.brandName} · ${site.tagline}`,
     template: `%s · ${site.brandName}`,
   },
   description: `${site.tagline} En portfoliobutik: inga riktiga produkter eller betalningar.`,
+  openGraph: { type: "website", locale: "sv_SE", siteName: site.brandName },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

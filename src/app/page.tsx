@@ -6,6 +6,7 @@ import { SplitPanel } from "@/components/patterns/SplitPanel";
 import { categories, featuredProducts, getDefaultVariant, getProduct, site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import { getRatingSummaries } from "@/lib/server/reviews";
+import { jsonLdScript, storeJsonLd } from "@/lib/structured-data";
 import styles from "./home.module.css";
 
 export const revalidate = 600;
@@ -17,6 +18,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(storeJsonLd())} />
       <Hero
         eyebrow="Nytt i belysning"
         title="Ljus som inte bländar"

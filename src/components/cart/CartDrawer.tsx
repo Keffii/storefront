@@ -116,7 +116,14 @@ export function CartDrawer() {
           <ul role="list" className={styles.lines}>
             {cart.lines.map((l) => (
               <li key={l.key} className={styles.line}>
-                <Link href={`/produkter/${l.slug}?variant=${l.variantId}`} className={styles.thumb} onClick={close}>
+                {/* Duplicate of the name link below, so hidden from keyboard and screen readers. */}
+                <Link
+                  href={`/produkter/${l.slug}?variant=${l.variantId}`}
+                  className={styles.thumb}
+                  onClick={close}
+                  tabIndex={-1}
+                  aria-hidden="true"
+                >
                   <Image src={l.variant.images[0].src} alt="" width={80} height={80} sizes="80px" />
                 </Link>
                 <div className={styles.lineBody}>

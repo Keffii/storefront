@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useId, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Drawer";
 import { SORTS, toQuery, type Filters, type PriceRangeId, type SortId } from "@/lib/catalog";
@@ -31,12 +31,17 @@ interface Props {
  * a drawer, on wide screens in a sidebar.
  */
 export function CollectionFilters(props: Props) {
-  const { filters, resultCount, activeCount } = props;
+  const { resultCount, activeCount } = props;
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+  // Optimistic copy of the filters so controls respond instantly while the
+  // server renders the new URL; it re-syncs when the new props arrive.
+  const [filters, setFilters] = useState(props.filters);
+  useEffect(() => setFilters(props.filters), [props.filters]);
 
   function go(next: Filters) {
+    setFilters(next);
     startTransition(() => router.push(`/kollektion${toQuery(next)}`, { scroll: false }));
   }
 
@@ -66,7 +71,7 @@ export function CollectionFilters(props: Props) {
       </div>
 
       <aside className={styles.sidebar} aria-label="Filter">
-        <FilterGroups {...props} onChange={go} />
+        <FilterGroups {...props} filters={filters} onChange={go} />
       </aside>
 
       <Drawer
@@ -90,7 +95,7 @@ export function CollectionFilters(props: Props) {
           </div>
         }
       >
-        <FilterGroups {...props} onChange={go} />
+        <FilterGroups {...props} filters={filters} onChange={go} />
       </Drawer>
     </>
   );
@@ -104,6 +109,9 @@ function FilterGroups({
   inStockCount,
   onChange,
 }: Props & { onChange: (f: Filters) => void }) {
+  // The groups render twice (sidebar and drawer); unique names keep the two
+  // sets of radios from acting as one group.
+  const groupName = `kategori-${useId()}`;
   const toggleColor = (id: string) =>
     onChange({
       ...filters,
@@ -117,7 +125,7 @@ function FilterGroups({
         <label className={styles.option}>
           <input
             type="radio"
-            name="kategori"
+            name={groupName}
             checked={filters.category === null}
             onChange={() => onChange({ ...filters, category: null })}
           />
@@ -127,7 +135,7 @@ function FilterGroups({
           <label key={c.id} className={styles.option} data-empty={c.count === 0 || undefined}>
             <input
               type="radio"
-              name="kategori"
+              name={groupName}
               checked={filters.category === c.id}
               onChange={() => onChange({ ...filters, category: c.id })}
             />

@@ -13,6 +13,7 @@ import { getCategory, getDefaultVariant, getPriceRange, getProduct, products, sh
 import type { AddOnChoice } from "@/components/product/BuyBox";
 import { isDbConfigured } from "@/lib/server/config";
 import { getRatingSummaries, getReviews } from "@/lib/server/reviews";
+import { breadcrumbJsonLd, categoryBreadcrumb, faqJsonLd, jsonLdScript, productJsonLd } from "@/lib/structured-data";
 import styles from "./product.module.css";
 
 // Statically generated, refreshed every 10 minutes and right after a new review.
@@ -25,7 +26,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const product = getProduct((await params).slug);
   if (!product) return {};
-  return { title: product.name, description: `${product.tagline} ${product.description}`.slice(0, 160) };
+  const description = `${product.tagline} ${product.description}`.slice(0, 158);
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: `/produkter/${product.slug}` },
+    openGraph: { type: "website", title: product.name, description, url: `/produkter/${product.slug}` },
+  };
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -53,8 +60,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     { id: "faq", label: "FAQ" },
   ].filter((s): s is SectionLink => Boolean(s));
 
+  const jsonLd = [
+    productJsonLd(product, summary),
+    breadcrumbJsonLd([
+      { name: "Start", path: "/" },
+      ...(category ? [categoryBreadcrumb(category)] : []),
+      { name: product.name, path: `/produkter/${product.slug}` },
+    ]),
+    faqJsonLd(faq),
+  ];
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(jsonLd)} />
       <div className="container">
         <nav aria-label="Brödsmulor" className={styles.breadcrumbs}>
           <ol role="list">

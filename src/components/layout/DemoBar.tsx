@@ -4,7 +4,7 @@ import styles from "./DemoBar.module.css";
 export function DemoBar() {
   return (
     <div className={styles.bar} role="note">
-      Portfolio demo – inga riktiga produkter eller betalningar
+      Portfolio demo: inga riktiga produkter eller betalningar
     </div>
   );
 }

@@ -16,7 +16,7 @@ export default function HomePage() {
       <Hero
         eyebrow="Nytt i belysning"
         title="Ljus som inte bländar"
-        body="Halo bordslampa – kupad skärm, tre ljuslägen, i tre färger."
+        body="Halo har en kupad skärm som döljer glödlampan och dimras i tre steg."
         image={{ src: "/images/hero.svg", alt: "En tänd bordslampa på en skänk i ett mörkt rum" }}
         actions={
           <>
@@ -26,6 +26,23 @@ export default function HomePage() {
           </>
         }
       />
+
+      <ul role="list" className={`container ${styles.promises}`} aria-label="Köpvillkor">
+        <li>
+          <strong>Fri frakt över {formatPrice(site.freeShippingThreshold)}</strong>
+          <span>Annars {formatPrice(site.shippingFee)}</span>
+        </li>
+        <li>
+          <strong>
+            Leverans på {site.deliveryDays.min}–{site.deliveryDays.max} vardagar
+          </strong>
+          <span>Skickas samma dag vid order före kl. {site.shippingCutoffHour}</span>
+        </li>
+        <li>
+          <strong>{site.returnDays} dagars öppet köp</strong>
+          <span>Och {site.warrantyYears} års garanti</span>
+        </li>
+      </ul>
 
       <section className={`container ${styles.section}`} aria-labelledby="featured-heading">
         <div className={styles.sectionHead}>
@@ -46,6 +63,24 @@ export default function HomePage() {
           </h2>
         </div>
         <CategoryGrid categories={categories} />
+      </section>
+
+      <section className={`container ${styles.section} ${styles.about}`} aria-labelledby="about-heading">
+        <p className="caption">Om {site.brandName}</p>
+        <h2 id="about-heading" className={styles.aboutTitle}>
+          Få föremål, gjorda för att användas länge.
+        </h2>
+        <div className={styles.aboutBody}>
+          <p>
+            Vi säljer ett litet sortiment av lampor, vaser och möbler i material som går att laga och sköta: stål,
+            massivt trä, stengods och glas. Varje produktsida visar mått, material och skötsel så att du kan bestämma
+            dig utan att gissa.
+          </p>
+          <p>
+            Recensionerna kommer från kunder och redigeras inte. Priserna är desamma hela året, och de enda
+            rabatterna är paketpriserna när du köper tillbehör till en produkt.
+          </p>
+        </div>
       </section>
 
       {spotlight && (

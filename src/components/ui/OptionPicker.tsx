@@ -58,13 +58,13 @@ export function OptionPicker({ option, value, defaultValue, onChange, soldOut }:
                   <span className={styles.dot} style={{ background: v.swatch }} aria-hidden="true" />
                   <span className="visually-hidden">
                     {v.label}
-                    {out && " – slutsåld"}
+                    {out && ", slutsåld"}
                   </span>
                 </>
               ) : (
                 <span>
                   {v.label}
-                  {out && <span className="visually-hidden"> – slutsåld</span>}
+                  {out && <span className="visually-hidden">, slutsåld</span>}
                 </span>
               )}
             </label>

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         message:
-          "Betalningar är inte aktiverade i den här demon ännu. Allt annat i butiken fungerar – välkommen tillbaka snart!",
+          "Betalningar är inte aktiverade i demon än. Resten av butiken fungerar som vanligt.",
       },
       { status: 503 },
     );

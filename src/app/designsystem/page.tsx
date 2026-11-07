@@ -62,10 +62,10 @@ export default function DesignSystemPage() {
         </h2>
         <div className={styles.stack}>
           <p style={{ fontSize: "var(--text-display)", fontWeight: 300, lineHeight: 1.05 }}>Display</p>
-          <p style={{ fontSize: "var(--text-3xl)", fontWeight: 300, lineHeight: 1.1 }}>Rubrik 1 – Hanken Grotesk 300</p>
+          <p style={{ fontSize: "var(--text-3xl)", fontWeight: 300, lineHeight: 1.1 }}>Rubrik 1: Hanken Grotesk 300</p>
           <p style={{ fontSize: "var(--text-2xl)", fontWeight: 300 }}>Rubrik 2</p>
-          <p>Brödtext – Hanken Grotesk 400, 16 px, radavstånd 1,6.</p>
-          <p className="caption">Bildtext – Jost 500, versaler, spärrad</p>
+          <p>Brödtext: Hanken Grotesk 400, 16 px, radavstånd 1,6.</p>
+          <p className="caption">Bildtext: Jost 500, versaler, spärrad</p>
         </div>
       </section>
 

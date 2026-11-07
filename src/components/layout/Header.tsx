@@ -15,7 +15,7 @@ export function Header() {
       <div className={`container ${styles.inner}`}>
         <MobileMenu links={navLinks} />
 
-        <Link href="/" className={styles.logo} aria-label={`${site.brandName} – startsida`}>
+        <Link href="/" className={styles.logo} aria-label={`${site.brandName}, startsida`}>
           {site.brandName}
         </Link>
 

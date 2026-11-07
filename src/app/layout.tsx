@@ -27,7 +27,7 @@ const jost = Jost({
 
 export const metadata: Metadata = {
   title: {
-    default: `${site.brandName} – ${site.tagline}`,
+    default: `${site.brandName} · ${site.tagline}`,
     template: `%s · ${site.brandName}`,
   },
   description: `${site.tagline} En portfoliobutik: inga riktiga produkter eller betalningar.`,

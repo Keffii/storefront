@@ -54,11 +54,11 @@ export function stockLevel(variant: Variant): StockLevel {
   return "in-stock";
 }
 
-/** "Halo bordslampa – Grafit, Liten · 32 cm" */
+/** "Halo bordslampa (Grafit, Liten · 32 cm)" */
 export function variantLabel(product: Product, variant: Variant): string {
   const parts = product.options
     .filter((o) => o.values.length > 1)
     .map((o) => o.values.find((v) => v.id === variant.options[o.id])?.label)
     .filter(Boolean);
-  return parts.length ? `${product.name} – ${parts.join(", ")}` : product.name;
+  return parts.length ? `${product.name} (${parts.join(", ")})` : product.name;
 }

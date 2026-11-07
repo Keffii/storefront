@@ -134,7 +134,7 @@ export function BuyBox({ product, variant, onVariantChange, addOns, priceFrom, r
       <p className={`${styles.stock} ${styles[level]}`} aria-live="polite">
         <span className={styles.stockDot} aria-hidden="true" />
         {level === "in-stock" && "I lager"}
-        {level === "low" && `I lager – endast ${variant.stock} kvar`}
+        {level === "low" && `I lager, ${variant.stock} kvar`}
         {level === "sold-out" && "Slutsåld i den här varianten. Välj en annan färg eller storlek."}
       </p>
 

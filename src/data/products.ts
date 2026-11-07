@@ -122,7 +122,7 @@ export const products: Product[] = [
       {
         id: "ljus",
         title: "Ljus som inte bländar",
-        body: "Skärmens kant går ner under ljuskällan, så du ser aldrig glödlampan när du sitter eller ligger bredvid. Ljuset hamnar där du behöver det.",
+        body: "Skärmens kant går ner under ljuskällan, så du ser aldrig glödlampan när du sitter eller ligger bredvid.",
         image: images("halo-bordslampa", "krita", "Halo bordslampa")[1],
       },
       {
@@ -202,7 +202,7 @@ export const products: Product[] = [
       {
         id: "handgjord",
         title: "Handdrejad",
-        body: "Varje vas formas för hand på drejskiva. Små skillnader i form och glasyr mellan två vaser är en del av uttrycket, inte ett fel.",
+        body: "Varje vas formas för hand på drejskiva. Därför skiljer sig form och glasyr lite mellan två vaser.",
         image: images("ovo-vas", "krita", "Ovo vas")[1],
       },
       {

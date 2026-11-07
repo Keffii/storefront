@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { RatingLine } from "@/components/reviews/RatingLine";
+import { Stars } from "@/components/reviews/Stars";
 import { Accordion } from "@/components/ui/Accordion";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -101,6 +103,10 @@ export default function DesignSystemPage() {
           <Price amount={149500} from />
           <Price amount={11900} before={14900} size="sm" />
         </div>
+        <div className={styles.row}>
+          <Stars value={4.5} size={16} />
+          <RatingLine summary={{ count: 12, average: 4.3 }} />
+        </div>
       </section>
 
       <section className={styles.section} aria-labelledby="ds-pickers">
@@ -143,7 +149,7 @@ export default function DesignSystemPage() {
 
       <section className={styles.section} aria-labelledby="ds-overlays">
         <h2 id="ds-overlays" className={styles.h2}>
-          Låda och notiser
+          Antal, låda och notiser
         </h2>
         <InteractiveDemo />
       </section>

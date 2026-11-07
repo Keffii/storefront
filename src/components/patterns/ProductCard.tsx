@@ -59,6 +59,7 @@ export function ProductCard({
             height={front.height}
             sizes="(min-width: 1080px) 25vw, (min-width: 720px) 33vw, 50vw"
             priority={priority}
+            fetchPriority={priority ? "high" : undefined}
             className={styles.image}
           />
           {showAltOnHover && (

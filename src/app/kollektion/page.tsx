@@ -120,7 +120,10 @@ export default async function CollectionPage({ searchParams }: { searchParams: S
           )}
 
           {list.length > 0 ? (
-            <ProductGrid products={list} priorityCount={4} ratings={ratings} />
+            <>
+              <h2 className="visually-hidden">Produkter</h2>
+              <ProductGrid products={list} priorityCount={2} ratings={ratings} />
+            </>
           ) : (
             <div className={styles.empty}>
               <h2 className={styles.emptyTitle}>Inga produkter matchar filtren</h2>

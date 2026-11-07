@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsLink } from "@/components/consent/CookieBanner";
 import { categories, site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import styles from "./Footer.module.css";
@@ -49,7 +50,11 @@ export function Footer() {
         <span>
           © {new Date().getFullYear()} {site.brandName} · Portfolio demo
         </span>
-        <Link href="/designsystem">Designsystem</Link>
+        <span className={styles.legalLinks}>
+          <Link href="/om-projektet">Om projektet</Link>
+          <Link href="/designsystem">Designsystem</Link>
+          <CookieSettingsLink className={styles.linkButton} />
+        </span>
       </div>
     </footer>
   );

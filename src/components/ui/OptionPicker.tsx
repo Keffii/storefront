@@ -12,13 +12,15 @@ interface OptionPickerProps {
   onChange?: (valueId: string) => void;
   /** Values that are sold out in the current combination. Still selectable, but marked. */
   soldOut?: ReadonlySet<string>;
+  /** Called with a value while the pointer is over it, and null when it leaves. */
+  onPreview?: (valueId: string | null) => void;
 }
 
 /**
  * A radio group: colour options render as swatches, everything else as
  * pills. Native radios give arrow-key navigation and screen-reader state.
  */
-export function OptionPicker({ option, value, defaultValue, onChange, soldOut }: OptionPickerProps) {
+export function OptionPicker({ option, value, defaultValue, onChange, soldOut, onPreview }: OptionPickerProps) {
   const name = useId();
   const [internal, setInternal] = useState(defaultValue ?? option.values[0]?.id);
   const selected = value ?? internal;
@@ -36,7 +38,7 @@ export function OptionPicker({ option, value, defaultValue, onChange, soldOut }:
         <span className="caption">{option.label}</span>
         {selectedLabel && <span className={styles.current}>{selectedLabel}</span>}
       </legend>
-      <div className={isSwatch ? styles.swatches : styles.pills}>
+      <div className={isSwatch ? styles.swatches : styles.pills} onMouseLeave={onPreview ? () => onPreview(null) : undefined}>
         {option.values.map((v) => {
           const out = soldOut?.has(v.id) ?? false;
           return (
@@ -44,6 +46,7 @@ export function OptionPicker({ option, value, defaultValue, onChange, soldOut }:
               key={v.id}
               className={`${isSwatch ? styles.swatch : styles.pill} ${out ? styles.soldOut : ""}`}
               title={isSwatch ? v.label : undefined}
+              onMouseEnter={onPreview ? () => onPreview(v.id) : undefined}
             >
               <input
                 type="radio"

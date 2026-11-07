@@ -5,10 +5,14 @@ import { ProductGrid } from "@/components/patterns/ProductGrid";
 import { SplitPanel } from "@/components/patterns/SplitPanel";
 import { categories, featuredProducts, getDefaultVariant, getProduct, site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
+import { getRatingSummaries } from "@/lib/server/reviews";
 import styles from "./home.module.css";
 
-export default function HomePage() {
+export const revalidate = 600;
+
+export default async function HomePage() {
   const featured = featuredProducts();
+  const ratings = await getRatingSummaries(featured.map((p) => p.slug));
   const spotlight = getProduct("halo-bordslampa");
 
   return (
@@ -53,7 +57,7 @@ export default function HomePage() {
             Visa alla
           </Button>
         </div>
-        <ProductGrid products={featured} />
+        <ProductGrid products={featured} ratings={ratings} />
       </section>
 
       <section className={`container ${styles.section}`} aria-labelledby="categories-heading">

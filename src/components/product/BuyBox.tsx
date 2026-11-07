@@ -30,14 +30,25 @@ interface BuyBoxProps {
   product: Product;
   variant: Variant;
   onVariantChange: (v: Variant) => void;
+  /** Hovering a colour previews it in the gallery without selecting it. */
+  onPreviewVariant?: (v: Variant | null) => void;
   addOns: AddOnChoice[];
   priceFrom: boolean;
   rating?: ReactNode;
-  /** A/B test arm. B moves the delivery promise above the button and puts the price on it. */
+  /** A/B test arm. B shows the total price on the buy button. */
   arm?: BuyBoxArm;
 }
 
-export function BuyBox({ product, variant, onVariantChange, addOns, priceFrom, rating, arm = "A" }: BuyBoxProps) {
+export function BuyBox({
+  product,
+  variant,
+  onVariantChange,
+  onPreviewVariant,
+  addOns,
+  priceFrom,
+  rating,
+  arm = "A",
+}: BuyBoxProps) {
   const { add } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [chosenAddOns, setChosenAddOns] = useState<Set<string>>(new Set());
@@ -128,6 +139,11 @@ export function BuyBox({ product, variant, onVariantChange, addOns, priceFrom, r
             value={variant.options[o.id]}
             onChange={(id) => pick(o.id, id)}
             soldOut={soldOutValues(product, variant, o.id)}
+            onPreview={
+              o.id === "color" && onPreviewVariant
+                ? (id) => onPreviewVariant(id ? selectOption(product, variant, "color", id) : null)
+                : undefined
+            }
           />
         ))}
 
@@ -137,8 +153,6 @@ export function BuyBox({ product, variant, onVariantChange, addOns, priceFrom, r
         {level === "low" && `I lager, ${variant.stock} kvar`}
         {level === "sold-out" && "Slutsåld i den här varianten. Välj en annan färg eller storlek."}
       </p>
-
-      {arm === "B" && delivery}
 
       <div className={styles.actions}>
         {!soldOut && (
@@ -178,7 +192,7 @@ export function BuyBox({ product, variant, onVariantChange, addOns, priceFrom, r
         </fieldset>
       )}
 
-      {arm === "A" && delivery}
+      {delivery}
 
       <ul role="list" className={styles.trust}>
         <li>

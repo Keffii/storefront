@@ -1,0 +1,19 @@
+.line {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+a.line:hover .text {
+  text-decoration: underline;
+}
+
+.md {
+  font-size: var(--text-sm);
+}
+
+.sm {
+  font-size: var(--text-xs);
+}

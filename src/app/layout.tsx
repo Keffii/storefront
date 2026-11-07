@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, Jost } from "next/font/google";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/components/cart/CartProvider";
+import { CookieBanner } from "@/components/consent/CookieBanner";
 import { DemoBar } from "@/components/layout/DemoBar";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <main id="main">{children}</main>
             <Footer />
             <CartDrawer />
+            <CookieBanner />
           </CartProvider>
         </ToastProvider>
       </body>

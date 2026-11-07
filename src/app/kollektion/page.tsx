@@ -14,6 +14,7 @@ import {
   toQuery,
   type Filters,
 } from "@/lib/catalog";
+import { getRatingSummaries } from "@/lib/server/reviews";
 import styles from "./kollektion.module.css";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -47,6 +48,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: S
   const counts = facetCounts(products, filters);
   const category = filters.category ? getCategory(filters.category) : undefined;
   const activeCount = activeFilterCount(filters);
+  const ratings = await getRatingSummaries(products.map((p) => p.slug));
 
   const chips: { label: string; next: Filters }[] = [
     ...(category ? [{ label: category.name, next: { ...filters, category: null } }] : []),
@@ -118,7 +120,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: S
           )}
 
           {list.length > 0 ? (
-            <ProductGrid products={list} priorityCount={4} />
+            <ProductGrid products={list} priorityCount={4} ratings={ratings} />
           ) : (
             <div className={styles.empty}>
               <h2 className={styles.emptyTitle}>Inga produkter matchar filtren</h2>

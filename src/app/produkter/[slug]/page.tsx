@@ -3,13 +3,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ComparisonTable } from "@/components/product/ComparisonTable";
+import { RatingLine } from "@/components/reviews/RatingLine";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { ProductView } from "@/components/product/ProductView";
 import { SectionNav, type SectionLink } from "@/components/product/SectionNav";
 import { Accordion } from "@/components/ui/Accordion";
 import { SpecRows } from "@/components/ui/SpecRows";
 import { getCategory, getDefaultVariant, getPriceRange, getProduct, products, sharedFaq } from "@/data/products";
 import type { AddOnChoice } from "@/components/product/BuyBox";
+import { isDbConfigured } from "@/lib/server/config";
+import { getRatingSummaries, getReviews } from "@/lib/server/reviews";
 import styles from "./product.module.css";
+
+// Statically generated, refreshed every 10 minutes and right after a new review.
+export const revalidate = 600;
 
 export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
@@ -28,6 +35,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { min, max } = getPriceRange(product);
   const category = getCategory(product.category);
   const faq = [...product.faq, ...sharedFaq()];
+  const [reviews, summaries] = await Promise.all([getReviews(product.slug), getRatingSummaries([product.slug])]);
+  const summary = summaries[product.slug];
 
   const addOns: AddOnChoice[] = product.addOns.flatMap((offer) => {
     const p = getProduct(offer.slug);
@@ -40,6 +49,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     product.features.length > 0 && { id: "funktioner", label: "Funktioner" },
     { id: "specifikationer", label: "Specifikationer" },
     product.comparison && { id: "jamfor", label: "Jämför" },
+    { id: "recensioner", label: summary.count > 0 ? `Recensioner (${summary.count})` : "Recensioner" },
     { id: "faq", label: "FAQ" },
   ].filter((s): s is SectionLink => Boolean(s));
 
@@ -60,7 +70,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </ol>
         </nav>
 
-        <ProductView product={product} addOns={addOns} priceFrom={min !== max} />
+        <ProductView
+          product={product}
+          addOns={addOns}
+          priceFrom={min !== max}
+          rating={<RatingLine summary={summary} href="#recensioner" />}
+        />
       </div>
 
       <SectionNav sections={sections} />
@@ -129,6 +144,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </div>
           </section>
         )}
+
+        <section id="recensioner" className={styles.section} aria-labelledby="recensioner-rubrik">
+          <h2 id="recensioner-rubrik" className={styles.sectionTitle}>
+            Recensioner
+          </h2>
+          <ReviewsSection
+            slug={product.slug}
+            productName={product.name}
+            reviews={reviews}
+            summary={summary}
+            enabled={isDbConfigured()}
+          />
+        </section>
 
         <section id="faq" className={styles.section} aria-labelledby="faq-rubrik">
           <h2 id="faq-rubrik" className={styles.sectionTitle}>

@@ -3,9 +3,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { FloatingBuyCard } from "@/components/patterns/FloatingBuyCard";
 import { track } from "@/lib/analytics";
+import { useBuyBoxArm } from "@/lib/experiment";
 import type { Product } from "@/lib/types";
 import { findVariantById } from "@/lib/variants";
-import { BuyBox, type AddOnChoice, type BuyBoxArm } from "./BuyBox";
+import { BuyBox, type AddOnChoice } from "./BuyBox";
 import { ProductGallery } from "./ProductGallery";
 import styles from "./ProductView.module.css";
 
@@ -14,7 +15,6 @@ interface ProductViewProps {
   addOns: AddOnChoice[];
   priceFrom: boolean;
   rating?: ReactNode;
-  arm?: BuyBoxArm;
 }
 
 /**
@@ -22,7 +22,8 @@ interface ProductViewProps {
  * mirrors it in the URL (?variant=) so a shared link opens the same variant.
  * The page itself is static; the variant in the URL is applied on mount.
  */
-export function ProductView({ product, addOns, priceFrom, rating, arm }: ProductViewProps) {
+export function ProductView({ product, addOns, priceFrom, rating }: ProductViewProps) {
+  const arm = useBuyBoxArm();
   const [variant, setVariant] = useState(
     () => findVariantById(product, product.defaultVariantId) ?? product.variants[0],
   );
@@ -33,7 +34,10 @@ export function ProductView({ product, addOns, priceFrom, rating, arm }: Product
     track({ name: "product_view", product: product.slug });
   }, [product]);
 
+  const [preview, setPreview] = useState<typeof variant | null>(null);
+
   function changeVariant(next: typeof variant) {
+    setPreview(null);
     setVariant(next);
     const url = new URL(window.location.href);
     url.searchParams.set("variant", next.id);
@@ -42,12 +46,13 @@ export function ProductView({ product, addOns, priceFrom, rating, arm }: Product
 
   return (
     <div className={styles.layout}>
-      <ProductGallery images={variant.images} productName={product.name} />
+      <ProductGallery images={(preview ?? variant).images} productName={product.name} />
       <FloatingBuyCard label={`Köp ${product.name}`}>
         <BuyBox
           product={product}
           variant={variant}
           onVariantChange={changeVariant}
+          onPreviewVariant={setPreview}
           addOns={addOns}
           priceFrom={priceFrom}
           rating={rating}

@@ -1,0 +1,13 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--demo-bar-height);
+  padding: 4px var(--gutter);
+  background: var(--color-stage-black);
+  color: var(--color-paper);
+  font-family: var(--font-caption);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+}

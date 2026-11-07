@@ -1,0 +1,65 @@
+.hero {
+  position: relative;
+  display: grid;
+  align-items: start;
+  min-height: min(82svh, 760px);
+  overflow: hidden;
+  background: var(--color-stage-black);
+  color: var(--color-paper);
+  isolation: isolate;
+}
+
+.image {
+  object-fit: cover;
+  /* Keep the bottom of the scene (where the subject sits) in view; the headline takes the top. */
+  object-position: 50% 100%;
+  z-index: -2;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.55) 0%, rgb(0 0 0 / 0.1) 45%, rgb(0 0 0 / 0) 100%);
+}
+
+.content {
+  padding-block: var(--space-8) var(--space-7);
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--color-frost-caption);
+  margin-bottom: var(--space-4);
+}
+
+.title {
+  max-width: 14ch;
+  margin-inline: auto;
+  font-size: var(--text-display);
+  font-weight: 300;
+}
+
+.body {
+  max-width: 38ch;
+  margin: var(--space-4) auto 0;
+  color: #e4e4e4;
+  font-size: var(--text-lg);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+@media (min-width: 960px) {
+  .hero {
+    min-height: min(88svh, 860px);
+  }
+  .content {
+    padding-top: var(--space-8);
+  }
+}

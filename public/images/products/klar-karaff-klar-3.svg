@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200">
+<defs>
+<linearGradient id="body" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0" stop-color="#d8e2e1"/>
+<stop offset="0.45" stop-color="#CFDCDA"/>
+<stop offset="1" stop-color="#959e9d"/>
+</linearGradient>
+<radialGradient id="bg" cx="0.5" cy="0.42" r="0.75">
+<stop offset="0" stop-color="#FBF9F5"/>
+<stop offset="1" stop-color="#F7F4EF"/>
+</radialGradient>
+<filter id="blur"><feGaussianBlur stdDeviation="14"/></filter>
+</defs>
+<rect width="1200" height="1200" fill="url(#bg)"/><g transform="translate(600 640) scale(1.9) translate(-600 600) translate(0 -1200)">
+<path d="M562 330 L638 330 L638 470 C638 525 745 565 745 705 L745 905 C745 945 715 968 675 968 L525 968 C485 968 455 945 455 905 L455 705 C455 565 562 525 562 470 Z" fill="url(#body)" opacity="0.9"/>
+<path d="M500 720 L500 900" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity="0.55"/>
+<ellipse cx="600" cy="332" rx="38" ry="8" fill="#878f8e"/>
+<rect x="470" y="760" width="260" height="190" rx="30" fill="#b0bbb9" opacity="0.35"/></g>
+</svg>

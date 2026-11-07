@@ -1,0 +1,47 @@
+.accordion {
+  border-top: 1px solid var(--border-strong);
+}
+.item {
+  border-bottom: 1px solid var(--border-strong);
+}
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: var(--space-3) 0;
+  cursor: pointer;
+  list-style: none;
+}
+.summary::-webkit-details-marker {
+  display: none;
+}
+.icon {
+  position: relative;
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+.icon::before,
+.icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  height: 1.5px;
+  background: currentColor;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+.icon::after {
+  transform: rotate(90deg);
+}
+.item[open] .icon::after {
+  transform: rotate(0deg);
+}
+.content {
+  padding: 0 0 var(--space-5);
+  color: var(--text-secondary);
+  max-width: 65ch;
+}

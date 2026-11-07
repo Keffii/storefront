@@ -1,0 +1,28 @@
+.trigger {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-left: -10px;
+  border: 0;
+  background: none;
+}
+
+.list {
+  display: grid;
+}
+
+.link {
+  display: block;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-xl);
+  font-weight: 300;
+  text-decoration: none;
+}
+
+@media (min-width: 960px) {
+  .trigger {
+    display: none;
+  }
+}

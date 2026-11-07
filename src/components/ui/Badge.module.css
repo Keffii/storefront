@@ -1,0 +1,26 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+.neutral {
+  background: var(--color-paper);
+  color: var(--color-graphite);
+  box-shadow: inset 0 0 0 1px var(--color-hair-line);
+}
+.dark {
+  background: var(--color-graphite);
+  color: var(--color-paper);
+}
+.success {
+  background: #e7f0e9;
+  color: var(--color-success);
+}
+.warning {
+  background: #f6ecdb;
+  color: var(--color-warning);
+}

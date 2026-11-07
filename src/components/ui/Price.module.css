@@ -1,0 +1,28 @@
+.price {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.sm {
+  font-size: var(--text-sm);
+}
+.md {
+  font-size: var(--text-md);
+}
+.lg {
+  font-size: var(--text-xl);
+  font-weight: 300;
+}
+
+.from {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+}
+
+.sale {
+  color: var(--color-danger);
+}
+
+.before {
+  color: var(--text-muted);
+  font-size: 0.85em;
+}

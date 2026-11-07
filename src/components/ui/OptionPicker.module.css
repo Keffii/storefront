@@ -1,0 +1,115 @@
+.fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.legend {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 0;
+  margin-bottom: var(--space-3);
+}
+
+.current {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+
+/* Swatches */
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px transparent;
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+}
+
+.swatch:hover {
+  box-shadow: inset 0 0 0 2px var(--color-hair-line);
+}
+
+.swatch:has(.input:checked) {
+  box-shadow: inset 0 0 0 3px var(--color-linen-sand), inset 0 0 0 4px var(--color-graphite);
+}
+
+.swatch.soldOut .dot {
+  background-image: linear-gradient(
+    to top right,
+    transparent calc(50% - 1px),
+    rgb(255 255 255 / 0.9) calc(50% - 1px),
+    rgb(255 255 255 / 0.9) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  ) !important;
+  opacity: 0.6;
+}
+
+/* Pills */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--color-footer-ash);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.pill:hover {
+  box-shadow: inset 0 0 0 1px var(--color-graphite);
+}
+
+.pill:has(.input:checked) {
+  background: var(--color-linen-sand);
+  box-shadow: inset 0 0 0 1px var(--color-graphite);
+}
+
+.pill.soldOut {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+/* Keyboard focus lands on the hidden radio; show it on the label. */
+.swatch:has(.input:focus-visible),
+.pill:has(.input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

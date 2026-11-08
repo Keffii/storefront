@@ -1,0 +1,37 @@
+name: Update visual baselines
+
+# Run by hand after an intended design change. Renders the screenshot
+# baselines on the same runner image as CI and commits them.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+
+      - name: Render baselines
+        run: npm run test:visual -- --update-snapshots
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/visual/__screenshots__
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "Update visual baselines"
+          git push

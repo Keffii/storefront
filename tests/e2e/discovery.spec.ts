@@ -66,8 +66,8 @@ test("quick add puts a chosen colour in the cart from the collection", async ({ 
   const drawer = page.getByRole("dialog", { name: "Snabbköp" });
   await expect(drawer).toBeVisible();
   const olive = drawer.getByRole("radio", { name: "Olivgrön" });
-  await expect(olive).toBeInViewport({ ratio: 1 }); // the drawer slides in
-  await olive.check({ force: true });
+  // No force: Playwright waits until the sliding drawer has stopped moving.
+  await olive.check();
   await drawer.getByRole("button", { name: "Lägg i varukorgen" }).click();
   const cart = page.getByRole("dialog", { name: /Varukorg/ });
   await expect(cart.getByRole("link", { name: /Ovo vas \(Olivgrön/ })).toBeVisible();

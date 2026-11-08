@@ -156,7 +156,7 @@ export function BuyBox({
         <span className={styles.stockDot} aria-hidden="true" />
         {level === "in-stock" && "I lager"}
         {level === "low" && `I lager, ${variant.stock} kvar`}
-        {level === "sold-out" && "Slutsåld i den här varianten. Välj en annan färg eller storlek."}
+        {level === "sold-out" && "Slutsåld i den här varianten. Välj en annan eller bevaka den nedan."}
       </p>
 
       <div className={styles.actions}>

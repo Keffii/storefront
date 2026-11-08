@@ -18,12 +18,16 @@
   color: var(--text-secondary);
 }
 
+/* The real radio covers the whole swatch or pill, invisible: the hit area
+   matches what's drawn, and tests and assistive tech get a real target. */
 .input {
   position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   margin: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 /* Swatches */

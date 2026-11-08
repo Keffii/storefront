@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Hanken_Grotesk, Jost } from "next/font/google";
+import localFont from "next/font/local";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { CookieBanner } from "@/components/consent/CookieBanner";
@@ -13,19 +13,21 @@ import { getCatalogWithStock } from "@/lib/server/catalog";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
-// Free stand-ins for the reference's commercial faces:
-// Hanken Grotesk for SangBleu Sans (text and display), Jost for Gill Sans (captions).
-const hanken = Hanken_Grotesk({
+// Free stand-ins for the reference's commercial faces: Hanken Grotesk for
+// SangBleu Sans (text and display), Jost for Gill Sans (captions). Self-hosted
+// from the @fontsource-variable packages, so the build never depends on
+// downloading from Google Fonts. The latin subset covers å, ä and ö.
+const hanken = localFont({
+  src: "../../node_modules/@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2",
   variable: "--font-hanken",
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: "100 900",
   display: "swap",
 });
 
-const jost = Jost({
+const jost = localFont({
+  src: "../../node_modules/@fontsource-variable/jost/files/jost-latin-wght-normal.woff2",
   variable: "--font-jost",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: "100 900",
   display: "swap",
 });
 

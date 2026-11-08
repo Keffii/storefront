@@ -34,6 +34,12 @@ export function Footer() {
             <li>{site.returnDays} dagars öppet köp</li>
             <li>{site.warrantyYears} års garanti</li>
             <li>Kort och Klarna</li>
+            <li>
+              <Link href="/spara-order">Spåra order</Link>
+            </li>
+            <li>
+              <Link href="/favoriter">Favoriter</Link>
+            </li>
           </ul>
         </div>
 

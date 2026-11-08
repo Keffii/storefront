@@ -21,7 +21,7 @@ const ses = () => (client ??= new SESv2Client({ region: backend.region }));
 
 export const isEmailConfigured = () => Boolean(from());
 
-async function send(to: string, subject: string, html: string, text: string): Promise<boolean> {
+export async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
   const sender = from();
   if (!sender) return false;
   try {
@@ -44,11 +44,11 @@ async function send(to: string, subject: string, html: string, text: string): Pr
   }
 }
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const orderNumber = (o: Order) => o.id.slice(-8).toUpperCase();
 
 /** Shared layout: plain, table-based HTML that holds up in mail clients. */
-function layout(title: string, intro: string, body: string): string {
+export function layout(title: string, intro: string, body: string): string {
   return `<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(title)}</title></head>
 <body style="margin:0;background:#f7f4ef;font-family:Helvetica,Arial,sans-serif;color:#1f1f1f;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f4ef;padding:24px 12px;"><tr><td align="center">
@@ -83,7 +83,7 @@ function address(o: Order): string {
   return `<p style="margin:20px 0 0;font-size:14px;line-height:1.6;"><strong>Leveransadress</strong><br>${esc(o.name ?? "")}<br>${esc(a.line1 ?? "")}${a.line2 ? `<br>${esc(a.line2)}` : ""}<br>${esc(`${a.postalCode ?? ""} ${a.city ?? ""}`)}</p>`;
 }
 
-const button = (href: string, label: string) =>
+export const button = (href: string, label: string) =>
   `<p style="margin:24px 0 0;"><a href="${href}" style="display:inline-block;padding:12px 20px;background:#1f1f1f;color:#ffffff;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">${label}</a></p>`;
 
 export function orderConfirmationEmail(o: Order) {
@@ -122,11 +122,11 @@ export function shippedEmail(o: Order) {
 export async function sendOrderConfirmation(o: Order): Promise<boolean> {
   if (!o.email) return false;
   const m = orderConfirmationEmail(o);
-  return send(o.email, m.subject, m.html, m.text);
+  return sendEmail(o.email, m.subject, m.html, m.text);
 }
 
 export async function sendShippedEmail(o: Order): Promise<boolean> {
   if (!o.email) return false;
   const m = shippedEmail(o);
-  return send(o.email, m.subject, m.html, m.text);
+  return sendEmail(o.email, m.subject, m.html, m.text);
 }

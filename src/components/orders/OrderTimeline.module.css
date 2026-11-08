@@ -1,0 +1,31 @@
+.timeline {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  flex: 1;
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 3px solid var(--color-option-mist);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.done {
+  border-top-color: var(--color-graphite);
+  color: var(--text);
+}
+
+.date {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.failed {
+  color: var(--color-danger);
+}

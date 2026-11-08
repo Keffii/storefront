@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useCart } from "@/components/cart/CartProvider";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { OptionPicker } from "@/components/ui/OptionPicker";
@@ -14,6 +15,7 @@ import { MAX_QUANTITY } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
 import type { Money, Product, Variant } from "@/lib/types";
 import { selectOption, soldOutValues, stockLevel, variantLabel } from "@/lib/variants";
+import { BackInStockForm } from "./BackInStockForm";
 import { DeliveryEstimate } from "./DeliveryEstimate";
 import { StickyBuyBar } from "./StickyBuyBar";
 import styles from "./BuyBox.module.css";
@@ -120,7 +122,10 @@ export function BuyBox({
       )}
 
       <div className={styles.titleBlock}>
-        <h1 className={styles.name}>{product.name}</h1>
+        <div className={styles.titleRow}>
+          <h1 className={styles.name}>{product.name}</h1>
+          <FavoriteButton slug={product.slug} name={product.name} variant="inline" />
+        </div>
         <p className={styles.tagline}>{product.tagline}</p>
         {rating}
       </div>
@@ -162,6 +167,8 @@ export function BuyBox({
           {buttonLabel}
         </Button>
       </div>
+
+      {soldOut && <BackInStockForm slug={product.slug} variantId={variant.id} label={variantLabel(product, variant)} />}
 
       {addOns.length > 0 && !soldOut && (
         <fieldset className={styles.addOns}>

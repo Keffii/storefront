@@ -21,6 +21,18 @@
   text-decoration: none;
 }
 
+.secondary {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  font-size: var(--text-md);
+}
+
+.secondary a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
 @media (min-width: 960px) {
   .trigger {
     display: none;

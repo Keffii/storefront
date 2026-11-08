@@ -33,6 +33,23 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
               </li>
             ))}
           </ul>
+          <ul role="list" className={styles.secondary}>
+            <li>
+              <Link href="/favoriter" onClick={() => setOpen(false)}>
+                Favoriter
+              </Link>
+            </li>
+            <li>
+              <Link href="/konto/ordrar" onClick={() => setOpen(false)}>
+                Mitt konto
+              </Link>
+            </li>
+            <li>
+              <Link href="/spara-order" onClick={() => setOpen(false)}>
+                Spåra order
+              </Link>
+            </li>
+          </ul>
         </nav>
       </Drawer>
     </>

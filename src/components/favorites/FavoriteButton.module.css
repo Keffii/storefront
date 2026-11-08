@@ -1,0 +1,41 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 0;
+  color: var(--color-graphite);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.button[aria-pressed="true"] {
+  color: var(--color-danger);
+}
+
+.button:active {
+  transform: scale(0.92);
+}
+
+.overlay {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.9);
+}
+
+.inline {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--color-footer-ash);
+  font-size: var(--text-sm);
+}
+
+.inline:hover {
+  box-shadow: inset 0 0 0 1px var(--color-graphite);
+}

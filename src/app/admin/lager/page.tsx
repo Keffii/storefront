@@ -6,6 +6,7 @@ import { getAdminState } from "@/lib/server/auth";
 import { withStock } from "@/lib/inventory";
 import { getAllProducts } from "@/lib/server/catalog";
 import { readStockUncached } from "@/lib/server/stock-store";
+import { waitingCounts } from "@/lib/server/back-in-stock";
 import { LOW_STOCK_THRESHOLD, variantLabel } from "@/lib/variants";
 import { updateStock } from "../actions";
 import styles from "../admin.module.css";
@@ -19,6 +20,7 @@ export default async function StockPage() {
 
   const products = await getAllProducts();
   const live = withStock(products, await readStockUncached());
+  const waiting = await waitingCounts(live.flatMap((p) => p.variants.map((v) => ({ slug: p.slug, variantId: v.id }))));
 
   return (
     <div className={`container ${styles.page}`}>
@@ -43,6 +45,7 @@ export default async function StockPage() {
               <th scope="col">Variant</th>
               <th scope="col">SKU</th>
               <th scope="col">I lager</th>
+              <th scope="col">Bevakar</th>
               <th scope="col">
                 <span className="visually-hidden">Ändra</span>
               </th>
@@ -65,6 +68,7 @@ export default async function StockPage() {
                         {v.stock === 0 ? "Slut" : `${v.stock} st`}
                       </span>
                     </td>
+                    <td>{waiting[`${p.slug}:${v.id}`] ?? 0}</td>
                     <td>
                       <form action={updateStock} className={styles.inlineForm}>
                         <input type="hidden" name="slug" value={p.slug} />

@@ -2,6 +2,7 @@ import "server-only";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   BatchGetCommand,
+  DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
   PutCommand,
@@ -34,7 +35,7 @@ export function db(): DynamoDBDocumentClient {
 
 export const table = () => backend.tableName as string;
 
-export { BatchGetCommand, GetCommand, PutCommand, QueryCommand, TransactWriteCommand, UpdateCommand };
+export { BatchGetCommand, DeleteCommand, GetCommand, PutCommand, QueryCommand, TransactWriteCommand, UpdateCommand };
 
 export function isConditionFailure(err: unknown): boolean {
   const name = (err as { name?: string })?.name;

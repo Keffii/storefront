@@ -187,8 +187,8 @@ button {
   cursor: pointer;
 }
 
-ul[role="list"],
-ol[role="list"] {
+/* :where() keeps this reset at zero specificity so classes like .container win. */
+:where(ul[role="list"], ol[role="list"]) {
   list-style: none;
   margin: 0;
   padding: 0;

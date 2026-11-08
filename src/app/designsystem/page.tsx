@@ -37,7 +37,7 @@ export default function DesignSystemPage() {
   return (
     <div className={`container ${styles.page}`}>
       <header>
-        <p className="caption">Fas 1</p>
+        <p className="caption">Objekt</p>
         <h1 className={styles.title}>Designsystem</h1>
         <p className={styles.lead}>Tokens och komponenter som resten av butiken byggs av.</p>
       </header>

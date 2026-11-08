@@ -7,12 +7,6 @@
 .tile {
   display: block;
   text-decoration: none;
-  background: var(--color-paper);
-  transition: background-color var(--duration-base) var(--ease-out);
-}
-
-.tile:hover {
-  background: var(--color-plinth-cream);
 }
 
 .media {
@@ -26,12 +20,23 @@
   height: 100%;
   object-fit: cover;
   transform: scale(1.15);
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .tile:hover .image {
+    transform: scale(1.2);
+  }
+  .tile:hover .name {
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
 }
 
 .text {
   display: flex;
   flex-direction: column;
-  padding: var(--space-3) var(--space-2) var(--space-4);
+  padding: var(--space-3) 0 var(--space-4);
 }
 
 .name {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./SectionNav.module.css";
 
 export interface SectionLink {
@@ -14,6 +14,18 @@ export interface SectionLink {
  */
 export function SectionNav({ sections }: { sections: SectionLink[] }) {
   const [active, setActive] = useState<string | null>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  // On narrow screens the links scroll sideways: keep the active one in view.
+  useEffect(() => {
+    const list = listRef.current;
+    const link = active ? list?.querySelector<HTMLElement>(`a[href="#${active}"]`) : null;
+    if (!list || !link) return;
+    const left = link.offsetLeft - list.offsetLeft;
+    if (left < list.scrollLeft || left + link.offsetWidth > list.scrollLeft + list.clientWidth) {
+      list.scrollTo({ left: Math.max(0, left - 16), behavior: "smooth" });
+    }
+  }, [active]);
 
   useEffect(() => {
     const visible = new Map<string, number>();
@@ -39,7 +51,7 @@ export function SectionNav({ sections }: { sections: SectionLink[] }) {
   return (
     <nav className={styles.nav} aria-label="Avsnitt på sidan">
       <div className="container">
-        <ul role="list" className={styles.list}>
+        <ul role="list" className={styles.list} ref={listRef}>
           {sections.map((s) => (
             <li key={s.id}>
               <a href={`#${s.id}`} className={styles.link} aria-current={active === s.id ? "location" : undefined}>

@@ -5,7 +5,8 @@
 <stop offset="0.45" stop-color="#E9E4DA"/>
 <stop offset="1" stop-color="#a8a49d"/>
 </linearGradient>
-<radialGradient id="bg" cx="0.5" cy="0.42" r="0.75">
+<!-- r=0.5 fades fully to cream at the edges, so images sit seamlessly on cream panels. -->
+<radialGradient id="bg" cx="0.5" cy="0.5" r="0.5">
 <stop offset="0" stop-color="#FBF9F5"/>
 <stop offset="1" stop-color="#F7F4EF"/>
 </radialGradient>

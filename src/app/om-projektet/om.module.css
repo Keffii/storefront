@@ -59,6 +59,7 @@
 
 .choices div {
   display: grid;
+  align-content: start;
   gap: var(--space-1);
   padding-top: var(--space-4);
   border-top: 1px solid var(--border-strong);

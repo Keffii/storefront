@@ -38,7 +38,8 @@
   min-width: 0;
 }
 
-.sort .caption {
+/* Phones: the select's aria-label names it, the visible caption needs the room. */
+.sort :global(.caption) {
   display: none;
 }
 
@@ -110,6 +111,7 @@
 
 .colors {
   display: grid;
+  margin-left: calc(-1 * var(--space-2)); /* the option's own padding */
   grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
   gap: var(--space-2);
 }
@@ -166,7 +168,7 @@
   .filterButton {
     display: none;
   }
-  .sort .caption {
+  .sort :global(.caption) {
     display: inline;
   }
   .sidebar {

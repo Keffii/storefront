@@ -57,7 +57,14 @@
     min-height: 560px;
   }
   .text {
-    padding: var(--space-9) clamp(var(--space-7), 6vw, var(--space-9));
+    padding-block: var(--space-9);
+    padding-inline-end: clamp(var(--space-7), 6vw, var(--space-9));
+    /* Align with .container content: half the space outside the container plus the gutter. */
+    padding-inline-start: max(var(--gutter), calc((100vw - var(--container)) / 2 + var(--gutter)));
+  }
+  .imageLeft .text {
+    padding-inline-start: clamp(var(--space-7), 6vw, var(--space-9));
+    padding-inline-end: max(var(--gutter), calc((100vw - var(--container)) / 2 + var(--gutter)));
   }
   .imageLeft .media {
     order: -1;

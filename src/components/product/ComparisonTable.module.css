@@ -16,6 +16,10 @@
   vertical-align: top;
 }
 
+.table tr > :first-child {
+  padding-left: 0;
+}
+
 .table tbody th {
   font-weight: 400;
   color: var(--text-secondary);

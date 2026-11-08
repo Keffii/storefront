@@ -56,7 +56,8 @@ export function CollectionView({ category, ratings }: ViewProps) {
   );
   const list = applyFilters(products, filters);
   const counts = facetCounts(products, filters);
-  const activeCount = activeFilterCount(filters);
+  // The category is the page itself, so only the query filters count.
+  const activeCount = activeFilterCount({ ...filters, category: null });
   const cleared: Filters = { category, colors: [], price: null, inStock: false, sort: filters.sort };
 
   const chips: { label: string; next: Filters }[] = [

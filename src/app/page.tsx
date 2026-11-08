@@ -71,24 +71,6 @@ export default async function HomePage() {
         <CategoryGrid categories={categories} />
       </section>
 
-      <section className={`container ${styles.section} ${styles.about}`} aria-labelledby="about-heading">
-        <p className="caption">Om {site.brandName}</p>
-        <h2 id="about-heading" className={styles.aboutTitle}>
-          Få föremål, gjorda för att användas länge.
-        </h2>
-        <div className={styles.aboutBody}>
-          <p>
-            Vi säljer ett litet sortiment av lampor, vaser och möbler i material som går att laga och sköta: stål,
-            massivt trä, stengods och glas. Varje produktsida visar mått, material och skötsel så att du kan bestämma
-            dig utan att gissa.
-          </p>
-          <p>
-            Recensionerna kommer från kunder och redigeras inte. Priserna är desamma hela året, och de enda
-            rabatterna är paketpriserna när du köper tillbehör till en produkt.
-          </p>
-        </div>
-      </section>
-
       {spotlight && (
         <div className={styles.section}>
           <SplitPanel
@@ -107,6 +89,23 @@ export default async function HomePage() {
           </SplitPanel>
         </div>
       )}
+      <section className={`container ${styles.section} ${styles.about}`} aria-labelledby="about-heading">
+        <p className="caption">Om {site.brandName}</p>
+        <h2 id="about-heading" className={styles.aboutTitle}>
+          Få föremål, gjorda för att användas länge.
+        </h2>
+        <div className={styles.aboutBody}>
+          <p>
+            Vi säljer ett litet sortiment av lampor, vaser och möbler i material som går att laga och sköta: stål,
+            massivt trä, stengods och glas. Varje produktsida visar mått, material och skötsel så att du kan bestämma
+            dig utan att gissa.
+          </p>
+          <p>
+            Recensionerna kommer från kunder och redigeras inte. Priserna är desamma hela året, och de enda
+            rabatterna är paketpriserna när du köper tillbehör till en produkt.
+          </p>
+        </div>
+      </section>
     </>
   );
 }

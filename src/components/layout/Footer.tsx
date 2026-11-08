@@ -46,7 +46,8 @@ export function Footer() {
         </div>
       </div>
 
-      <div className={`container ${styles.legal}`}>
+      <div className="container">
+        <div className={styles.legal}>
         <span>
           © {new Date().getFullYear()} {site.brandName} · Portfolio demo
         </span>
@@ -55,6 +56,7 @@ export function Footer() {
           <Link href="/designsystem">Designsystem</Link>
           <CookieSettingsLink className={styles.linkButton} />
         </span>
+        </div>
       </div>
     </footer>
   );

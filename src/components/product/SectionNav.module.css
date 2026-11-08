@@ -3,7 +3,7 @@
   z-index: 30;
   top: var(--header-height);
   margin-top: var(--space-8);
-  background: rgb(255 255 255 / 0.97);
+  background: var(--color-paper);
   border-bottom: 1px solid var(--border-strong);
 }
 
@@ -12,6 +12,9 @@
   gap: var(--space-5);
   overflow-x: auto;
   scrollbar-width: none;
+  /* Fade at the right edge hints that more links scroll into view. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  padding-right: 40px;
 }
 
 .list::-webkit-scrollbar {
@@ -47,5 +50,7 @@
 @media (min-width: 960px) {
   .list {
     gap: var(--space-7);
+    mask-image: none;
+    padding-right: 0;
   }
 }

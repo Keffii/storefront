@@ -67,6 +67,7 @@ export function CollectionFilters(props: Props) {
           <select
             value={filters.sort}
             onChange={(e) => go({ ...filters, sort: e.target.value as SortId })}
+            aria-label="Sortera"
             className={styles.select}
           >
             {SORTS.map((s) => (

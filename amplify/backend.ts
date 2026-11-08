@@ -124,9 +124,6 @@ imageBucket.grantDelete(computeRole, "products/*");
  * webhook fails. Two alarms cost about 0.20 USD a month. The address must
  * confirm the SNS subscription (AWS sends a link) before mail arrives.
  */
-const alerts = new Topic(stack, "StorefrontAlerts", { displayName: "Objekt storefront alerts" });
-alerts.addSubscription(new EmailSubscription(process.env.ALERT_EMAIL ?? "alerts@example.com"));
-
 computeRole.addToPolicy(
   new PolicyStatement({
     actions: ["cloudwatch:PutMetricData"],
@@ -135,18 +132,24 @@ computeRole.addToPolicy(
   }),
 );
 
-new Alarm(stack, "WebhookErrorsAlarm", {
-  alarmName: "objekt-storefront-webhook-errors",
-  alarmDescription: "A Stripe webhook failed. Stripe retries, but check the order in the admin.",
-  metric: new Metric({ namespace: "Objekt/Storefront", metricName: "WebhookErrors", statistic: "Sum", period: Duration.minutes(5) }),
-  threshold: 1,
-  evaluationPeriods: 1,
-  comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-  treatMissingData: TreatMissingData.NOT_BREACHING,
-}).addAlarmAction(new SnsAction(alerts));
+// Alerts only for the production branch. Pull-request previews and sandboxes
+// get their own backend copies and shouldn't email anyone (alarm names are
+// also unique per account, so a second copy would fail to deploy).
+// AWS_BRANCH and AWS_APP_ID are set by Amplify during the build.
+if (process.env.AWS_BRANCH === "main" && process.env.AWS_APP_ID) {
+  const alerts = new Topic(stack, "StorefrontAlerts", { displayName: "Objekt storefront alerts" });
+  alerts.addSubscription(new EmailSubscription(process.env.ALERT_EMAIL ?? "alerts@example.com"));
 
-// AWS_APP_ID is set by Amplify during the build; a local sandbox has no hosting to watch.
-if (process.env.AWS_APP_ID) {
+  new Alarm(stack, "WebhookErrorsAlarm", {
+    alarmName: "objekt-storefront-webhook-errors",
+    alarmDescription: "A Stripe webhook failed. Stripe retries, but check the order in the admin.",
+    metric: new Metric({ namespace: "Objekt/Storefront", metricName: "WebhookErrors", statistic: "Sum", period: Duration.minutes(5) }),
+    threshold: 1,
+    evaluationPeriods: 1,
+    comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+    treatMissingData: TreatMissingData.NOT_BREACHING,
+  }).addAlarmAction(new SnsAction(alerts));
+
   new Alarm(stack, "ServerErrorsAlarm", {
     alarmName: "objekt-storefront-5xx",
     alarmDescription: "The storefront returned 5 or more server errors (5xx) in 5 minutes.",

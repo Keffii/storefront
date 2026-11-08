@@ -74,7 +74,7 @@ test("delivery method and pickup point are chosen in the cart", async ({ page })
   // Ombud is the default and offers nearby (demo) pickup points.
   await expect(cart.getByRole("radio", { name: /Ombud/ })).toBeChecked();
   const points = cart.getByRole("radiogroup", { name: "Ombud" });
-  await expect(points.getByRole("radio")).toHaveCount(4);
+  await expect(points.getByRole("radio")).toHaveCount(3);
   await expect(points.getByRole("radio").first()).toBeChecked();
   await cart.getByLabel("Postnummer").fill("17145");
   await cart.getByRole("button", { name: "Visa ombud" }).click();
@@ -97,4 +97,21 @@ test("delivery method and pickup point are chosen in the cart", async ({ page })
 test("return pages don't reveal orders without a valid link", async ({ page }) => {
   const res = await page.goto("/retur/cs_test_doesnotexist?t=wrong");
   expect(res?.status()).toBe(404);
+});
+
+test("gift card page and the cart's gift card field", async ({ page }) => {
+  await page.goto("/presentkort");
+  await expect(page.getByRole("heading", { name: "Ge bort ett presentkort" })).toBeVisible();
+  await page.getByRole("radio", { name: "1 000 kr" }).check({ force: true });
+  await expect(page.getByRole("button", { name: /Köp presentkort, 1 000 kr/ })).toBeVisible();
+  await page.getByLabel("Skicka direkt till mottagaren").check();
+  await expect(page.getByLabel("Mottagarens e-post")).toBeVisible();
+
+  await page.goto("/produkter/lag-skal");
+  await page.getByRole("button", { name: /Lägg i varukorgen/ }).first().click();
+  const cart = page.getByRole("dialog", { name: /Varukorg/ });
+  await cart.getByRole("button", { name: "Har du ett presentkort?" }).click();
+  await cart.getByLabel("Presentkortskod").fill("hej");
+  await cart.getByRole("button", { name: "Använd" }).click();
+  await expect(cart.getByRole("alert")).toContainText("OBJ-XXXX-XXXX");
 });

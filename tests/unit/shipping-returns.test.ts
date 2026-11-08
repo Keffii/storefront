@@ -193,3 +193,17 @@ describe("cancellations", () => {
     expect(canCancel({ status: "pending_payment" })).toBe(false);
   });
 });
+
+describe("refunds with a promotion code", () => {
+  it("refunds the price paid after the code's discount", () => {
+    const o = order({
+      lines: [{ slug: "lag-skal", variantId: "krita", name: "Låg skål", quantity: 2, unitAmount: 39500, total: 79000, discount: 7900 }],
+      subtotal: 79000,
+      discount: 7900,
+      shipping: 4900,
+      total: 76000,
+    });
+    const r = ret([{ lineIndex: 0, quantity: 1 }]);
+    expect(suggestedRefund({ ...o, returns: [r] }, r)).toBe(35550);
+  });
+});

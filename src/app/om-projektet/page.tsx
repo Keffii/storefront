@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
+import { WELCOME_CODE, WELCOME_PERCENT } from "@/lib/promotions";
 import styles from "./om.module.css";
 
 export const metadata: Metadata = {
@@ -115,6 +116,10 @@ export default function AboutProjectPage() {
         <p className={styles.text}>
           Sådana knep kan ge fler köp på kort sikt. För en butik som vill att kunderna kommer tillbaka kostar de
           förtroende, och de gör det svårare att lita på siffrorna i ett A/B-test.
+        </p>
+        <p className={styles.text}>
+          Rabattkoder finns, men de visas öppet här i stället för i en popup. Testa koden{" "}
+          <strong className={styles.code}>{WELCOME_CODE}</strong> i kassan för {WELCOME_PERCENT} % på första köpet.
         </p>
       </section>
 

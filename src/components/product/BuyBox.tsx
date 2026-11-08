@@ -18,6 +18,7 @@ import { selectOption, soldOutValues, stockLevel, variantLabel } from "@/lib/var
 import { BackInStockForm } from "./BackInStockForm";
 import { DeliveryEstimate } from "./DeliveryEstimate";
 import { StickyBuyBar } from "./StickyBuyBar";
+import { KlarnaMessage } from "./KlarnaMessage";
 import styles from "./BuyBox.module.css";
 
 export interface AddOnChoice {
@@ -134,6 +135,7 @@ export function BuyBox({
         <Price amount={variant.price} size="lg" />
         {priceFrom && <span className={styles.priceNote}>Priset gäller vald storlek</span>}
       </div>
+      <KlarnaMessage amount={variant.price} />
 
       {product.options
         .filter((o) => o.values.length > 1)

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Drawer";
 import { Price } from "@/components/ui/Price";
@@ -17,6 +17,8 @@ import { vatIncluded } from "@/lib/vat";
 import { variantLabel } from "@/lib/variants";
 import { useCart } from "./CartProvider";
 import { DeliveryPicker } from "./DeliveryPicker";
+import { GiftCardField } from "./GiftCardField";
+import { giftCardReduction } from "@/lib/gift-cards";
 import { useDelivery } from "./deliveryStore";
 import styles from "./CartDrawer.module.css";
 
@@ -27,6 +29,9 @@ export function CartDrawer() {
   const [checkout, setCheckout] = useState<CheckoutState>({ status: "idle" });
   const catalog = useCatalog();
   const [delivery] = useDelivery();
+  const [giftBalance, setGiftBalance] = useState(0);
+  const onGiftBalance = useCallback((b: number) => setGiftBalance(b), []);
+  const giftAmount = delivery.giftCardCode ? giftCardReduction(giftBalance, cart.total) : 0;
   const suggestion = suggestAddOn(cart, catalog);
   const progress = Math.min(1, (site.freeShippingThreshold - cart.freeShippingRemaining) / site.freeShippingThreshold);
 
@@ -40,6 +45,7 @@ export function CartDrawer() {
         body: JSON.stringify({
           lines: cart.lines.map((l) => ({ slug: l.slug, variantId: l.variantId, quantity: l.quantity })),
           delivery: { method: delivery.method, pickupPointId: delivery.method === "ombud" ? delivery.pickupPointId : null },
+          giftCardCode: giftAmount > 0 ? delivery.giftCardCode : null,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { url?: string; message?: string };
@@ -71,9 +77,15 @@ export function CartDrawer() {
             <dt>Frakt, {shippingMethod(cart.shippingMethod).label.toLowerCase()}</dt>
             <dd>{cart.shipping === 0 ? "Fri" : formatPrice(cart.shipping)}</dd>
           </div>
+          {giftAmount > 0 && (
+            <div className={styles.saving}>
+              <dt>Presentkort</dt>
+              <dd>−{formatPrice(giftAmount)}</dd>
+            </div>
+          )}
           <div className={styles.total}>
-            <dt>Totalt</dt>
-            <dd>{formatPrice(cart.total)}</dd>
+            <dt>{giftAmount > 0 ? "Att betala" : "Totalt"}</dt>
+            <dd>{formatPrice(cart.total - giftAmount)}</dd>
           </div>
           <div className={styles.vat}>
             <dt>Varav moms (25 %)</dt>
@@ -88,7 +100,7 @@ export function CartDrawer() {
         <Button size="lg" fullWidth onClick={startCheckout} disabled={checkout.status === "loading"}>
           {checkout.status === "loading" ? "Öppnar kassan …" : "Till kassan"}
         </Button>
-        <p className={styles.payNote}>Kort eller Klarna · Testläge, inga riktiga betalningar</p>
+        <p className={styles.payNote}>Rabattkod anger du i kassan · Testläge, inga riktiga betalningar</p>
       </div>
     ) : undefined;
 
@@ -190,6 +202,7 @@ export function CartDrawer() {
           )}
 
           <DeliveryPicker amount={cart.subtotal - cart.discount} />
+          <GiftCardField onBalance={onGiftBalance} />
         </div>
       )}
     </Drawer>

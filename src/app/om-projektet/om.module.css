@@ -98,3 +98,11 @@
     column-gap: var(--space-7);
   }
 }
+
+.code {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-linen-sand);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}

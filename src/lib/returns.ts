@@ -130,7 +130,7 @@ export function validateReturn(order: Order, items: ReturnItem[], reason: string
 /** What the customer paid per unit of a line, after bundle discounts. */
 const unitPaid = (order: Pick<Order, "lines">, lineIndex: number) => {
   const l = order.lines[lineIndex];
-  return l ? Math.round(l.total / l.quantity) : 0;
+  return l ? Math.round((l.total - (l.discount ?? 0)) / l.quantity) : 0;
 };
 
 export const refundedSoFar = (order: Pick<Order, "refunds">) => (order.refunds ?? []).reduce((s, r) => s + r.amount, 0);

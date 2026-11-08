@@ -13,7 +13,10 @@ export interface OrderLine {
   name: string;
   quantity: number;
   unitAmount: Money;
+  /** Before promotion-code discounts. */
   total: Money;
+  /** This line's share of a promotion-code discount. */
+  discount?: Money;
 }
 
 export interface Order {
@@ -32,6 +35,13 @@ export interface Order {
   } | null;
   lines: OrderLine[];
   subtotal: Money;
+  /** Promotion-code discount applied in Stripe Checkout. */
+  discount?: Money;
+  discountCode?: string | null;
+  /** Part of the order paid with a gift card (not charged in Stripe). */
+  giftCard?: { code: string; amount: Money } | null;
+  /** The gift card balance was gone by the time the order was paid. */
+  giftCardIssue?: boolean;
   shipping: Money;
   total: Money;
   currency: string;

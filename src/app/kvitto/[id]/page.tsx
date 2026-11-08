@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { site } from "@/data/products";
+import { maskGiftCardCode } from "@/lib/gift-cards";
 import { formatPrice } from "@/lib/format";
 import { isValidReceiptToken } from "@/lib/receipt-token";
 import { isDbConfigured } from "@/lib/server/config";
@@ -90,6 +91,22 @@ export default async function ReceiptPage({
                 <td>{formatPrice(l.total)}</td>
               </tr>
             ))}
+            {order.discount ? (
+              <tr>
+                <td>Rabatt{order.discountCode ? ` (${order.discountCode})` : ""}</td>
+                <td />
+                <td />
+                <td>−{formatPrice(order.discount)}</td>
+              </tr>
+            ) : null}
+            {order.giftCard ? (
+              <tr>
+                <td>Presentkort ({maskGiftCardCode(order.giftCard.code)})</td>
+                <td />
+                <td />
+                <td>−{formatPrice(order.giftCard.amount)}</td>
+              </tr>
+            ) : null}
             <tr>
               <td>Frakt</td>
               <td />

@@ -49,6 +49,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <span className={`${styles.status} ${styles[order.status]}`}>{STATUS_LABELS[order.status]}</span>
       </header>
 
+      {order.giftCardIssue ? (
+        <p className={styles.warning} role="alert">
+          Presentkortets saldo räckte inte när ordern betalades. Kunden har fått {formatPrice(order.giftCard?.amount ?? 0)} i
+          avdrag som inte drogs från kortet. Kontakta kunden innan du skickar.
+        </p>
+      ) : null}
+
       {order.stockIssues?.length ? (
         <p className={styles.warning} role="alert">
           Lagret räckte inte för {order.stockIssues.length === 1 ? "en variant" : `${order.stockIssues.length} varianter`} när
@@ -71,6 +78,18 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                   <span>{formatPrice(l.total)}</span>
                 </li>
               ))}
+              {order.discount ? (
+                <li>
+                  <span>Rabatt{order.discountCode ? ` (${order.discountCode})` : ""}</span>
+                  <span>−{formatPrice(order.discount)}</span>
+                </li>
+              ) : null}
+              {order.giftCard ? (
+                <li>
+                  <span>Presentkort ({order.giftCard.code})</span>
+                  <span>−{formatPrice(order.giftCard.amount)}</span>
+                </li>
+              ) : null}
               <li>
                 <span>Frakt{order.delivery ? ` (${order.delivery.label})` : ""}</span>
                 <span>{order.shipping ? formatPrice(order.shipping) : "Fri"}</span>

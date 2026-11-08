@@ -1,0 +1,139 @@
+.page {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 640px;
+  padding-top: var(--space-7);
+}
+
+.intro {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: var(--text-3xl);
+}
+
+.lead {
+  color: var(--text-secondary);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+  justify-items: start;
+}
+
+.fieldset {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.amounts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+@media (min-width: 560px) {
+  .amounts {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.amount {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 64px;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--color-footer-ash);
+  font-size: var(--text-lg);
+  cursor: pointer;
+}
+
+.amount:has(.radio:checked) {
+  background: var(--color-linen-sand);
+  box-shadow: inset 0 0 0 1px var(--color-graphite);
+}
+
+.amount:has(.radio:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.radio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.check {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-graphite);
+}
+
+.recipient {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.field > span:first-child {
+  color: var(--text-secondary);
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-footer-ash);
+  border-radius: var(--radius-sm);
+  background: var(--color-paper);
+  font: inherit;
+  font-size: var(--text-md);
+}
+
+.note {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.error {
+  width: 100%;
+  padding: var(--space-3);
+  background: #f9ebe9;
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}

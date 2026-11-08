@@ -21,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.9,
     })),
+    { url: absoluteUrl("/presentkort"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: absoluteUrl("/om-projektet"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
 }

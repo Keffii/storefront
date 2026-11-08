@@ -1,0 +1,18 @@
+.box {
+  position: relative;
+  min-height: 1.5rem;
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.fallback {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

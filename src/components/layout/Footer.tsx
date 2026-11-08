@@ -40,6 +40,9 @@ export function Footer() {
             <li>
               <Link href="/favoriter">Favoriter</Link>
             </li>
+            <li>
+              <Link href="/presentkort">Presentkort</Link>
+            </li>
           </ul>
         </div>
 

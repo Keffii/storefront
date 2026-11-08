@@ -12,10 +12,12 @@ export interface DeliveryChoice {
   method: ShippingMethodId;
   pickupPointId: string | null;
   postalCode: string;
+  /** A gift card code entered in the cart (checked again on the server). */
+  giftCardCode: string | null;
 }
 
 const STORAGE_KEY = "objekt.delivery.v1";
-const DEFAULT: DeliveryChoice = { method: DEFAULT_SHIPPING_METHOD, pickupPointId: null, postalCode: "" };
+const DEFAULT: DeliveryChoice = { method: DEFAULT_SHIPPING_METHOD, pickupPointId: null, postalCode: "", giftCardCode: null };
 
 let choice: DeliveryChoice = DEFAULT;
 let loaded = false;
@@ -30,6 +32,7 @@ function read(): DeliveryChoice {
       method: isShippingMethodId(p.method) ? p.method : DEFAULT.method,
       pickupPointId: typeof p.pickupPointId === "string" ? p.pickupPointId : null,
       postalCode: typeof p.postalCode === "string" ? p.postalCode.slice(0, 6) : "",
+      giftCardCode: typeof p.giftCardCode === "string" ? p.giftCardCode.slice(0, 20) : null,
     };
   } catch {
     return DEFAULT;

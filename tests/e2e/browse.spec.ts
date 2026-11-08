@@ -26,8 +26,14 @@ test("colour dots on a product card preview the colour and link to it", async ({
 
 test("filters and sorting live in the URL", async ({ page, isMobile }) => {
   await page.goto("/kollektion");
-  if (isMobile) await page.getByRole("button", { name: /Filtrera/ }).click();
   const panel = isMobile ? page.getByRole("dialog", { name: "Filtrera" }) : page.getByRole("complementary", { name: "Filter" });
+  // On a cold server the first tap can land before React hydrates; tap again until the drawer opens.
+  if (isMobile) {
+    await expect(async () => {
+      await page.getByRole("button", { name: /Filtrera/ }).click();
+      await expect(panel).toBeVisible({ timeout: 2000 });
+    }).toPass({ timeout: 20000 });
+  }
   await panel.getByRole("radio", { name: "Vaser" }).check();
   await expect(page).toHaveURL(/\/kollektion\/vaser/);
   // A category is its own page, so choosing one navigates (and closes the phone drawer).

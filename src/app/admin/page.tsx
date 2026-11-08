@@ -86,6 +86,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <Link href="/admin">Översikt</Link>
         <Link href="/admin/produkter">Produkter</Link>
         <Link href="/admin/lager">Lager</Link>
+        <Link href="/admin/presentkort">Presentkort</Link>
       </nav>
 
       <section aria-labelledby="kpi-title">

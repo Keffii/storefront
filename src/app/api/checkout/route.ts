@@ -7,8 +7,11 @@ import { getProfile, saveProfile } from "@/lib/server/customers";
 import { parseCheckoutBody, parseDelivery, toCheckoutLineItems } from "@/lib/checkout";
 import { pickupPoints } from "@/lib/pickup-points";
 import { shippingMethod } from "@/lib/shipping";
-import { isStripeConfigured } from "@/lib/server/config";
+import { isDbConfigured, isStripeConfigured } from "@/lib/server/config";
+import { giftCardReduction, maskGiftCardCode, normaliseGiftCardCode } from "@/lib/gift-cards";
+import { getGiftCard, isUsable } from "@/lib/server/gift-cards";
 import { requestOrigin } from "@/lib/server/origin";
+import { ensureWelcomeCode } from "@/lib/server/promotions";
 import { stripe } from "@/lib/server/stripe";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +45,14 @@ export async function POST(req: NextRequest) {
   // Live stock, uncached: the cart in the browser may be a minute behind.
   const liveProducts = await getLiveProducts();
   const cart = priceCart(lines, liveProducts, method.id);
+
+  // Gift card: checked here against the stored balance, never trusted from the browser.
+  const giftCardInput = (body as { giftCardCode?: unknown } | null)?.giftCardCode;
+  const giftCardCode = typeof giftCardInput === "string" && giftCardInput ? normaliseGiftCardCode(giftCardInput) : null;
+  const giftCard = giftCardCode && isDbConfigured() ? await getGiftCard(giftCardCode) : null;
+  if (giftCardInput && (!giftCard || !isUsable(giftCard))) {
+    return NextResponse.json({ message: "Presentkortet går inte att använda. Ta bort det i varukorgen och försök igen." }, { status: 400 });
+  }
   const short = shortages(
     cart.lines.map((l) => ({ slug: l.slug, variantId: l.variantId, quantity: l.quantity })),
     liveProducts,
@@ -60,14 +71,31 @@ export async function POST(req: NextRequest) {
   const arm = req.cookies.get("objekt_ab_buybox")?.value ?? "none";
 
   try {
-    const customer = await checkoutCustomer();
+    const [customer] = await Promise.all([checkoutCustomer(), giftCard ? null : ensureWelcomeCode()]);
+    const giftCardAmount = giftCard ? giftCardReduction(giftCard.balance, cart.total) : 0;
+    // A gift card becomes a one-off coupon for exactly this session. Stripe
+    // can't combine it with promotion codes, so those are off when it's used.
+    const giftCoupon = giftCardAmount
+      ? await stripe().coupons.create({
+          amount_off: giftCardAmount,
+          currency: "sek",
+          duration: "once",
+          max_redemptions: 1,
+          name: `Presentkort ${maskGiftCardCode(giftCard!.code)}`,
+          redeem_by: Math.floor(Date.now() / 1000) + 24 * 3600,
+          metadata: { giftCardCode: giftCard!.code },
+        })
+      : null;
     const session = await stripe().checkout.sessions.create({
       ...customer,
       mode: "payment",
       locale: "sv",
       currency: "sek",
-      // Filters the methods enabled in the Stripe dashboard down to card and Klarna.
-      allowed_payment_method_types: ["card", "klarna"],
+      // Filters the methods enabled in the Stripe dashboard. Apple Pay and
+      // Google Pay ride on "card" in hosted Checkout; Swish appears once
+      // Stripe has enabled it for the account (it's in beta).
+      allowed_payment_method_types: ["card", "klarna", "swish"],
+      ...(giftCoupon ? { discounts: [{ coupon: giftCoupon.id }] } : { allow_promotion_codes: true }),
       line_items: toCheckoutLineItems(cart),
       shipping_address_collection: { allowed_countries: ["SE"] },
       phone_number_collection: { enabled: false },
@@ -84,7 +112,12 @@ export async function POST(req: NextRequest) {
           },
         },
       ],
-      metadata: { arm, shippingMethod: method.id, pickupPointId: pickupPoint?.id ?? "" },
+      metadata: {
+        arm,
+        shippingMethod: method.id,
+        pickupPointId: pickupPoint?.id ?? "",
+        ...(giftCoupon ? { giftCardCode: giftCard!.code, giftCardAmount: String(giftCardAmount) } : {}),
+      },
       success_url: `${origin}/tack?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?kassa=avbruten`,
     });

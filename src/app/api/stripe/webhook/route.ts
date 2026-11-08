@@ -3,9 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { isDbConfigured, stripeConfig } from "@/lib/server/config";
 import { incrementMetric } from "@/lib/server/metrics";
-import { sendOrderConfirmation } from "@/lib/server/email";
+import { giftCardEmail, sendEmail, sendOrderConfirmation } from "@/lib/server/email";
+import { issueGiftCard, redeemGiftCard } from "@/lib/server/gift-cards";
 import { decrementStock, INVENTORY_TAG } from "@/lib/server/inventory";
-import { createOrder, getOrder, markStockIssues, setOrderStatus, type Order, type OrderLine } from "@/lib/server/orders";
+import { createOrder, getOrder, markStockIssues, setOrderStatus, updateOrder, type Order, type OrderLine } from "@/lib/server/orders";
 import { stripe } from "@/lib/server/stripe";
 import { pickupPoints } from "@/lib/pickup-points";
 import { isShippingMethodId, shippingMethod } from "@/lib/shipping";
@@ -39,10 +40,15 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
+        if (session.metadata?.kind === "giftcard") {
+          if (session.payment_status === "paid") await issueCardFor(session);
+          break;
+        }
         const order = await toOrder(session);
         const created = await createOrder(order);
         if (created && session.payment_status === "paid") {
           await takeFromStock(order);
+          await takeFromGiftCard(order);
           await incrementMetric("purchase", session.metadata?.arm ?? null);
           await sendOrderConfirmation(order);
         }
@@ -50,10 +56,15 @@ export async function POST(req: NextRequest) {
       }
       case "checkout.session.async_payment_succeeded": {
         const session = event.data.object;
+        if (session.metadata?.kind === "giftcard") {
+          await issueCardFor(session);
+          break;
+        }
         if (await setOrderStatus(session.id, "paid", ["pending_payment"])) {
           const order = await getOrder(session.id);
           if (order) {
             await takeFromStock(order);
+            await takeFromGiftCard(order);
             await sendOrderConfirmation({ ...order, status: "paid" });
           }
           await incrementMetric("purchase", session.metadata?.arm ?? null);
@@ -89,6 +100,40 @@ async function takeFromStock(order: Order) {
   revalidateTag(INVENTORY_TAG);
 }
 
+/** Issues and emails the gift card for a paid purchase (once per session). */
+async function issueCardFor(session: Stripe.Checkout.Session) {
+  const m = session.metadata ?? {};
+  const buyerEmail = session.customer_details?.email ?? null;
+  const card = await issueGiftCard({
+    initial: Number(m.amount) || session.amount_total || 0,
+    purchaseSessionId: session.id,
+    buyerEmail,
+    recipientEmail: m.recipientEmail || null,
+    recipientName: m.recipientName || null,
+    message: m.message || null,
+  });
+  if (!card) return;
+  const mail = giftCardEmail(card);
+  const to = card.recipientEmail ?? buyerEmail;
+  if (to) await sendEmail(to, mail.subject, mail.html, mail.text);
+  // The buyer gets a copy when the card went to someone else.
+  if (buyerEmail && card.recipientEmail && card.recipientEmail !== buyerEmail) {
+    await sendEmail(buyerEmail, `Kopia: ${mail.subject}`, mail.html, mail.text);
+  }
+}
+
+/**
+ * Takes the gift card part of a paid order from the card's balance. If the
+ * balance was spent elsewhere in the meantime, the order is flagged for the
+ * admin instead of silently giving the discount away.
+ */
+async function takeFromGiftCard(order: Order) {
+  if (!order.giftCard) return;
+  if (!(await redeemGiftCard(order.giftCard.code, order.giftCard.amount))) {
+    await updateOrder(order.id, (o) => ({ ...o, giftCardIssue: true }));
+  }
+}
+
 async function toOrder(session: Stripe.Checkout.Session): Promise<Order> {
   const items = await stripe().checkout.sessions.listLineItems(session.id, {
     limit: 100,
@@ -102,7 +147,8 @@ async function toOrder(session: Stripe.Checkout.Session): Promise<Order> {
       name: li.description ?? product?.name ?? "",
       quantity: li.quantity ?? 1,
       unitAmount: li.price?.unit_amount ?? 0,
-      total: li.amount_total,
+      total: li.amount_subtotal,
+      discount: li.amount_discount,
     };
   });
   const shipping = session.collected_information?.shipping_details ?? null;
@@ -125,6 +171,12 @@ async function toOrder(session: Stripe.Checkout.Session): Promise<Order> {
       : null,
     lines,
     subtotal: session.amount_subtotal ?? 0,
+    // A gift card is applied as a one-off Stripe coupon; it's shown as its own line, not as a discount.
+    discount: session.metadata?.giftCardCode ? 0 : (session.total_details?.amount_discount ?? 0),
+    discountCode: session.metadata?.giftCardCode ? null : await discountCode(session),
+    giftCard: session.metadata?.giftCardCode
+      ? { code: session.metadata.giftCardCode, amount: Number(session.metadata.giftCardAmount) || 0 }
+      : null,
     shipping: session.shipping_cost?.amount_total ?? 0,
     total: session.amount_total ?? 0,
     currency: session.currency ?? "sek",
@@ -152,6 +204,18 @@ async function paymentMethodType(session: Stripe.Checkout.Session): Promise<stri
   try {
     const intent = await stripe().paymentIntents.retrieve(id, { expand: ["payment_method"] });
     return (intent.payment_method as Stripe.PaymentMethod | null)?.type ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** The promotion code the customer typed in Checkout, if any. */
+async function discountCode(session: Stripe.Checkout.Session): Promise<string | null> {
+  const promo = session.discounts?.find((d) => d.promotion_code)?.promotion_code;
+  if (!promo) return null;
+  if (typeof promo !== "string") return promo.code;
+  try {
+    return (await stripe().promotionCodes.retrieve(promo)).code;
   } catch {
     return null;
   }

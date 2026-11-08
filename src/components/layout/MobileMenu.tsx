@@ -49,6 +49,11 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
                 Spåra order
               </Link>
             </li>
+            <li>
+              <Link href="/presentkort" onClick={() => setOpen(false)}>
+                Presentkort
+              </Link>
+            </li>
           </ul>
         </nav>
       </Drawer>

@@ -3,12 +3,14 @@ import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import { site } from "@/data/products";
 import { estimateDelivery, formatDeliveryRange } from "@/lib/delivery";
 import { formatPrice } from "@/lib/format";
+import { maskGiftCardCode } from "@/lib/gift-cards";
 import { receiptPath, returnPath } from "@/lib/receipt-token";
 import { RETURN_REASONS, type OrderReturn } from "@/lib/returns";
 import { shippingMethod, trackingLink } from "@/lib/shipping";
 import { absoluteUrl } from "@/lib/site-url";
 import { vatIncluded } from "@/lib/vat";
 import { backend } from "./config";
+import type { GiftCard } from "./gift-cards";
 import type { Order } from "./orders";
 
 /**
@@ -74,6 +76,8 @@ function linesTable(o: Order): string {
   const row = (label: string, value: string, strong = false) =>
     `<tr><td style="padding:4px 0;font-size:14px;${strong ? "font-weight:bold;" : "color:#4c4c4c;"}">${label}</td><td align="right" style="padding:4px 0;font-size:14px;white-space:nowrap;${strong ? "font-weight:bold;" : ""}">${value}</td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}
+${o.discount ? row(`Rabatt${o.discountCode ? ` (${esc(o.discountCode)})` : ""}`, `−${formatPrice(o.discount)}`) : ""}
+${o.giftCard ? row(`Presentkort (${maskGiftCardCode(o.giftCard.code)})`, `−${formatPrice(o.giftCard.amount)}`) : ""}
 ${row("Frakt", o.shipping ? formatPrice(o.shipping) : "Fri")}
 ${row("Totalt", formatPrice(o.total), true)}
 ${row("Varav moms (25 %)", formatPrice(vatIncluded(o.total)))}</table>`;
@@ -168,12 +172,39 @@ export function refundEmail(o: Order, amount: number, why: string) {
 
 export function cancelledEmail(o: Order) {
   const subject = `Order ${orderNumber(o)} är avbruten`;
-  const intro = `Vi har avbrutit order ${orderNumber(o)} och återbetalat <strong>${formatPrice(o.total)}</strong>. Pengarna syns på kontot eller i Klarna-appen inom 5–10 bankdagar.`;
+  const giftCard = o.giftCard && !o.giftCardIssue ? ` ${formatPrice(o.giftCard.amount)} har lagts tillbaka på presentkortet.` : "";
+  const intro = `Vi har avbrutit order ${orderNumber(o)} och återbetalat <strong>${formatPrice(o.total)}</strong>. Pengarna syns på kontot eller i Klarna-appen inom 5–10 bankdagar.${giftCard}`;
   return {
     subject,
     html: layout("Ordern är avbruten", intro, linesTable(o)),
     text: `Order ${orderNumber(o)} är avbruten och ${formatPrice(o.total)} återbetalas.\n\n${DEMO_NOTE}`,
   };
+}
+
+export function giftCardEmail(card: GiftCard) {
+  const expires = new Date(card.expiresAt).toLocaleDateString("sv-SE", { dateStyle: "long", timeZone: "Europe/Stockholm" });
+  const forSomeone = card.recipientEmail && card.recipientEmail !== card.buyerEmail;
+  const subject = forSomeone ? `Du har fått ett presentkort från ${site.brandName}` : `Ditt presentkort från ${site.brandName}`;
+  const greeting = card.recipientName ? `Hej ${esc(card.recipientName)}! ` : "";
+  const intro = `${greeting}Här är ett presentkort på <strong>${formatPrice(card.initial)}</strong>. Skriv koden i varukorgen när du handlar.`;
+  const codeBox = `<p style="margin:20px 0 0;padding:16px;background:#f5f1ea;font-size:20px;letter-spacing:3px;text-align:center;font-weight:bold;">${esc(card.code)}</p>`;
+  const html = layout(
+    "Ett presentkort",
+    intro,
+    codeBox +
+      (card.message ? paragraph(`”${esc(card.message)}”`) : "") +
+      paragraph(`Giltigt till och med ${expires}. Saldot kan användas i flera köp.`) +
+      button(absoluteUrl("/kollektion"), "Börja handla"),
+  );
+  const text = [
+    `${card.recipientName ? `Hej ${card.recipientName}! ` : ""}Här är ett presentkort på ${formatPrice(card.initial)}.`,
+    `Kod: ${card.code}`,
+    card.message ? `"${card.message}"` : "",
+    `Giltigt till och med ${expires}.`,
+    "",
+    DEMO_NOTE,
+  ].join("\n");
+  return { subject, html, text };
 }
 
 /** Sends one of the templates above to the order's email address. */

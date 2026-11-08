@@ -9,6 +9,7 @@ import { cancelledEmail, refundEmail, returnReceivedEmail, sendOrderEmail, sendS
 import { incrementStock, INVENTORY_TAG, setStock } from "@/lib/server/inventory";
 import { getOrder, updateOrder } from "@/lib/server/orders";
 import { refundInStripe } from "@/lib/server/refunds";
+import { restoreGiftCard } from "@/lib/server/gift-cards";
 import { deleteReview, REVIEWS_TAG } from "@/lib/server/reviews";
 
 /** Every action re-checks the admin session: server actions are public endpoints. */
@@ -77,6 +78,8 @@ export async function cancelOrder(formData: FormData) {
   );
   if (updated) {
     for (const l of updated.lines) if (l.slug && l.variantId) await incrementStock(l.slug, l.variantId, l.quantity);
+    // The gift card part was never charged in Stripe: give it back to the card.
+    if (updated.giftCard && !updated.giftCardIssue) await restoreGiftCard(updated.giftCard.code, updated.giftCard.amount);
     revalidateTag(INVENTORY_TAG);
     await sendOrderEmail(updated, cancelledEmail(updated));
   }

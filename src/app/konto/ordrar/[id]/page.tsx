@@ -7,6 +7,7 @@ import { OrderTimeline } from "@/components/orders/OrderTimeline";
 import { Button } from "@/components/ui/Button";
 import { canViewOrder, reorderLines } from "@/lib/accounts";
 import { formatPrice } from "@/lib/format";
+import { maskGiftCardCode } from "@/lib/gift-cards";
 import { receiptPath, returnPath } from "@/lib/receipt-token";
 import { canStartReturn, refundedSoFar } from "@/lib/returns";
 import { trackingLink } from "@/lib/shipping";
@@ -79,6 +80,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             })}
           </ul>
           <dl className={styles.totals}>
+            {order.discount ? (
+              <div>
+                <dt>Rabatt{order.discountCode ? ` (${order.discountCode})` : ""}</dt>
+                <dd>−{formatPrice(order.discount)}</dd>
+              </div>
+            ) : null}
+            {order.giftCard ? (
+              <div>
+                <dt>Presentkort ({maskGiftCardCode(order.giftCard.code)})</dt>
+                <dd>−{formatPrice(order.giftCard.amount)}</dd>
+              </div>
+            ) : null}
             <div>
               <dt>Frakt</dt>
               <dd>{order.shipping ? formatPrice(order.shipping) : "Fri"}</dd>

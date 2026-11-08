@@ -103,8 +103,9 @@ export function DeliveryPicker({ amount }: { amount: Money }) {
                   <span className={styles.methodBody}>
                     <span className={styles.methodName}>{p.name}</span>
                     <span className={styles.methodSub}>
-                      {p.street}, {p.postalCode} {p.city} · {p.hours}
+                      {p.street}, {p.postalCode} {p.city}
                     </span>
+                    <span className={styles.methodSub}>{p.hours}</span>
                   </span>
                 </label>
               ))}

@@ -1,16 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Screenshot comparisons of the views that matter most. Anything that
- * changes on its own (delivery dates, the clock) is masked, and the clock is
- * frozen so the "order within" countdown can't differ between runs.
+ * Screenshot comparisons of the views that matter most. The clock is frozen,
+ * so delivery dates and the "order within" countdown are the same every run.
  */
 test.beforeEach(async ({ page, baseURL }) => {
   await page.context().addCookies([{ name: "objekt_consent", value: "necessary", url: baseURL! }]);
   await page.clock.setFixedTime(new Date("2026-11-10T09:00:00+01:00"));
 });
-
-const dynamic = (page: Page) => [page.locator('[class*="DeliveryEstimate_box"]'), page.locator('[class*="DeliveryPicker_methodSub"]')];
 
 async function settle(page: Page) {
   await page.evaluate(() => document.fonts.ready);
@@ -20,7 +17,7 @@ async function settle(page: Page) {
 test("home", async ({ page }) => {
   await page.goto("/");
   await settle(page);
-  await expect(page).toHaveScreenshot("home.png", { fullPage: true, mask: dynamic(page) });
+  await expect(page).toHaveScreenshot("home.png", { fullPage: true });
 });
 
 test("collection", async ({ page }) => {
@@ -32,7 +29,7 @@ test("collection", async ({ page }) => {
 test("product", async ({ page }) => {
   await page.goto("/produkter/halo-bordslampa");
   await settle(page);
-  await expect(page).toHaveScreenshot("product.png", { mask: dynamic(page) });
+  await expect(page).toHaveScreenshot("product.png");
 });
 
 test("cart", async ({ page }) => {
@@ -43,5 +40,5 @@ test("cart", async ({ page }) => {
   await expect(cart).toBeVisible();
   await expect(cart.getByRole("radiogroup", { name: "Ombud" })).toBeVisible();
   await page.waitForTimeout(400);
-  await expect(page).toHaveScreenshot("cart.png", { mask: dynamic(page) });
+  await expect(page).toHaveScreenshot("cart.png");
 });

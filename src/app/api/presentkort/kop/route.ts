@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       mode: "payment",
       locale: "sv",
       currency: "sek",
-      allowed_payment_method_types: ["card", "klarna", "swish"],
+      allowed_payment_method_types: ["card", "klarna"],
       line_items: [
         {
           quantity: 1,

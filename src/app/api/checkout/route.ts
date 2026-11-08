@@ -91,10 +91,8 @@ export async function POST(req: NextRequest) {
       mode: "payment",
       locale: "sv",
       currency: "sek",
-      // Filters the methods enabled in the Stripe dashboard. Apple Pay and
-      // Google Pay ride on "card" in hosted Checkout; Swish appears once
-      // Stripe has enabled it for the account (it's in beta).
-      allowed_payment_method_types: ["card", "klarna", "swish"],
+      // The shop takes card and Klarna, whatever else the Stripe dashboard enables.
+      allowed_payment_method_types: ["card", "klarna"],
       ...(giftCoupon ? { discounts: [{ coupon: giftCoupon.id }] } : { allow_promotion_codes: true }),
       line_items: toCheckoutLineItems(cart),
       shipping_address_collection: { allowed_countries: ["SE"] },

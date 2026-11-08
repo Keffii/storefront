@@ -54,8 +54,8 @@ export default async function HomePage() {
           <span>Och {site.warrantyYears} års garanti</span>
         </li>
         <li>
-          <strong>Kort, Klarna eller wallet</strong>
-          <span>Apple Pay och Google Pay i kassan</span>
+          <strong>Kort eller Klarna</strong>
+          <span>Betala direkt, om 30 dagar eller dela upp</span>
         </li>
       </ul>
 

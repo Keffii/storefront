@@ -27,7 +27,7 @@ Objekt är en webbutik för ett påhittat varumärke med lampor, vaser, möbler 
 | --- | --- |
 | Hitta | Sök med direkta träffar, filter i adressfältet, kategorisidor, "Visa fler", favoriter, senast visade och "Passar bra med" |
 | Välja | Färgprickar som visar produkten i rätt färg, snabbköp från korten, mått- och skötselguide, recensioner med "Verifierat köp", bevakning av slutsålda varianter |
-| Köpa | Tillbehör till paketpris, set till setpris, ombud, hemleverans eller express med leveransdatum, presentkort, rabattkoder, kort, Apple Pay, Google Pay och Klarna (Swish när Stripe släpper betan) |
+| Köpa | Tillbehör till paketpris, set till setpris, ombud, hemleverans eller express med leveransdatum, presentkort, rabattkoder, kort och Klarna |
 | Efter köpet | Orderbekräftelse, kvitto med moms, spårningslänk, returer och återbetalning via Stripe, konto med orderhistorik och "Köp igen" |
 | Admin | Produkter och bilder, lager, ordrar med frakt och spårning, returer, avbrutna ordrar, presentkort, recensioner, försäljningstratt och A/B-test |
 | Marknad | Produktflöden för Google och Meta, GA4-händelser efter samtycke, nyhetsbrev med dubbel bekräftelse |
@@ -52,7 +52,7 @@ A storefront for a made-up homeware brand: 34 products with colours and sizes, g
 ```mermaid
 flowchart LR
   B[Browser] -->|HTML, RSC| N[Next.js on Amplify Hosting<br/>SSR compute + CDN]
-  N -->|Checkout Session| S[Stripe Checkout<br/>card, wallets, Klarna]
+  N -->|Checkout Session| S[Stripe Checkout<br/>card + Klarna, SEK]
   B -->|redirect| S
   S -->|signed webhook| N
   N --> D[(DynamoDB<br/>single table)]
@@ -66,7 +66,7 @@ flowchart LR
 - **Catalogue.** Hand-written flagship products in [`src/data/products.ts`](src/data/products.ts) and the wider range as plain data in [`src/data/range.json`](src/data/range.json), which the image generator reads too. Once the admin saves a product, the catalogue lives in DynamoDB; products added to the files later still appear. Live stock is a separate item per variant, decremented by the webhook with a write that can't go below zero.
 - **Pages.** Product and category pages are static with tag-based revalidation (catalogue, stock, reviews). Filters, sorting and "Visa fler" (`?sida=`) live in the URL and apply in the browser; the static HTML holds the first page, so it works before JavaScript loads. Search is a ranked scan in the browser with a server-rendered `/sok?q=` fallback.
 - **Cart and pricing.** Pure functions in [`src/lib/cart.ts`](src/lib/cart.ts) shared by browser and server: bundle prices, set prices spread over lines in whole öre, delivery method fees. The checkout route re-prices everything from the catalogue and only trusts ids, quantities, the delivery choice and a gift card code, all validated on the server.
-- **Stripe.** [`/api/checkout`](src/app/api/checkout/route.ts) creates one Checkout Session with a single validated shipping rate. Wallets come through "card"; Swish is allowed and shows once Stripe enables its beta. Promotion codes are on, and a gift card becomes a one-off coupon for that session. [`/api/stripe/webhook`](src/app/api/stripe/webhook/route.ts) verifies the signature, writes orders idempotently, takes stock and gift card balances with conditional writes, issues purchased gift cards and handles Klarna's asynchronous events. Refunds (returns, cancellations) call Stripe with idempotency keys before saving. Live keys are refused.
+- **Stripe.** [`/api/checkout`](src/app/api/checkout/route.ts) creates one Checkout Session with a single validated shipping rate. Payment is limited to card and Klarna. Promotion codes are on, and a gift card becomes a one-off coupon for that session. [`/api/stripe/webhook`](src/app/api/stripe/webhook/route.ts) verifies the signature, writes orders idempotently, takes stock and gift card balances with conditional writes, issues purchased gift cards and handles Klarna's asynchronous events. Refunds (returns, cancellations) call Stripe with idempotency keys before saving. Live keys are refused.
 - **Orders after payment.** Shipping with carrier and tracking number, returns at `/retur/<order>` (signed link or account), partial and full refunds, cancellations with restock. Every step is written to an order history shown to admin and customer. Updates use optimistic locking on the order item.
 - **Accounts.** Cognito sign-up with email verification. Orders link to the account through `client_reference_id`; guest orders can be claimed with a verified email. Customers can export their data and delete the account; their orders are then anonymised.
 - **Email.** SES templates for confirmations, shipping, returns, refunds, cancellations, gift cards, back-in-stock and newsletter double opt-in, each newsletter mail with a one-click unsubscribe. SES is in sandbox mode, so mail only reaches verified addresses.

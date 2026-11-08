@@ -130,7 +130,7 @@ export default function PrivacyPage() {
         <h2>Vilka som hjälper oss</h2>
         <ul>
           <li>Amazon Web Services (drift, databas, inloggning, e-post via Amazon SES, bilder via Amazon S3 och CloudFront), region Stockholm.</li>
-          <li>Stripe (kortbetalning, Apple Pay, Google Pay och Klarna). Stripe är självständigt ansvarig för betaluppgifterna.</li>
+          <li>Stripe (kortbetalning och Klarna). Stripe är självständigt ansvarig för betaluppgifterna.</li>
         </ul>
       </section>
 

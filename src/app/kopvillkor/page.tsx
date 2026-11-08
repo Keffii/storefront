@@ -16,7 +16,7 @@ export default function TermsPage() {
       <section>
         <h2>Priser och betalning</h2>
         <p>
-          Alla priser är i svenska kronor och inklusive 25 % moms. Du betalar med kort, Apple Pay, Google Pay eller Klarna
+          Alla priser är i svenska kronor och inklusive 25 % moms. Du betalar med kort eller Klarna
           via Stripe. Ordern är bindande när betalningen är godkänd och du har fått en orderbekräftelse med e-post.
         </p>
       </section>

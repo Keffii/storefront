@@ -89,7 +89,7 @@ export function GiftCardForm() {
       <Button type="submit" size="lg" disabled={state.status === "loading"}>
         {state.status === "loading" ? "Öppnar kassan …" : `Köp presentkort, ${formatPrice(amount)}`}
       </Button>
-      <p className={styles.note}>Kort, Klarna eller Swish · Testläge, inga riktiga betalningar</p>
+      <p className={styles.note}>Kort eller Klarna · Testläge, inga riktiga betalningar</p>
     </form>
   );
 }

@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/Button";
 import { CategoryGrid } from "@/components/patterns/CategoryGrid";
 import { Hero } from "@/components/patterns/Hero";
 import { ProductGrid } from "@/components/patterns/ProductGrid";
-import { SplitPanel } from "@/components/patterns/SplitPanel";
-import { categories, getDefaultVariant, site } from "@/data/products";
+import Link from "next/link";
+import { categories, sets, site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import { getCatalogWithStock } from "@/lib/server/catalog";
 import { getRatingSummaries } from "@/lib/server/reviews";
@@ -16,7 +16,7 @@ export default async function HomePage() {
   const catalog = await getCatalogWithStock();
   const featured = catalog.filter((p) => p.featured);
   const ratings = await getRatingSummaries(featured.map((p) => p.slug));
-  const spotlight = catalog.find((p) => p.slug === "halo-bordslampa") ?? catalog[0];
+  const frukost = sets.find((s) => s.id === "frukost");
 
   return (
     <>
@@ -30,6 +30,9 @@ export default async function HomePage() {
           <>
             <Button href="/produkter/halo-bordslampa" variant="inverse" size="lg">
               Se lampan
+            </Button>
+            <Button href="/kollektion" variant="inverse" size="lg" className={styles.heroSecondary}>
+              Alla produkter
             </Button>
           </>
         }
@@ -50,9 +53,13 @@ export default async function HomePage() {
           <strong>{site.returnDays} dagars öppet köp</strong>
           <span>Och {site.warrantyYears} års garanti</span>
         </li>
+        <li>
+          <strong>Kort, Klarna eller wallet</strong>
+          <span>Apple Pay och Google Pay i kassan</span>
+        </li>
       </ul>
 
-      <section className={`container ${styles.section}`} aria-labelledby="featured-heading">
+      <section className={`container ${styles.section} ${styles.first}`} aria-labelledby="featured-heading">
         <div className={styles.sectionHead}>
           <h2 id="featured-heading" className={styles.heading}>
             Utvalda föremål
@@ -73,24 +80,21 @@ export default async function HomePage() {
         <CategoryGrid categories={categories} />
       </section>
 
-      {spotlight && (
-        <div className={styles.section}>
-          <SplitPanel
-            tone="accent"
-            eyebrow="Fri frakt"
-            title={`Fri frakt på beställningar över ${formatPrice(site.freeShippingThreshold)}`}
-            image={getDefaultVariant(spotlight).images[1]}
-          >
-            <p>
-              Beställ före kl. {site.shippingCutoffHour} på vardagar så skickar vi samma dag. {site.returnDays} dagars
-              öppet köp på allt.
-            </p>
-            <Button href="/kollektion" variant="inverse">
-              Handla nu
-            </Button>
-          </SplitPanel>
-        </div>
-      )}
+      <section className={`container ${styles.section} ${styles.promos}`} aria-label="Erbjudanden">
+        <Link href="/produkter/mugg" className={styles.promo}>
+          <span className="caption">Setpris</span>
+          <span className={styles.promoTitle}>Frukostset för {formatPrice(frukost?.price ?? 49900)}</span>
+          <span className={styles.promoText}>Mugg, assiett och två skålar i samma glasyr. Köpta var för sig kostar de mer.</span>
+          <span className={styles.promoLink}>Se setet</span>
+        </Link>
+        <Link href="/presentkort" className={`${styles.promo} ${styles.promoAccent}`}>
+          <span className="caption">Presentkort</span>
+          <span className={styles.promoTitle}>Ge bort något de väljer själva</span>
+          <span className={styles.promoText}>Skickas med e-post direkt, gäller i två år och kan användas i flera köp.</span>
+          <span className={styles.promoLink}>Köp presentkort</span>
+        </Link>
+      </section>
+
       <section className={`container ${styles.section} ${styles.about}`} aria-labelledby="about-heading">
         <p className="caption">Om {site.brandName}</p>
         <h2 id="about-heading" className={styles.aboutTitle}>
@@ -103,8 +107,8 @@ export default async function HomePage() {
             dig utan att gissa.
           </p>
           <p>
-            Recensionerna kommer från kunder och redigeras inte. Priserna är desamma hela året, och de enda
-            rabatterna är paketpriserna när du köper tillbehör till en produkt.
+            Recensionerna kommer från kunder och redigeras inte. Priserna är desamma hela året. Rabatterna är
+            paketpriser på tillbehör, setpriser och en välkomstkod som står öppet på sidan om projektet.
           </p>
         </div>
       </section>

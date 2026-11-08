@@ -8,7 +8,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    env:
+      # Canonical URLs and the sitemap point at the server Lighthouse audits.
+      SITE_URL: http://localhost:3400
     steps:
       - uses: actions/checkout@v4
 

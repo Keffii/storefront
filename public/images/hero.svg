@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
 <defs>
-<radialGradient id="glow" cx="0.5" cy="0.78" r="0.6">
+<radialGradient id="glow" cx="0.71" cy="0.78" r="0.6">
 <stop offset="0" stop-color="#5A4A33"/>
 <stop offset="0.35" stop-color="#2A241C"/>
 <stop offset="1" stop-color="#0E0E0E"/>
@@ -17,10 +17,10 @@
 </defs>
 <rect width="1600" height="1000" fill="url(#glow)"/>
 <rect x="0" y="910" width="1600" height="90" fill="#0B0B0B"/>
-<rect x="420" y="900" width="760" height="20" fill="#2B251E"/>
-<rect x="440" y="920" width="720" height="80" fill="#1A1714"/>
-<ellipse cx="800" cy="902" rx="260" ry="34" fill="url(#pool)"/>
-<g transform="translate(800 902) scale(0.42) translate(-600 -970)">
+<rect x="760" y="900" width="760" height="20" fill="#2B251E"/>
+<rect x="780" y="920" width="720" height="80" fill="#1A1714"/>
+<ellipse cx="1140" cy="902" rx="260" ry="34" fill="url(#pool)"/>
+<g transform="translate(1140 902) scale(0.42) translate(-600 -970)">
 <ellipse cx="600" cy="968" rx="120" ry="16" fill="#5d5952"/>
 <rect x="480" y="925" width="240" height="44" rx="6" fill="url(#body)"/>
 <rect x="591" y="540" width="18" height="390" fill="#726e65"/>

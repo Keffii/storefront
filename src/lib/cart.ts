@@ -3,7 +3,7 @@
  * server (checkout route), so the customer sees exactly what Stripe charges.
  * The server never trusts client prices: it re-runs priceCart on the ids.
  */
-import { getProduct, products as catalog, site } from "@/data/products";
+import { products as catalog, site } from "@/data/products";
 import type { Money, Product, Variant } from "./types";
 
 export const MAX_QUANTITY = 10;
@@ -77,7 +77,7 @@ function bundleDiscountFor(addOnSlug: string, lines: { product: Product; quantit
 }
 
 export function priceCart(input: CartLine[], products: Product[] = catalog): PricedCart {
-  const lookup = (slug: string) => products.find((p) => p.slug === slug) ?? getProduct(slug);
+  const lookup = (slug: string) => products.find((p) => p.slug === slug);
   const removed: CartLine[] = [];
   const resolved: { line: CartLine; product: Product; variant: Variant; quantity: number }[] = [];
 

@@ -9,7 +9,7 @@ import outputs from "../../../amplify_outputs.json";
  */
 interface Outputs {
   version: string;
-  custom?: { tableName?: string; region?: string };
+  custom?: { tableName?: string; region?: string; imageBucket?: string; imageCdnDomain?: string };
   auth?: { aws_region: string; user_pool_id: string; user_pool_client_id: string };
 }
 
@@ -18,7 +18,11 @@ const o = outputs as Outputs;
 export const backend = {
   tableName: process.env.STOREFRONT_TABLE ?? o.custom?.tableName ?? null,
   region: process.env.STOREFRONT_REGION ?? o.custom?.region ?? o.auth?.aws_region ?? "eu-north-1",
+  imageBucket: o.custom?.imageBucket ?? null,
+  imageCdnDomain: o.custom?.imageCdnDomain ?? null,
 };
+
+export const isImageStorageConfigured = () => Boolean(backend.imageBucket && backend.imageCdnDomain);
 
 export const stripeConfig = {
   secretKey: process.env.STRIPE_SECRET_KEY ?? null,

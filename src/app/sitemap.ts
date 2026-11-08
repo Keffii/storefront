@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
-import { categories, products } from "@/data/products";
+import { categories } from "@/data/products";
+import { getCatalog } from "@/lib/server/catalog";
 import { absoluteUrl } from "@/lib/site-url";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const products = await getCatalog();
   return [
     { url: absoluteUrl("/"), lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: absoluteUrl("/kollektion"), lastModified: now, changeFrequency: "weekly", priority: 0.8 },

@@ -9,23 +9,23 @@ import { ProductView } from "@/components/product/ProductView";
 import { SectionNav, type SectionLink } from "@/components/product/SectionNav";
 import { Accordion } from "@/components/ui/Accordion";
 import { SpecRows } from "@/components/ui/SpecRows";
-import { getCategory, getDefaultVariant, getPriceRange, getProduct, products, sharedFaq } from "@/data/products";
+import { getCategory, getDefaultVariant, getPriceRange, sharedFaq } from "@/data/products";
 import type { AddOnChoice } from "@/components/product/BuyBox";
 import { isDbConfigured } from "@/lib/server/config";
 import { getRatingSummaries, getReviews } from "@/lib/server/reviews";
 import { breadcrumbJsonLd, categoryBreadcrumb, faqJsonLd, jsonLdScript, productJsonLd } from "@/lib/structured-data";
-import { getProductsWithStock } from "@/lib/server/inventory";
+import { findProduct, getCatalog, getCatalogWithStock } from "@/lib/server/catalog";
 import styles from "./product.module.css";
 
 // Statically generated, refreshed every 10 minutes and right after a new review.
 export const revalidate = 600;
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  return (await getCatalog()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const product = getProduct((await params).slug);
+  const product = await findProduct((await params).slug);
   if (!product) return {};
   const description = `${product.tagline} ${product.description}`.slice(0, 158);
   return {
@@ -38,7 +38,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-  const product = (await getProductsWithStock()).find((p) => p.slug === slug);
+  const catalog = await getCatalogWithStock();
+  const product = catalog.find((p) => p.slug === slug);
   if (!product) notFound();
 
   const { min, max } = getPriceRange(product);
@@ -48,7 +49,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const summary = summaries[product.slug];
 
   const addOns: AddOnChoice[] = product.addOns.flatMap((offer) => {
-    const p = getProduct(offer.slug);
+    const p = catalog.find((x) => x.slug === offer.slug);
     if (!p) return [];
     const v = getDefaultVariant(p);
     return v.stock > 0 ? [{ product: p, variant: v, discount: offer.bundleDiscount }] : [];

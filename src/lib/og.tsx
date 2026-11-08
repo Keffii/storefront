@@ -5,6 +5,17 @@ export const OG_SIZE = { width: 1200, height: 630 };
 
 /** Reads an image from /public as a data URI for use inside ImageResponse. */
 export async function publicImageDataUri(src: string): Promise<string | null> {
+  if (/^https:\/\//.test(src)) {
+    // Uploaded product images live on CloudFront.
+    try {
+      const res = await fetch(src);
+      if (!res.ok) return null;
+      const type = res.headers.get("content-type") ?? "image/jpeg";
+      return `data:${type};base64,${Buffer.from(await res.arrayBuffer()).toString("base64")}`;
+    } catch {
+      return null;
+    }
+  }
   try {
     const file = await readFile(join(process.cwd(), "public", src));
     const type = src.endsWith(".svg") ? "image/svg+xml" : src.endsWith(".png") ? "image/png" : "image/jpeg";

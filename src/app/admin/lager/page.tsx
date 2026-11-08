@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { products } from "@/data/products";
 import { getAdminState } from "@/lib/server/auth";
-import { getLiveProducts } from "@/lib/server/inventory";
+import { withStock } from "@/lib/inventory";
+import { getAllProducts } from "@/lib/server/catalog";
+import { readStockUncached } from "@/lib/server/stock-store";
 import { LOW_STOCK_THRESHOLD, variantLabel } from "@/lib/variants";
 import { updateStock } from "../actions";
 import styles from "../admin.module.css";
@@ -16,7 +17,8 @@ export default async function StockPage() {
   const state = await getAdminState();
   if (state.kind !== "admin") redirect("/admin");
 
-  const live = await getLiveProducts();
+  const products = await getAllProducts();
+  const live = withStock(products, await readStockUncached());
 
   return (
     <div className={`container ${styles.page}`}>

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ProductGrid } from "@/components/patterns/ProductGrid";
 import { Button } from "@/components/ui/Button";
 import { useCatalog } from "@/components/inventory/InventoryProvider";
-import { categories, products as baseProducts } from "@/data/products";
+import { categories } from "@/data/products";
 import {
   activeFilterCount,
   allColors,
@@ -20,7 +20,6 @@ import type { CategoryId } from "@/lib/types";
 import { CollectionFilters } from "./CollectionFilters";
 import styles from "./CollectionView.module.css";
 
-const colorValues = allColors(baseProducts);
 
 interface ViewProps {
   category: CategoryId | null;
@@ -34,6 +33,8 @@ interface ViewProps {
  * so React hydrates the grid once instead of swapping in a second tree.
  */
 export function CollectionView({ category, ratings }: ViewProps) {
+  const products = useCatalog();
+  const colorValues = allColors(products);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -55,7 +56,6 @@ export function CollectionView({ category, ratings }: ViewProps) {
     colorValues.map((c) => c.id),
     category,
   );
-  const products = useCatalog();
   const list = applyFilters(products, filters);
   const counts = facetCounts(products, filters);
   // The category is the page itself, so only the query filters count.

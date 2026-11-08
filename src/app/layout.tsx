@@ -9,7 +9,7 @@ import { Header } from "@/components/layout/Header";
 import { ToastProvider } from "@/components/ui/Toast";
 import { InventoryProvider } from "@/components/inventory/InventoryProvider";
 import { site } from "@/data/products";
-import { getStockMap } from "@/lib/server/inventory";
+import { getCatalogWithStock } from "@/lib/server/catalog";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -45,7 +45,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const stock = await getStockMap();
+  const catalog = await getCatalogWithStock();
   return (
     <html lang="sv" className={`${hanken.variable} ${jost.variable}`}>
       <body>
@@ -53,7 +53,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           Hoppa till innehållet
         </a>
         <ToastProvider>
-          <InventoryProvider stock={stock}>
+          <InventoryProvider products={catalog}>
           <CartProvider>
             <DemoBar />
             <Header />

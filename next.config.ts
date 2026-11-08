@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
     // Inline the (small) CSS into the HTML: removes render-blocking requests
     // and improves first paint on phones.
     inlineCss: true,
+    // Product image uploads from the admin go through server actions.
+    serverActions: { bodySizeLimit: "6mb" },
+  },
+  images: {
+    // Product images uploaded in the admin are served from CloudFront.
+    remotePatterns: [{ protocol: "https", hostname: "*.cloudfront.net", pathname: "/products/**" }],
   },
   poweredByHeader: false,
   async redirects() {

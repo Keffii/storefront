@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/admin/SignOutButton";
 import { Button } from "@/components/ui/Button";
-import { getProduct, products } from "@/data/products";
+import { getAllProducts } from "@/lib/server/catalog";
 import type { AnalyticsEventName } from "@/lib/analytics-events";
 import { formatPrice } from "@/lib/format";
 import { getAdminState } from "@/lib/server/auth";
@@ -55,6 +55,8 @@ export default async function AdminPage() {
     );
   }
 
+  const products = await getAllProducts();
+  const getProduct = (slug: string) => products.find((p) => p.slug === slug);
   const [orders, metrics, reviews] = await Promise.all([
     listOrders(100),
     readMetrics(30),
@@ -81,6 +83,7 @@ export default async function AdminPage() {
 
       <nav aria-label="Admin" className={styles.adminNav}>
         <Link href="/admin">Översikt</Link>
+        <Link href="/admin/produkter">Produkter</Link>
         <Link href="/admin/lager">Lager</Link>
       </nav>
 

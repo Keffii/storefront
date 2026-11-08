@@ -1,6 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
-import { getProduct } from "@/data/products";
+import { findProduct } from "@/lib/server/catalog";
 import { validateReview } from "@/lib/reviews";
 import { isDbConfigured } from "@/lib/server/config";
 import { clientKey, rateLimit } from "@/lib/server/ratelimit";
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
-  const product = typeof body.slug === "string" ? getProduct(body.slug) : undefined;
+  const product = typeof body.slug === "string" ? await findProduct(body.slug) : undefined;
   if (!product) return NextResponse.json({ message: "Produkten finns inte." }, { status: 404 });
 
   const result = validateReview(body);

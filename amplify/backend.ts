@@ -1,7 +1,10 @@
 import { defineBackend } from "@aws-amplify/backend";
-import { RemovalPolicy, Stack } from "aws-cdk-lib";
+import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { AllowedMethods, Distribution, ViewerProtocolPolicy, CachePolicy } from "aws-cdk-lib/aws-cloudfront";
+import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { BlockPublicAccess, Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
 import { auth } from "./auth/resource";
 
 const backend = defineBackend({ auth });
@@ -53,10 +56,43 @@ computeRole.addToPolicy(
   }),
 );
 
+/**
+ * Product images uploaded from the admin. The bucket is private; images are
+ * served through CloudFront with origin access control and long caching
+ * (every upload gets a new key, so files never change in place).
+ */
+const imageBucket = new Bucket(stack, "ProductImages", {
+  blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+  encryption: BucketEncryption.S3_MANAGED,
+  enforceSSL: true,
+  removalPolicy: RemovalPolicy.DESTROY,
+  autoDeleteObjects: true,
+});
+
+const imageCdn = new Distribution(stack, "ProductImagesCdn", {
+  comment: "Objekt storefront product images",
+  defaultBehavior: {
+    origin: S3BucketOrigin.withOriginAccessControl(imageBucket),
+    viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+    allowedMethods: AllowedMethods.ALLOW_GET_HEAD,
+    cachePolicy: new CachePolicy(stack, "ProductImagesCache", {
+      defaultTtl: Duration.days(365),
+      maxTtl: Duration.days(365),
+      minTtl: Duration.days(1),
+    }),
+  },
+});
+
+// The admin's server actions upload and remove images.
+imageBucket.grantPut(computeRole, "products/*");
+imageBucket.grantDelete(computeRole, "products/*");
+
 backend.addOutput({
   custom: {
     tableName: table.tableName,
     region: Stack.of(table).region,
     computeRoleArn: computeRole.roleArn,
+    imageBucket: imageBucket.bucketName,
+    imageCdnDomain: imageCdn.distributionDomainName,
   },
 });

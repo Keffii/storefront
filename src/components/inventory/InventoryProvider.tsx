@@ -1,15 +1,16 @@
 "use client";
 
-import { createContext, useContext, useMemo, type ReactNode } from "react";
-import { products as catalog } from "@/data/products";
-import { withStock, type StockMap } from "@/lib/inventory";
+import { createContext, useContext, type ReactNode } from "react";
+import { products as seed } from "@/data/products";
 import type { Product } from "@/lib/types";
 
-const CatalogContext = createContext<Product[]>(catalog);
+const CatalogContext = createContext<Product[]>(seed);
 
-/** Gives client components the catalogue with live stock from the server. */
-export function InventoryProvider({ stock, children }: { stock: StockMap; children: ReactNode }) {
-  const products = useMemo(() => withStock(catalog, stock), [stock]);
+/**
+ * Gives client components the published catalogue with live stock, as the
+ * server read it (products from DynamoDB once the admin has edited them).
+ */
+export function InventoryProvider({ products, children }: { products: Product[]; children: ReactNode }) {
   return <CatalogContext.Provider value={products}>{children}</CatalogContext.Provider>;
 }
 

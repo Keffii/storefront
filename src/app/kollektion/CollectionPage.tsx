@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CollectionView } from "@/components/collection/CollectionView";
-import { products } from "@/data/products";
+import { getCatalog } from "@/lib/server/catalog";
 import { getRatingSummaries } from "@/lib/server/reviews";
 import { breadcrumbJsonLd, categoryBreadcrumb, jsonLdScript } from "@/lib/structured-data";
 import type { Category } from "@/lib/types";
@@ -8,7 +8,7 @@ import styles from "./kollektion.module.css";
 
 /** Shared by /kollektion and /kollektion/[kategori]. Statically generated. */
 export async function CollectionPage({ category }: { category: Category | null }) {
-  const ratings = await getRatingSummaries(products.map((p) => p.slug));
+  const ratings = await getRatingSummaries((await getCatalog()).map((p) => p.slug));
   const crumbs = [
     { name: "Start", path: "/" },
     { name: "Alla produkter", path: "/kollektion" },

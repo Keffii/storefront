@@ -96,6 +96,8 @@ export interface Product {
   addOns: AddOnOffer[];
   /** Shown on the home page when true. */
   featured: boolean;
+  /** Hidden products aren't listed, can't be bought and their page is a 404. Default true. */
+  published?: boolean;
 }
 
 export interface AddOnOffer {

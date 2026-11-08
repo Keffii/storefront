@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { site } from "@/data/products";
 import { priceCart } from "@/lib/cart";
 import { shortages } from "@/lib/inventory";
-import { getLiveProducts } from "@/lib/server/inventory";
+import { getLiveProducts } from "@/lib/server/catalog";
 import { parseCheckoutBody, toCheckoutLineItems } from "@/lib/checkout";
 import { isStripeConfigured } from "@/lib/server/config";
 import { requestOrigin } from "@/lib/server/origin";

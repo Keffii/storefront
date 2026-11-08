@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/om-projektet" },
 };
 
-const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL ?? "https://github.com/Keffii/storefront";
+// Only shown when a public repository URL is configured (the repo is private by default).
+const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL;
 
 export default function AboutProjectPage() {
   return (
@@ -131,9 +132,11 @@ export default function AboutProjectPage() {
       </section>
 
       <div className={styles.actions}>
-        <Button href={REPO_URL} variant="secondary">
-          Källkoden på GitHub
-        </Button>
+        {REPO_URL && (
+          <Button href={REPO_URL} variant="secondary">
+            Källkoden på GitHub
+          </Button>
+        )}
         <Button href="/kollektion">Till butiken</Button>
       </div>
 

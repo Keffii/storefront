@@ -85,7 +85,7 @@ flowchart LR
 
 ### Performance
 
-Mobile Lighthouse on the live site (simulated phone): performance 97–98 on the home page, a category page and a product page, and 100 for accessibility, best practices and SEO. Fonts are self-hosted through `next/font`, CSS is inlined, the main product image is preloaded, and the shop pages ship about 120 kB of JavaScript. The admin sign-in bundle loads only on the admin pages.
+Mobile Lighthouse on the live site (simulated phone): performance 96–98 on the home page, the collection, a category page and a product page, and 100 for accessibility, best practices and SEO. Fonts are self-hosted through `next/font`, CSS is inlined, the main product image is preloaded, and the shop pages ship about 120 kB of JavaScript. The admin sign-in bundle loads only on the admin pages.
 
 ### Tests
 

@@ -27,6 +27,7 @@
 
 .promises li {
   display: grid;
+  align-content: start;
   gap: 2px;
 }
 
@@ -156,11 +157,11 @@
 
 /* The first section after the promises starts closer, so products show on the first screen. */
 .section.first {
-  margin-top: var(--space-6);
+  margin-top: var(--space-5);
 }
 
 @media (min-width: 960px) {
   .section.first {
-    margin-top: var(--space-7);
+    margin-top: var(--space-6);
   }
 }

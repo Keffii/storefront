@@ -79,6 +79,11 @@ export default async function AdminPage() {
         </div>
       </header>
 
+      <nav aria-label="Admin" className={styles.adminNav}>
+        <Link href="/admin">Översikt</Link>
+        <Link href="/admin/lager">Lager</Link>
+      </nav>
+
       <section aria-labelledby="kpi-title">
         <h2 id="kpi-title" className="visually-hidden">
           Nyckeltal
@@ -193,6 +198,7 @@ export default async function AdminPage() {
                     <td>{formatPrice(o.total)}</td>
                     <td>
                       <span className={`${styles.status} ${styles[o.status]}`}>{STATUS_LABELS[o.status]}</span>
+                      {o.stockIssues?.length ? <span className={`${styles.status} ${styles.failed}`}> Lagerbrist</span> : null}
                     </td>
                     <td>
                       {o.status === "paid" && (

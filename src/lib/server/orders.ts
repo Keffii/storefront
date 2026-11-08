@@ -34,6 +34,8 @@ export interface Order {
   currency: string;
   paymentMethod: string | null;
   shippedAt?: string;
+  /** Variants that couldn't be taken from stock when the order was paid. */
+  stockIssues?: string[];
 }
 
 const key = (id: string) => ({ pk: `ORDER#${id}`, sk: "ORDER" });
@@ -75,6 +77,17 @@ export async function listOrders(limit = 100): Promise<Order[]> {
     }),
   );
   return (res.Items ?? []) as Order[];
+}
+
+export async function markStockIssues(id: string, issues: string[]): Promise<void> {
+  await db().send(
+    new UpdateCommand({
+      TableName: table(),
+      Key: key(id),
+      UpdateExpression: "SET stockIssues = :i",
+      ExpressionAttributeValues: { ":i": issues },
+    }),
+  );
 }
 
 /** Moves an order to `next` only from one of the allowed current statuses. */

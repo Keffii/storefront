@@ -5,6 +5,8 @@ import { site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import { isStripeConfigured } from "@/lib/server/config";
 import { stripe } from "@/lib/server/stripe";
+import { receiptPath } from "@/lib/receipt-token";
+import { vatIncluded } from "@/lib/vat";
 import { ClearCart } from "./ClearCart";
 import styles from "./tack.module.css";
 
@@ -81,6 +83,10 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
               <dt>Totalt</dt>
               <dd>{formatPrice(session.amount_total ?? 0)}</dd>
             </div>
+            <div>
+              <dt>Varav moms (25 %)</dt>
+              <dd>{formatPrice(vatIncluded(session.amount_total ?? 0))}</dd>
+            </div>
           </dl>
         </section>
 
@@ -106,9 +112,16 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
         )}
       </div>
 
-      <Button href="/kollektion" variant="secondary">
-        Fortsätt handla
-      </Button>
+      <div className={styles.actions}>
+        {paid && (
+          <Button href={receiptPath(session.id)} variant="secondary">
+            Visa kvitto
+          </Button>
+        )}
+        <Button href="/kollektion" variant="ghost">
+          Fortsätt handla
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { site } from "@/data/products";
 import { priceCart } from "@/lib/cart";
+import { shortages } from "@/lib/inventory";
+import { getLiveProducts } from "@/lib/server/inventory";
 import { parseCheckoutBody, toCheckoutLineItems } from "@/lib/checkout";
 import { isStripeConfigured } from "@/lib/server/config";
 import { requestOrigin } from "@/lib/server/origin";
@@ -27,7 +29,19 @@ export async function POST(req: NextRequest) {
   const lines = parseCheckoutBody(await req.json().catch(() => null));
   if (!lines) return NextResponse.json({ message: "Varukorgen kunde inte läsas." }, { status: 400 });
 
-  const cart = priceCart(lines);
+  // Live stock, uncached: the cart in the browser may be a minute behind.
+  const liveProducts = await getLiveProducts();
+  const cart = priceCart(lines, liveProducts);
+  const short = shortages(
+    cart.lines.map((l) => ({ slug: l.slug, variantId: l.variantId, quantity: l.quantity })),
+    liveProducts,
+  );
+  if (cart.removed.length > 0 || short.length > 0) {
+    return NextResponse.json(
+      { message: "Något i varukorgen har tagit slut eller finns i färre exemplar. Uppdatera sidan och försök igen." },
+      { status: 409 },
+    );
+  }
   if (cart.lines.length === 0) {
     return NextResponse.json({ message: "Varorna i varukorgen finns inte längre i lager." }, { status: 409 });
   }

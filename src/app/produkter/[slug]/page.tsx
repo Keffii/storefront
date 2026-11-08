@@ -14,6 +14,7 @@ import type { AddOnChoice } from "@/components/product/BuyBox";
 import { isDbConfigured } from "@/lib/server/config";
 import { getRatingSummaries, getReviews } from "@/lib/server/reviews";
 import { breadcrumbJsonLd, categoryBreadcrumb, faqJsonLd, jsonLdScript, productJsonLd } from "@/lib/structured-data";
+import { getProductsWithStock } from "@/lib/server/inventory";
 import styles from "./product.module.css";
 
 // Statically generated, refreshed every 10 minutes and right after a new review.
@@ -36,7 +37,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const product = getProduct((await params).slug);
+  const slug = (await params).slug;
+  const product = (await getProductsWithStock()).find((p) => p.slug === slug);
   if (!product) notFound();
 
   const { min, max } = getPriceRange(product);

@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Drawer";
 import { Price } from "@/components/ui/Price";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
+import { useCatalog } from "@/components/inventory/InventoryProvider";
 import { site } from "@/data/products";
 import { track } from "@/lib/analytics";
 import { MAX_QUANTITY, suggestAddOn } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
+import { vatIncluded } from "@/lib/vat";
 import { variantLabel } from "@/lib/variants";
 import { useCart } from "./CartProvider";
 import styles from "./CartDrawer.module.css";
@@ -20,7 +22,8 @@ type CheckoutState = { status: "idle" } | { status: "loading" } | { status: "err
 export function CartDrawer() {
   const { cart, isOpen, close, add, setQuantity, remove } = useCart();
   const [checkout, setCheckout] = useState<CheckoutState>({ status: "idle" });
-  const suggestion = suggestAddOn(cart);
+  const catalog = useCatalog();
+  const suggestion = suggestAddOn(cart, catalog);
   const progress = Math.min(1, (site.freeShippingThreshold - cart.freeShippingRemaining) / site.freeShippingThreshold);
 
   async function startCheckout() {
@@ -64,8 +67,12 @@ export function CartDrawer() {
             <dd>{cart.shipping === 0 ? "Fri" : formatPrice(cart.shipping)}</dd>
           </div>
           <div className={styles.total}>
-            <dt>Totalt inkl. moms</dt>
+            <dt>Totalt</dt>
             <dd>{formatPrice(cart.total)}</dd>
+          </div>
+          <div className={styles.vat}>
+            <dt>Varav moms (25 %)</dt>
+            <dd>{formatPrice(vatIncluded(cart.total))}</dd>
           </div>
         </dl>
         {checkout.status === "error" && (

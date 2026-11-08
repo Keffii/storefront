@@ -20,7 +20,7 @@ frontend:
       commands:
         # Amplify only passes environment variables to the Next.js server
         # runtime through .env.production, so copy the ones the server needs.
-        - env | grep -E '^(STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|SITE_URL|HASH_SALT|NEXT_PUBLIC_REPO_URL)=' >> .env.production || true
+        - env | grep -E '^(STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|SITE_URL|HASH_SALT|NEXT_PUBLIC_REPO_URL|EMAIL_FROM|RECEIPT_SECRET)=' >> .env.production || true
         - npm run build
   artifacts:
     baseDirectory: .next

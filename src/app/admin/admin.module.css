@@ -187,6 +187,35 @@
   font-weight: 500;
 }
 
+.inlineForm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.qtyInput {
+  width: 5.5rem;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-footer-ash);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
+}
+
+.adminNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.warning {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-warning);
+  background: #f6ecdb;
+  font-size: var(--text-sm);
+}
+
 .detailGrid {
   display: grid;
   gap: var(--space-4);

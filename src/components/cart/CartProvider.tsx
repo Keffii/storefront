@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { useCatalog } from "@/components/inventory/InventoryProvider";
 import { priceCart, type PricedCart } from "@/lib/cart";
 import { cartStore } from "./cartStore";
 
@@ -34,7 +35,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const lines = useSyncExternalStore(cartStore.subscribe, cartStore.getSnapshot, cartStore.getServerSnapshot);
   const ready = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const [isOpen, setOpen] = useState(false);
-  const cart = useMemo(() => priceCart(lines), [lines]);
+  const catalog = useCatalog();
+  const cart = useMemo(() => priceCart(lines, catalog), [lines, catalog]);
 
   // Coming back from a cancelled Stripe checkout: reopen the cart.
   useEffect(() => {

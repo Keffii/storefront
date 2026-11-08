@@ -1,0 +1,132 @@
+import "server-only";
+import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
+import { site } from "@/data/products";
+import { estimateDelivery, formatDeliveryRange } from "@/lib/delivery";
+import { formatPrice } from "@/lib/format";
+import { receiptPath } from "@/lib/receipt-token";
+import { absoluteUrl } from "@/lib/site-url";
+import { vatIncluded } from "@/lib/vat";
+import { backend } from "./config";
+import type { Order } from "./orders";
+
+/**
+ * Order emails through Amazon SES. The SES account is in sandbox mode, so
+ * mail only reaches verified addresses; a real shop would request
+ * production access. Sending never breaks an order: failures are logged.
+ */
+const from = () => process.env.EMAIL_FROM ?? null;
+
+let client: SESv2Client | null = null;
+const ses = () => (client ??= new SESv2Client({ region: backend.region }));
+
+export const isEmailConfigured = () => Boolean(from());
+
+async function send(to: string, subject: string, html: string, text: string): Promise<boolean> {
+  const sender = from();
+  if (!sender) return false;
+  try {
+    await ses().send(
+      new SendEmailCommand({
+        FromEmailAddress: `${site.brandName} <${sender}>`,
+        Destination: { ToAddresses: [to] },
+        Content: {
+          Simple: {
+            Subject: { Data: subject, Charset: "UTF-8" },
+            Body: { Html: { Data: html, Charset: "UTF-8" }, Text: { Data: text, Charset: "UTF-8" } },
+          },
+        },
+      }),
+    );
+    return true;
+  } catch (err) {
+    console.warn("[email] send failed:", (err as Error).name, (err as Error).message);
+    return false;
+  }
+}
+
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+const orderNumber = (o: Order) => o.id.slice(-8).toUpperCase();
+
+/** Shared layout: plain, table-based HTML that holds up in mail clients. */
+function layout(title: string, intro: string, body: string): string {
+  return `<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(title)}</title></head>
+<body style="margin:0;background:#f7f4ef;font-family:Helvetica,Arial,sans-serif;color:#1f1f1f;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f4ef;padding:24px 12px;"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;">
+<tr><td style="padding:28px 28px 8px;font-size:16px;letter-spacing:6px;">OBJEKT</td></tr>
+<tr><td style="padding:8px 28px 0;"><h1 style="margin:0 0 12px;font-size:24px;font-weight:300;">${esc(title)}</h1>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#4c4c4c;">${intro}</p></td></tr>
+<tr><td style="padding:0 28px 24px;">${body}</td></tr>
+<tr><td style="padding:16px 28px 28px;border-top:1px solid #f3f3f3;font-size:12px;line-height:1.6;color:#6b6b6b;">
+Det här är en portfoliodemo. Inga varor skickas och inga pengar dras.</td></tr>
+</table></td></tr></table></body></html>`;
+}
+
+function linesTable(o: Order): string {
+  const rows = o.lines
+    .map(
+      (l) =>
+        `<tr><td style="padding:8px 0;border-bottom:1px solid #f3f3f3;font-size:14px;">${l.quantity} × ${esc(l.name)}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #f3f3f3;font-size:14px;white-space:nowrap;">${formatPrice(l.total)}</td></tr>`,
+    )
+    .join("");
+  const row = (label: string, value: string, strong = false) =>
+    `<tr><td style="padding:4px 0;font-size:14px;${strong ? "font-weight:bold;" : "color:#4c4c4c;"}">${label}</td><td align="right" style="padding:4px 0;font-size:14px;white-space:nowrap;${strong ? "font-weight:bold;" : ""}">${value}</td></tr>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}
+${row("Frakt", o.shipping ? formatPrice(o.shipping) : "Fri")}
+${row("Totalt", formatPrice(o.total), true)}
+${row("Varav moms (25 %)", formatPrice(vatIncluded(o.total)))}</table>`;
+}
+
+function address(o: Order): string {
+  if (!o.address) return "";
+  const a = o.address;
+  return `<p style="margin:20px 0 0;font-size:14px;line-height:1.6;"><strong>Leveransadress</strong><br>${esc(o.name ?? "")}<br>${esc(a.line1 ?? "")}${a.line2 ? `<br>${esc(a.line2)}` : ""}<br>${esc(`${a.postalCode ?? ""} ${a.city ?? ""}`)}</p>`;
+}
+
+const button = (href: string, label: string) =>
+  `<p style="margin:24px 0 0;"><a href="${href}" style="display:inline-block;padding:12px 20px;background:#1f1f1f;color:#ffffff;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">${label}</a></p>`;
+
+export function orderConfirmationEmail(o: Order) {
+  const estimate = formatDeliveryRange(
+    estimateDelivery(new Date(o.createdAt), {
+      cutoffHour: site.shippingCutoffHour,
+      minDays: site.deliveryDays.min,
+      maxDays: site.deliveryDays.max,
+    }),
+  );
+  const subject = `Orderbekräftelse ${orderNumber(o)}`;
+  const intro = `Tack för din beställning! Vi har tagit emot order ${orderNumber(o)}. Beräknad leverans: <strong>${estimate}</strong>.`;
+  const html = layout("Tack för din beställning", intro, linesTable(o) + address(o) + button(absoluteUrl(receiptPath(o.id)), "Visa kvitto"));
+  const text = [
+    `Tack för din beställning! Order ${orderNumber(o)}. Beräknad leverans: ${estimate}.`,
+    "",
+    ...o.lines.map((l) => `${l.quantity} × ${l.name}  ${formatPrice(l.total)}`),
+    `Frakt: ${o.shipping ? formatPrice(o.shipping) : "Fri"}`,
+    `Totalt: ${formatPrice(o.total)} (varav moms ${formatPrice(vatIncluded(o.total))})`,
+    "",
+    `Kvitto: ${absoluteUrl(receiptPath(o.id))}`,
+    "",
+    "Det här är en portfoliodemo. Inga varor skickas och inga pengar dras.",
+  ].join("\n");
+  return { subject, html, text };
+}
+
+export function shippedEmail(o: Order) {
+  const subject = `Din order ${orderNumber(o)} är skickad`;
+  const intro = `Order ${orderNumber(o)} har lämnat vårt lager och är på väg till dig.`;
+  const html = layout("Din order är skickad", intro, linesTable(o) + address(o));
+  const text = `Order ${orderNumber(o)} har lämnat vårt lager och är på väg till dig.\n\nDet här är en portfoliodemo. Inga varor skickas och inga pengar dras.`;
+  return { subject, html, text };
+}
+
+export async function sendOrderConfirmation(o: Order): Promise<boolean> {
+  if (!o.email) return false;
+  const m = orderConfirmationEmail(o);
+  return send(o.email, m.subject, m.html, m.text);
+}
+
+export async function sendShippedEmail(o: Order): Promise<boolean> {
+  if (!o.email) return false;
+  const m = shippedEmail(o);
+  return send(o.email, m.subject, m.html, m.text);
+}

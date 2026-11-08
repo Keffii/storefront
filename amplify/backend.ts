@@ -1,7 +1,7 @@
 import { defineBackend } from "@aws-amplify/backend";
 import { RemovalPolicy, Stack } from "aws-cdk-lib";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
-import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource";
 
 const backend = defineBackend({ auth });
@@ -44,6 +44,14 @@ const computeRole = new Role(stack, "SsrComputeRole", {
   description: "Objekt storefront: Next.js SSR access to the storefront table",
 });
 table.grantReadWriteData(computeRole);
+
+// Order emails. Limited to sending from identities verified in this account.
+computeRole.addToPolicy(
+  new PolicyStatement({
+    actions: ["ses:SendEmail"],
+    resources: [`arn:aws:ses:${Stack.of(table).region}:${Stack.of(table).account}:identity/*`],
+  }),
+);
 
 backend.addOutput({
   custom: {

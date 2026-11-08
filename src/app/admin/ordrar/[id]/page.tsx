@@ -35,6 +35,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <span className={`${styles.status} ${styles[order.status]}`}>{STATUS_LABELS[order.status]}</span>
       </header>
 
+      {order.stockIssues?.length ? (
+        <p className={styles.warning} role="alert">
+          Lagret räckte inte för {order.stockIssues.length === 1 ? "en variant" : `${order.stockIssues.length} varianter`} när
+          ordern betalades ({order.stockIssues.join(", ")}). Kontakta kunden eller fyll på lagret innan du skickar.
+        </p>
+      ) : null}
+
       <div className={styles.detailGrid}>
         <section className={styles.card} aria-labelledby="lines-title">
           <h2 id="lines-title" className="caption">

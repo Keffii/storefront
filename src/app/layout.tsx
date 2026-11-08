@@ -7,7 +7,9 @@ import { DemoBar } from "@/components/layout/DemoBar";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { ToastProvider } from "@/components/ui/Toast";
+import { InventoryProvider } from "@/components/inventory/InventoryProvider";
 import { site } from "@/data/products";
+import { getStockMap } from "@/lib/server/inventory";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -42,7 +44,8 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const stock = await getStockMap();
   return (
     <html lang="sv" className={`${hanken.variable} ${jost.variable}`}>
       <body>
@@ -50,6 +53,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Hoppa till innehållet
         </a>
         <ToastProvider>
+          <InventoryProvider stock={stock}>
           <CartProvider>
             <DemoBar />
             <Header />
@@ -58,6 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <CartDrawer />
             <CookieBanner />
           </CartProvider>
+          </InventoryProvider>
         </ToastProvider>
       </body>
     </html>

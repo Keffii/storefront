@@ -1,8 +1,11 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { isDbConfigured, stripeConfig } from "@/lib/server/config";
 import { incrementMetric } from "@/lib/server/metrics";
-import { createOrder, setOrderStatus, type Order, type OrderLine } from "@/lib/server/orders";
+import { sendOrderConfirmation } from "@/lib/server/email";
+import { decrementStock, INVENTORY_TAG } from "@/lib/server/inventory";
+import { createOrder, getOrder, markStockIssues, setOrderStatus, type Order, type OrderLine } from "@/lib/server/orders";
 import { stripe } from "@/lib/server/stripe";
 
 export const dynamic = "force-dynamic";
@@ -34,15 +37,23 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
-        const created = await createOrder(await toOrder(session));
+        const order = await toOrder(session);
+        const created = await createOrder(order);
         if (created && session.payment_status === "paid") {
+          await takeFromStock(order);
           await incrementMetric("purchase", session.metadata?.arm ?? null);
+          await sendOrderConfirmation(order);
         }
         break;
       }
       case "checkout.session.async_payment_succeeded": {
         const session = event.data.object;
         if (await setOrderStatus(session.id, "paid", ["pending_payment"])) {
+          const order = await getOrder(session.id);
+          if (order) {
+            await takeFromStock(order);
+            await sendOrderConfirmation({ ...order, status: "paid" });
+          }
           await incrementMetric("purchase", session.metadata?.arm ?? null);
         }
         break;
@@ -58,6 +69,22 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ received: true });
+}
+
+/**
+ * Lowers stock for a paid order. Runs once per order (only on the transition
+ * to paid). If two customers paid for the last unit at the same moment, the
+ * conditional write refuses the second decrement and the order is flagged
+ * for the admin instead of letting stock go negative.
+ */
+async function takeFromStock(order: Order) {
+  const issues: string[] = [];
+  for (const l of order.lines) {
+    if (!l.slug || !l.variantId) continue;
+    if (!(await decrementStock(l.slug, l.variantId, l.quantity))) issues.push(`${l.slug}:${l.variantId}`);
+  }
+  if (issues.length) await markStockIssues(order.id, issues);
+  revalidateTag(INVENTORY_TAG);
 }
 
 async function toOrder(session: Stripe.Checkout.Session): Promise<Order> {

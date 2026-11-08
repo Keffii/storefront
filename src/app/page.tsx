@@ -3,8 +3,9 @@ import { CategoryGrid } from "@/components/patterns/CategoryGrid";
 import { Hero } from "@/components/patterns/Hero";
 import { ProductGrid } from "@/components/patterns/ProductGrid";
 import { SplitPanel } from "@/components/patterns/SplitPanel";
-import { categories, featuredProducts, getDefaultVariant, getProduct, site } from "@/data/products";
+import { categories, getDefaultVariant, getProduct, site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
+import { getProductsWithStock } from "@/lib/server/inventory";
 import { getRatingSummaries } from "@/lib/server/reviews";
 import { jsonLdScript, storeJsonLd } from "@/lib/structured-data";
 import styles from "./home.module.css";
@@ -12,7 +13,7 @@ import styles from "./home.module.css";
 export const revalidate = 600;
 
 export default async function HomePage() {
-  const featured = featuredProducts();
+  const featured = (await getProductsWithStock()).filter((p) => p.featured);
   const ratings = await getRatingSummaries(featured.map((p) => p.slug));
   const spotlight = getProduct("halo-bordslampa");
 

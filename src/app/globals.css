@@ -204,6 +204,19 @@ button {
   color: var(--color-graphite);
 }
 
+@media print {
+  header,
+  footer,
+  [role="note"],
+  .no-print,
+  .skip-link {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
+
 /* Utilities */
 .container {
   width: 100%;

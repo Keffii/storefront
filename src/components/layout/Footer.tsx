@@ -79,7 +79,6 @@ export function Footer() {
           © {new Date().getFullYear()} {site.brandName} · Portfolio demo
         </span>
         <span className={styles.legalLinks}>
-          <Link href="/designsystem">Designsystem</Link>
           <CookieSettingsLink className={styles.linkButton} />
         </span>
         </div>

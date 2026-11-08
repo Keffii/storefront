@@ -11,6 +11,7 @@ import { absoluteUrl } from "@/lib/site-url";
 import { vatIncluded } from "@/lib/vat";
 import { backend } from "./config";
 import type { GiftCard } from "./gift-cards";
+import { reportMetric } from "./monitoring";
 import type { Order } from "./orders";
 
 /**
@@ -45,6 +46,7 @@ export async function sendEmail(to: string, subject: string, html: string, text:
     return true;
   } catch (err) {
     console.warn("[email] send failed:", (err as Error).name, (err as Error).message);
+    await reportMetric("EmailErrors");
     return false;
   }
 }

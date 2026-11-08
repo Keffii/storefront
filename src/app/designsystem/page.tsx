@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getAdminState } from "@/lib/server/auth";
 import { RatingLine } from "@/components/reviews/RatingLine";
 import { Stars } from "@/components/reviews/Stars";
 import { Accordion } from "@/components/ui/Accordion";
@@ -14,8 +16,9 @@ import styles from "./designsystem.module.css";
 
 export const metadata: Metadata = {
   title: "Designsystem",
-  robots: { index: false },
+  robots: { index: false, follow: false },
 };
+export const dynamic = "force-dynamic";
 
 const palette = [
   ["Graphite", "--color-graphite", "Text, primärknappar"],
@@ -30,7 +33,11 @@ const palette = [
   ["Footer Black", "--color-footer-black", "Sidfot"],
 ] as const;
 
-export default function DesignSystemPage() {
+export default async function DesignSystemPage() {
+  // Internal reference for the team: only admins see it on the live site.
+  const state = await getAdminState();
+  if (state.kind !== "admin" && state.kind !== "not-configured") redirect("/admin/logga-in");
+
   const lamp = getProduct("halo-bordslampa")!;
   const lowStock = new Set(["l"]);
 

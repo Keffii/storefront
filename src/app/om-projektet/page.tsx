@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
@@ -146,9 +145,6 @@ export default function AboutProjectPage() {
         <Button href="/kollektion">Till butiken</Button>
       </div>
 
-      <p className={styles.small}>
-        Designsystemet med färger, typsnitt och komponenter finns på <Link href="/designsystem">en egen sida</Link>.
-      </p>
     </article>
   );
 }

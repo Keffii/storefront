@@ -7,6 +7,7 @@ import { giftCardEmail, sendEmail, sendOrderConfirmation } from "@/lib/server/em
 import { issueGiftCard, redeemGiftCard } from "@/lib/server/gift-cards";
 import { decrementStock, INVENTORY_TAG } from "@/lib/server/inventory";
 import { createOrder, getOrder, markStockIssues, setOrderStatus, updateOrder, type Order, type OrderLine } from "@/lib/server/orders";
+import { reportMetric } from "@/lib/server/monitoring";
 import { stripe } from "@/lib/server/stripe";
 import { pickupPoints } from "@/lib/pickup-points";
 import { isShippingMethodId, shippingMethod } from "@/lib/shipping";
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("[webhook] failed to handle", event.type, event.id, err);
+    await reportMetric("WebhookErrors");
     // A 500 makes Stripe retry later.
     return NextResponse.json({ error: "Handler failed" }, { status: 500 });
   }

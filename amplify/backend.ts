@@ -3,7 +3,11 @@ import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { AllowedMethods, Distribution, ViewerProtocolPolicy, CachePolicy } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
+import { Alarm, ComparisonOperator, Metric, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch";
+import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
 import { BlockPublicAccess, Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
 import { auth } from "./auth/resource";
 
@@ -114,6 +118,51 @@ computeRole.addToPolicy(
 // The admin's server actions upload and remove images.
 imageBucket.grantPut(computeRole, "products/*");
 imageBucket.grantDelete(computeRole, "products/*");
+
+/*
+ * Monitoring: an email when the site returns server errors or a Stripe
+ * webhook fails. Two alarms cost about 0.20 USD a month. The address must
+ * confirm the SNS subscription (AWS sends a link) before mail arrives.
+ */
+const alerts = new Topic(stack, "StorefrontAlerts", { displayName: "Objekt storefront alerts" });
+alerts.addSubscription(new EmailSubscription(process.env.ALERT_EMAIL ?? "alerts@example.com"));
+
+computeRole.addToPolicy(
+  new PolicyStatement({
+    actions: ["cloudwatch:PutMetricData"],
+    resources: ["*"],
+    conditions: { StringEquals: { "cloudwatch:namespace": "Objekt/Storefront" } },
+  }),
+);
+
+new Alarm(stack, "WebhookErrorsAlarm", {
+  alarmName: "objekt-storefront-webhook-errors",
+  alarmDescription: "A Stripe webhook failed. Stripe retries, but check the order in the admin.",
+  metric: new Metric({ namespace: "Objekt/Storefront", metricName: "WebhookErrors", statistic: "Sum", period: Duration.minutes(5) }),
+  threshold: 1,
+  evaluationPeriods: 1,
+  comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+  treatMissingData: TreatMissingData.NOT_BREACHING,
+}).addAlarmAction(new SnsAction(alerts));
+
+// AWS_APP_ID is set by Amplify during the build; a local sandbox has no hosting to watch.
+if (process.env.AWS_APP_ID) {
+  new Alarm(stack, "ServerErrorsAlarm", {
+    alarmName: "objekt-storefront-5xx",
+    alarmDescription: "The storefront returned 5 or more server errors (5xx) in 5 minutes.",
+    metric: new Metric({
+      namespace: "AWS/AmplifyHosting",
+      metricName: "5xxErrors",
+      dimensionsMap: { App: process.env.AWS_APP_ID },
+      statistic: "Sum",
+      period: Duration.minutes(5),
+    }),
+    threshold: 5,
+    evaluationPeriods: 1,
+    comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+    treatMissingData: TreatMissingData.NOT_BREACHING,
+  }).addAlarmAction(new SnsAction(alerts));
+}
 
 backend.addOutput({
   custom: {

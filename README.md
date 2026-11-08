@@ -85,7 +85,7 @@ flowchart LR
 
 ### Performance
 
-Mobile Lighthouse on the live site (simulated phone): performance 97 on the home page and a product page, 100 for accessibility, best practices and SEO. See the changelog for the collection page. Fonts are self-hosted through `next/font`, CSS is inlined, the main product image is preloaded, and the shop pages ship about 120 kB of JavaScript. The admin sign-in bundle loads only on the admin pages.
+Mobile Lighthouse on the live site (simulated phone): performance 97–98 on the home page, a category page and a product page, and 100 for accessibility, best practices and SEO. Fonts are self-hosted through `next/font`, CSS is inlined, the main product image is preloaded, and the shop pages ship about 120 kB of JavaScript. The admin sign-in bundle loads only on the admin pages.
 
 ### Tests
 
@@ -93,6 +93,7 @@ Mobile Lighthouse on the live site (simulated phone): performance 97 on the home
 npm test            # Vitest: delivery dates, cart pricing, checkout items, filters, variants, review validation
 npm run build
 npm run test:e2e    # Playwright on desktop and Pixel 7: purchase flow, swatches, filters, consent, axe, keyboard
+node scripts/screenshots.mjs <url> <dir>   # every page and UI state at phone and desktop size
 ```
 
 The tests found real bugs during development. A price of 129,50 kr was shown as "129,5 kr". The filter radios in the sidebar and the mobile drawer shared a name, so ticking one unchecked the other. The cart's thumbnail link had no accessible name.

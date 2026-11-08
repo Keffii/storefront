@@ -70,3 +70,17 @@ test("the admin area requires sign-in", async ({ page }) => {
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/logga-in/);
 });
+
+test("account pages send signed-out visitors to sign-in and back", async ({ page }) => {
+  await page.goto("/konto/ordrar");
+  await expect(page).toHaveURL(/\/konto\/logga-in\?till=%2Fkonto%2Fordrar|\/konto\/logga-in\?till=\/konto\/ordrar/);
+  await page.goto("/konto/ordrar/cs_test_someoneelse");
+  await expect(page).toHaveURL(/\/konto\/logga-in/);
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Logga in" })).toHaveAttribute("href", "/konto/logga-in");
+});
+
+test("data export requires a session", async ({ request }) => {
+  const res = await request.get("/api/konto/export");
+  expect(res.status()).toBe(401);
+});

@@ -5,6 +5,8 @@ import { validateReview } from "@/lib/reviews";
 import { isDbConfigured } from "@/lib/server/config";
 import { clientKey, rateLimit } from "@/lib/server/ratelimit";
 import { addReview, REVIEWS_TAG } from "@/lib/server/reviews";
+import { getSession } from "@/lib/server/auth";
+import { listCustomerOrders } from "@/lib/server/customers";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +40,14 @@ export async function POST(req: NextRequest) {
         { status: 429 },
       );
     }
-    const review = await addReview(product.slug, result.value);
+    // "Verifierat köp": decided on the server from the session and the customer's paid orders.
+    const session = await getSession();
+    const verified = session
+      ? (await listCustomerOrders(session.sub)).some(
+          (o) => (o.status === "paid" || o.status === "shipped") && o.lines.some((l) => l.slug === product.slug),
+        )
+      : false;
+    const review = await addReview(product.slug, result.value, verified);
     revalidateTag(REVIEWS_TAG);
     revalidatePath(`/produkter/${product.slug}`);
     return NextResponse.json({ ok: true, review }, { status: 201 });

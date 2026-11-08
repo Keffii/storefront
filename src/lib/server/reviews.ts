@@ -13,10 +13,10 @@ const productPk = (slug: string) => `PRODUCT#${slug}`;
  * Stores a review and bumps the product's summary (count and star sum) in
  * one transaction, so averages never drift from the reviews themselves.
  */
-export async function addReview(slug: string, input: ReviewInput): Promise<Review> {
+export async function addReview(slug: string, input: ReviewInput, verified = false): Promise<Review> {
   const createdAt = new Date().toISOString();
   const id = randomUUID();
-  const review: Review = { id, slug, createdAt, ...input };
+  const review: Review = { id, slug, createdAt, ...input, verified };
   await db().send(
     new TransactWriteCommand({
       TransactItems: [
@@ -83,6 +83,7 @@ async function queryReviews(slug: string, limit: number): Promise<Review[]> {
     title: i.title ?? "",
     body: i.body,
     createdAt: i.createdAt,
+    verified: i.verified === true,
   }));
 }
 

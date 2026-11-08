@@ -127,6 +127,8 @@ async function toOrder(session: Stripe.Checkout.Session): Promise<Order> {
     total: session.amount_total ?? 0,
     currency: session.currency ?? "sek",
     paymentMethod: await paymentMethodType(session),
+    // Set by our checkout route for signed-in customers (a Cognito sub).
+    customerSub: /^[0-9a-f-]{36}$/.test(session.client_reference_id ?? "") ? session.client_reference_id : null,
   };
 }
 

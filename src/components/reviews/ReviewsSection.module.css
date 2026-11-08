@@ -58,6 +58,15 @@
   letter-spacing: 0;
 }
 
+.verified {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: #e7f0e9;
+  color: var(--color-success);
+  font-size: var(--text-xs);
+}
+
 .body {
   color: var(--text-secondary);
   white-space: pre-line;

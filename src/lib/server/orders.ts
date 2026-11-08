@@ -36,6 +36,9 @@ export interface Order {
   shippedAt?: string;
   /** Variants that couldn't be taken from stock when the order was paid. */
   stockIssues?: string[];
+  /** Cognito sub of the account that placed or claimed the order. */
+  customerSub?: string | null;
+  anonymisedAt?: string;
 }
 
 const key = (id: string) => ({ pk: `ORDER#${id}`, sk: "ORDER" });
@@ -49,7 +52,14 @@ export async function createOrder(order: Order): Promise<boolean> {
     await db().send(
       new PutCommand({
         TableName: table(),
-        Item: { ...key(order.id), gsi1pk: "ORDERS", gsi1sk: order.createdAt, type: "order", ...order },
+        Item: {
+          ...key(order.id),
+          gsi1pk: "ORDERS",
+          gsi1sk: order.createdAt,
+          ...(order.customerSub ? { gsi2pk: `CUSTOMER#${order.customerSub}`, gsi2sk: order.createdAt } : {}),
+          type: "order",
+          ...order,
+        },
         ConditionExpression: "attribute_not_exists(pk)",
       }),
     );

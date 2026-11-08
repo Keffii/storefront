@@ -2,7 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { site } from "@/data/products";
 import { priceCart } from "@/lib/cart";
 import { shortages } from "@/lib/inventory";
+import { getSession } from "@/lib/server/auth";
 import { getLiveProducts } from "@/lib/server/catalog";
+import { getProfile, saveProfile } from "@/lib/server/customers";
 import { parseCheckoutBody, toCheckoutLineItems } from "@/lib/checkout";
 import { isStripeConfigured } from "@/lib/server/config";
 import { requestOrigin } from "@/lib/server/origin";
@@ -50,7 +52,9 @@ export async function POST(req: NextRequest) {
   const arm = req.cookies.get("objekt_ab_buybox")?.value ?? "none";
 
   try {
+    const customer = await checkoutCustomer();
     const session = await stripe().checkout.sessions.create({
+      ...customer,
       mode: "payment",
       locale: "sv",
       currency: "sek",
@@ -80,5 +84,42 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[checkout] Stripe error", err);
     return NextResponse.json({ message: "Kassan gick inte att öppna. Försök igen om en stund." }, { status: 502 });
+  }
+}
+
+/**
+ * Signed-in customers: the order is linked to their account through
+ * client_reference_id (set here on the server, never from the browser), and
+ * their saved name and address prefill Stripe Checkout through a Stripe
+ * Customer. Guests get none of this and check out exactly as before.
+ */
+async function checkoutCustomer(): Promise<
+  { client_reference_id: string; customer: string } | { client_reference_id: string; customer_email: string } | Record<string, never>
+> {
+  const account = await getSession();
+  if (!account) return {};
+  try {
+    const profile = await getProfile(account.sub);
+    const a = profile.address;
+    const shipping = a.line1 && a.postalCode && a.city
+      ? { name: profile.name || account.email, address: { line1: a.line1, line2: a.line2 || undefined, postal_code: a.postalCode, city: a.city, country: "SE" } }
+      : undefined;
+    let customerId = profile.stripeCustomerId;
+    if (customerId) {
+      await stripe().customers.update(customerId, { email: account.email, name: profile.name || undefined, shipping });
+    } else {
+      const created = await stripe().customers.create({
+        email: account.email,
+        name: profile.name || undefined,
+        shipping,
+        metadata: { cognitoSub: account.sub },
+      });
+      customerId = created.id;
+      await saveProfile(account.sub, { ...profile, stripeCustomerId: customerId });
+    }
+    return { client_reference_id: account.sub, customer: customerId };
+  } catch (err) {
+    console.warn("[checkout] customer prefill failed:", (err as Error).message);
+    return { client_reference_id: account.sub, customer_email: account.email };
   }
 }

@@ -8,6 +8,8 @@ export interface Review {
   title: string;
   body: string;
   createdAt: string;
+  /** Written by a signed-in customer with a paid order containing the product. */
+  verified?: boolean;
 }
 
 export interface RatingSummary {

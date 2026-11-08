@@ -9,9 +9,10 @@ import { auth } from "./auth/resource";
 
 const backend = defineBackend({ auth });
 
-// Invitation only: nobody can create an account from the sign-in page.
+// Customers sign up themselves; admins are told apart only by the "admin"
+// group, which is assigned by hand and checked on every admin page and action.
 backend.auth.resources.cfnResources.cfnUserPool.adminCreateUserConfig = {
-  allowAdminCreateUserOnly: true,
+  allowAdminCreateUserOnly: false,
 };
 
 const stack = backend.createStack("storefront-data");
@@ -34,6 +35,13 @@ table.addGlobalSecondaryIndex({
   indexName: "gsi1",
   partitionKey: { name: "gsi1pk", type: AttributeType.STRING },
   sortKey: { name: "gsi1sk", type: AttributeType.STRING },
+});
+
+// "Mina ordrar": orders by customer (gsi2pk = CUSTOMER#<cognito sub>).
+table.addGlobalSecondaryIndex({
+  indexName: "gsi2",
+  partitionKey: { name: "gsi2pk", type: AttributeType.STRING },
+  sortKey: { name: "gsi2sk", type: AttributeType.STRING },
 });
 
 /**
@@ -82,6 +90,14 @@ const imageCdn = new Distribution(stack, "ProductImagesCdn", {
     }),
   },
 });
+
+// Customers can delete their own account (the server verifies the session first).
+computeRole.addToPolicy(
+  new PolicyStatement({
+    actions: ["cognito-idp:AdminDeleteUser", "cognito-idp:AdminGetUser"],
+    resources: [backend.auth.resources.userPool.userPoolArn],
+  }),
+);
 
 // The admin's server actions upload and remove images.
 imageBucket.grantPut(computeRole, "products/*");

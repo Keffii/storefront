@@ -30,7 +30,8 @@ const FUNNEL: { event: AnalyticsEventName; label: string }[] = [
 const pct = (part: number, whole: number) =>
   whole > 0 ? `${((part / whole) * 100).toLocaleString("sv-SE", { maximumFractionDigits: 1 })} %` : "–";
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const q = ((await searchParams).q ?? "").trim().toLowerCase();
   const state = await getAdminState();
   if (state.kind === "signed-out" || state.kind === "not-configured") redirect("/admin/logga-in");
 
@@ -173,6 +174,15 @@ export default async function AdminPage() {
         <h2 id="orders-title" className={styles.h2}>
           Ordrar
         </h2>
+        <form className={styles.inlineForm} role="search">
+          <label className="visually-hidden" htmlFor="order-search">
+            Sök order på e-post
+          </label>
+          <input id="order-search" name="q" type="search" defaultValue={q} placeholder="Sök på e-post" className={styles.searchInput} />
+          <Button type="submit" variant="secondary">
+            Sök
+          </Button>
+        </form>
         {orders.length === 0 ? (
           <p className={styles.note}>Inga ordrar än. Testköp med Stripes testkort hamnar här.</p>
         ) : (
@@ -191,13 +201,17 @@ export default async function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((o) => (
+                {orders.filter((o) => !q || (o.email ?? "").toLowerCase().includes(q)).map((o) => (
                   <tr key={o.id}>
                     <th scope="row">
                       <Link href={`/admin/ordrar/${o.id}`}>{o.id.slice(-8).toUpperCase()}</Link>
                     </th>
                     <td>{dateTime.format(new Date(o.createdAt))}</td>
-                    <td>{o.name ?? o.email ?? "–"}</td>
+                    <td>
+                      {o.name ?? o.email ?? "–"}
+                      <br />
+                      <span className={styles.note}>{o.customerSub ? "Konto" : "Gäst"}</span>
+                    </td>
                     <td>{formatPrice(o.total)}</td>
                     <td>
                       <span className={`${styles.status} ${styles[o.status]}`}>{STATUS_LABELS[o.status]}</span>

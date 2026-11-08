@@ -52,6 +52,7 @@ export function ReviewsSection({
                 <header className={styles.reviewHead}>
                   <Stars value={r.rating} label={`${r.rating} av 5 stjärnor`} />
                   {r.title && <h3 className={styles.title}>{r.title}</h3>}
+                  {r.verified && <span className={styles.verified}>Verifierat köp</span>}
                 </header>
                 <p className={styles.body}>{r.body}</p>
                 <footer className={styles.meta}>

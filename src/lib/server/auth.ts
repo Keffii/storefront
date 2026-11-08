@@ -40,6 +40,36 @@ export async function getAdminState(): Promise<AdminState> {
   }
 }
 
+export interface CustomerSession {
+  sub: string;
+  email: string;
+  emailVerified: boolean;
+  groups: string[];
+}
+
+/** The signed-in user (customer or admin), verified on the server, or null. */
+export async function getSession(): Promise<CustomerSession | null> {
+  if (!runner) return null;
+  try {
+    const session = await runner.runWithAmplifyServerContext({
+      nextServerContext: { cookies },
+      operation: (ctx) => fetchAuthSession(ctx),
+    });
+    const p = session.tokens?.idToken?.payload;
+    if (!p || typeof p.sub !== "string" || typeof p.email !== "string") return null;
+    const groups = Array.isArray(p["cognito:groups"]) ? (p["cognito:groups"] as string[]) : [];
+    return { sub: p.sub, email: p.email, emailVerified: p.email_verified === true, groups };
+  } catch {
+    return null;
+  }
+}
+
+export async function requireCustomer(): Promise<CustomerSession> {
+  const s = await getSession();
+  if (!s) throw new Error("Not signed in");
+  return s;
+}
+
 export async function requireAdmin(): Promise<{ email: string | null }> {
   const state = await getAdminState();
   if (state.kind !== "admin") throw new Error("Forbidden");

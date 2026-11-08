@@ -206,6 +206,15 @@
   gap: var(--space-2);
 }
 
+.searchInput {
+  width: min(320px, 100%);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-footer-ash);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
+}
+
 .qtyInput {
   width: 5.5rem;
   min-height: 44px;

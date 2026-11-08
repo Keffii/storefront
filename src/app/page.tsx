@@ -12,6 +12,18 @@ import styles from "./home.module.css";
 
 export const revalidate = 600;
 
+function SellingPoint({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+  return (
+    <li>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d={icon} stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      </svg>
+      <strong>{title}</strong>
+      <span>{children}</span>
+    </li>
+  );
+}
+
 export default async function HomePage() {
   const catalog = await getCatalogWithStock();
   const featured = catalog.filter((p) => p.featured);
@@ -39,24 +51,18 @@ export default async function HomePage() {
       />
 
       <ul role="list" className={`container ${styles.promises}`} aria-label="Köpvillkor">
-        <li>
-          <strong>Fri frakt över {formatPrice(site.freeShippingThreshold)}</strong>
-          <span>Annars {formatPrice(site.shippingFee)}</span>
-        </li>
-        <li>
-          <strong>
-            Leverans på {site.deliveryDays.min}–{site.deliveryDays.max} vardagar
-          </strong>
-          <span>Skickas samma dag vid order före kl. {site.shippingCutoffHour}</span>
-        </li>
-        <li>
-          <strong>{site.returnDays} dagars öppet köp</strong>
-          <span>Och {site.warrantyYears} års garanti</span>
-        </li>
-        <li>
-          <strong>Kort eller Klarna</strong>
-          <span>Betala direkt, om 30 dagar eller dela upp</span>
-        </li>
+        <SellingPoint icon="M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 19.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" title={`Fri frakt över ${formatPrice(site.freeShippingThreshold)}`}>
+          Annars {formatPrice(site.shippingFee)}
+        </SellingPoint>
+        <SellingPoint icon="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2" title={`Leverans på ${site.deliveryDays.min}–${site.deliveryDays.max} vardagar`}>
+          Skickas samma dag vid order före kl. {site.shippingCutoffHour}
+        </SellingPoint>
+        <SellingPoint icon="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4" title={`${site.returnDays} dagars öppet köp`}>
+          Och {site.warrantyYears} års garanti
+        </SellingPoint>
+        <SellingPoint icon="M3 6h18v12H3zM3 10h18M7 15h4" title="Kort eller Klarna">
+          Betala direkt, om 30 dagar eller dela upp
+        </SellingPoint>
       </ul>
 
       <section className={`container ${styles.section} ${styles.first}`} aria-labelledby="featured-heading">
@@ -77,7 +83,10 @@ export default async function HomePage() {
             Handla efter kategori
           </h2>
         </div>
-        <CategoryGrid categories={categories} />
+        <CategoryGrid
+          categories={categories}
+          counts={Object.fromEntries(categories.map((c) => [c.id, catalog.filter((p) => p.category === c.id).length]))}
+        />
       </section>
 
       <section className={`container ${styles.section} ${styles.promos}`} aria-label="Erbjudanden">
@@ -102,13 +111,8 @@ export default async function HomePage() {
         </h2>
         <div className={styles.aboutBody}>
           <p>
-            Vi säljer ett litet sortiment av lampor, vaser och möbler i material som går att laga och sköta: stål,
-            massivt trä, stengods och glas. Varje produktsida visar mått, material och skötsel så att du kan bestämma
-            dig utan att gissa.
-          </p>
-          <p>
-            Recensionerna kommer från kunder och redigeras inte. Priserna är desamma hela året. Rabatterna är
-            paketpriser på tillbehör, setpriser och en välkomstkod som står öppet på sidan om projektet.
+            Lampor, vaser, möbler och bordsartiklar i stål, massivt trä, stengods och glas. Varje produktsida visar mått,
+            material och skötsel, recensionerna redigeras inte och priserna är desamma hela året.
           </p>
         </div>
       </section>

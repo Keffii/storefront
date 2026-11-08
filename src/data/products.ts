@@ -488,26 +488,26 @@ export const categories: Category[] = [
   {
     id: "belysning",
     name: "Belysning",
-    description: "Lampor och ljusstakar",
-    image: images("halo-bordslampa", "krita", "Halo bordslampa")[0],
+    description: "Tak-, golv- och bordslampor",
+    image: images("kupol-taklampa", "krita", "Kupol taklampa")[0],
   },
   {
     id: "vaser",
     name: "Vaser",
-    description: "Handdrejat stengods",
-    image: images("ovo-vas", "terrakotta", "Ovo vas")[0],
+    description: "Vaser och krukor",
+    image: images("flaskvas", "olivgron", "Flaskvas")[0],
   },
   {
     id: "mobler",
     name: "Möbler",
-    description: "Pallar och små bord",
-    image: images("rund-pall", "sand", "Rund pall")[0],
+    description: "Bord, bänkar och speglar",
+    image: images("sidobord", "sand", "Sidobord")[0],
   },
   {
     id: "bordsartiklar",
     name: "Bordsartiklar",
-    description: "Skålar och karaffer",
-    image: images("lag-skal", "grafit", "Låg skål")[0],
+    description: "Tallrikar, muggar och glas",
+    image: images("mugg", "terrakotta", "Mugg")[0],
   },
 ];
 

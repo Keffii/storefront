@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Suspense } from "react";
-import { CollectionView, CollectionViewWithSearch } from "@/components/collection/CollectionView";
+import { CollectionView } from "@/components/collection/CollectionView";
 import { products } from "@/data/products";
 import { getRatingSummaries } from "@/lib/server/reviews";
 import { breadcrumbJsonLd, categoryBreadcrumb, jsonLdScript } from "@/lib/structured-data";
@@ -41,11 +40,8 @@ export async function CollectionPage({ category }: { category: Category | null }
         {category && <p className={styles.lead}>{category.description}</p>}
       </header>
 
-      {/* The fallback is the unfiltered list, so the static HTML is complete;
-          query filters are applied once the page hydrates. */}
-      <Suspense fallback={<CollectionView category={category?.id ?? null} ratings={ratings} search={null} />}>
-        <CollectionViewWithSearch category={category?.id ?? null} ratings={ratings} />
-      </Suspense>
+      {/* Static HTML holds the unfiltered list; query filters apply after hydration. */}
+      <CollectionView category={category?.id ?? null} ratings={ratings} />
     </div>
   );
 }

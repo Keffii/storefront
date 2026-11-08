@@ -23,6 +23,8 @@ interface Props {
   inStockCount: number;
   resultCount: number;
   activeCount: number;
+  /** Applies a same-category filter change (updates the URL in place). */
+  onFilterChange: (href: string) => void;
 }
 
 /**
@@ -47,7 +49,7 @@ export function CollectionFilters(props: Props) {
     if (next.category !== props.filters.category) {
       startTransition(() => router.push(href, { scroll: false }));
     } else {
-      window.history.pushState(null, "", href);
+      props.onFilterChange(href);
     }
   }
 
@@ -114,7 +116,7 @@ function FilterGroups({
   prices,
   inStockCount,
   onChange,
-}: Props & { onChange: (f: Filters) => void }) {
+}: Omit<Props, "onFilterChange"> & { onChange: (f: Filters) => void }) {
   // The groups render twice (sidebar and drawer); unique names keep the two
   // sets of radios from acting as one group.
   const groupName = `kategori-${useId()}`;

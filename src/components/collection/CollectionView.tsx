@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { ProductGrid } from "@/components/patterns/ProductGrid";
 import { Button } from "@/components/ui/Button";
 import { categories, products } from "@/data/products";
@@ -25,16 +24,31 @@ const colorValues = allColors(products);
 interface ViewProps {
   category: CategoryId | null;
   ratings: Record<string, RatingSummary>;
-  /** Query string to apply; null renders the unfiltered list (static HTML). */
-  search: URLSearchParams | null;
 }
 
 /**
- * Filters, chips and the product grid for one collection page. The page's
- * HTML is static (the unfiltered list); query filters apply in the browser.
+ * Filters, chips and the product grid for one collection page. The static
+ * HTML is the unfiltered list; after hydration the query string is read and
+ * applied, and Back/Forward re-apply it. One component instance throughout,
+ * so React hydrates the grid once instead of swapping in a second tree.
  */
-export function CollectionView({ category, ratings, search }: ViewProps) {
-  const params = search ? Object.fromEntries(search.entries()) : {};
+export function CollectionView({ category, ratings }: ViewProps) {
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const sync = () => setSearch(window.location.search);
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+
+  /** Same-page filter change: update the URL without a server round trip. */
+  const navigate = useCallback((href: string) => {
+    window.history.pushState(null, "", href);
+    setSearch(window.location.search);
+  }, []);
+
+  const params = Object.fromEntries(new URLSearchParams(search).entries());
   const filters = parseFilters(
     params,
     colorValues.map((c) => c.id),
@@ -66,6 +80,7 @@ export function CollectionView({ category, ratings, search }: ViewProps) {
         inStockCount={counts.inStock()}
         resultCount={list.length}
         activeCount={activeCount}
+        onFilterChange={navigate}
       />
 
       <div className={styles.results}>
@@ -73,18 +88,32 @@ export function CollectionView({ category, ratings, search }: ViewProps) {
           <ul role="list" className={styles.chips} aria-label="Aktiva filter">
             {chips.map((c) => (
               <li key={c.label}>
-                <Link href={collectionHref(c.next)} scroll={false} replace className={styles.chip}>
+                <a
+                  href={collectionHref(c.next)}
+                  className={styles.chip}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate(collectionHref(c.next));
+                  }}
+                >
                   {c.label}
                   <span aria-hidden="true">×</span>
                   <span className="visually-hidden"> (ta bort filter)</span>
-                </Link>
+                </a>
               </li>
             ))}
             {chips.length > 1 && (
               <li>
-                <Link href={collectionHref(cleared)} scroll={false} replace className={styles.clear}>
+                <a
+                  href={collectionHref(cleared)}
+                  className={styles.clear}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate(collectionHref(cleared));
+                  }}
+                >
                   Rensa alla
-                </Link>
+                </a>
               </li>
             )}
           </ul>
@@ -107,10 +136,4 @@ export function CollectionView({ category, ratings, search }: ViewProps) {
       </div>
     </div>
   );
-}
-
-/** Reads the query string; must sit inside a Suspense boundary on a static page. */
-export function CollectionViewWithSearch(props: Omit<ViewProps, "search">) {
-  const search = useSearchParams();
-  return <CollectionView {...props} search={new URLSearchParams(search.toString())} />;
 }

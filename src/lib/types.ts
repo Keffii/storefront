@@ -100,6 +100,17 @@ export interface Product {
   published?: boolean;
 }
 
+/** "Komplettera med": products sold together at a stated set price. */
+export interface ProductSet {
+  id: string;
+  name: string;
+  description: string;
+  /** One unit of each. */
+  slugs: string[];
+  /** Price for one of each, in öre. */
+  price: Money;
+}
+
 export interface AddOnOffer {
   slug: string;
   /** Discount in öre when bought together with the parent product. */

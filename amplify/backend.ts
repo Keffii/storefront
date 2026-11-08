@@ -11,8 +11,20 @@ const backend = defineBackend({ auth });
 
 // Customers sign up themselves; admins are told apart only by the "admin"
 // group, which is assigned by hand and checked on every admin page and action.
+// The invitation puts the password alone on its own line, with nothing after
+// it: a trailing full stop was easy to read as part of the password.
 backend.auth.resources.cfnResources.cfnUserPool.adminCreateUserConfig = {
   allowAdminCreateUserOnly: false,
+  inviteMessageTemplate: {
+    emailSubject: "Ditt konto hos Objekt",
+    emailMessage: [
+      "<p>Hej!</p>",
+      "<p>Du har fått ett konto hos Objekt.</p>",
+      "<p>E-post: {username}<br>Tillfälligt lösenord (allt på raden nedan, inget mer):</p>",
+      '<p style="font-family:monospace;font-size:20px;letter-spacing:2px;">{####}</p>',
+      "<p>Logga in och välj ett eget lösenord. Det tillfälliga gäller i 7 dagar.</p>",
+    ].join(""),
+  },
 };
 
 const stack = backend.createStack("storefront-data");

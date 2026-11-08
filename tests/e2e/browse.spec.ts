@@ -39,13 +39,14 @@ test("filters and sorting live in the URL", async ({ page, isMobile }) => {
   // A category is its own page, so choosing one navigates (and closes the phone drawer).
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Vaser");
   await expect(page.getByRole("dialog", { name: "Filtrera" })).toBeHidden();
-  await expect(page.getByRole("article")).toHaveCount(1);
+  await expect(page.getByRole("article").filter({ hasText: "Ovo vas" })).toBeVisible();
+  await expect(page.getByRole("article").filter({ hasText: "Halo bordslampa" })).toHaveCount(0);
 
   await page.getByRole("combobox").selectOption("pris-fallande");
   await expect(page).toHaveURL(/sortera=pris-fallande/);
 
   // An impossible combination shows the empty state.
-  await page.goto("/kollektion/vaser?farg=grafit");
+  await page.goto("/kollektion/vaser?farg=varmvit");
   await expect(page.getByText("Inga produkter matchar filtren")).toBeVisible();
   await page.getByRole("link", { name: "Visa alla produkter" }).click();
   await expect(page).toHaveURL(/\/kollektion$/);

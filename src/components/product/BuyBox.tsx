@@ -19,6 +19,7 @@ import { BackInStockForm } from "./BackInStockForm";
 import { DeliveryEstimate } from "./DeliveryEstimate";
 import { StickyBuyBar } from "./StickyBuyBar";
 import { KlarnaMessage } from "./KlarnaMessage";
+import { SizeGuide } from "./SizeGuide";
 import styles from "./BuyBox.module.css";
 
 export interface AddOnChoice {
@@ -153,6 +154,8 @@ export function BuyBox({
             }
           />
         ))}
+
+      <SizeGuide product={product} />
 
       <p className={`${styles.stock} ${styles[level]}`} aria-live="polite">
         <span className={styles.stockDot} aria-hidden="true" />

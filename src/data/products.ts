@@ -12,9 +12,11 @@ import type {
   OptionValue,
   Product,
   ProductImage,
+  ProductSet,
   SiteConfig,
   Variant,
 } from "@/lib/types";
+import range from "./range.json";
 
 export const site: SiteConfig = {
   brandName: "Objekt",
@@ -416,6 +418,72 @@ export const products: Product[] = [
   },
 ];
 
+/* ---------- The wider range ---------- */
+
+/**
+ * The rest of the range is plain data in range.json (also read by the image
+ * generator). Each entry becomes a full product with the same structure as
+ * the hand-written ones above.
+ */
+interface RangeItem {
+  slug: string;
+  name: string;
+  shape: string;
+  category: CategoryId;
+  colors: ColorId[];
+  price: number;
+  tagline: string;
+  description: string;
+  material: string;
+  size: string;
+  care: string;
+}
+
+const CARE_ADD_ON: Partial<Record<CategoryId, string>> = { mobler: "skotselduk" };
+
+function fromRange(r: RangeItem, index: number): Product {
+  const sku = r.slug.replace(/[^a-z]/g, "").slice(0, 6).toUpperCase();
+  // A few variants run low or sell out, so the range shows realistic stock.
+  const stock: Record<string, number> = index % 7 === 3 ? { [r.colors[r.colors.length - 1]]: 0 } : index % 5 === 1 ? { [r.colors[0]]: 4 } : {};
+  const addOn = CARE_ADD_ON[r.category];
+  return {
+    slug: r.slug,
+    name: r.name,
+    tagline: r.tagline,
+    description: r.description,
+    category: r.category,
+    badges: index % 9 === 0 ? ["new"] : [],
+    options: [{ id: "color", label: "Färg", values: r.colors.map((c) => color[c]) }],
+    variants: variants(r.slug, sku, r.name, r.colors, [{ id: "", price: r.price }], stock, 18),
+    defaultVariantId: r.colors[0],
+    features: [
+      {
+        id: "material",
+        title: r.material,
+        body: `${r.name} är gjord i ${r.material.toLowerCase()}. ${r.care}`,
+        image: images(r.slug, r.colors[0], r.name)[1],
+      },
+      {
+        id: "matt",
+        title: "Mått",
+        body: `${r.size}. Måtten står också i specifikationen nedan, så att du kan mäta hemma innan du beställer.`,
+        image: images(r.slug, r.colors[r.colors.length - 1], r.name)[2],
+      },
+    ],
+    specs: [
+      { label: "Mått", value: r.size },
+      { label: "Material", value: r.material },
+      { label: "Skötsel", value: r.care },
+    ],
+    inTheBox: [r.name],
+    faq: [{ question: "Hur sköter jag den?", answer: r.care }],
+    addOns: addOn ? [{ slug: addOn, bundleDiscount: 2000 }] : [],
+    featured: false,
+  };
+}
+
+products.push(...(range as RangeItem[]).map(fromRange));
+
 export const categories: Category[] = [
   {
     id: "belysning",
@@ -491,3 +559,37 @@ export function isAddOnOnly(product: Product): boolean {
 }
 
 export const featuredProducts = () => products.filter((p) => p.featured);
+
+/* ---------- Sets ---------- */
+
+/** Sets sold at a stated price. The cart applies the price when one of each is in it. */
+export const sets: ProductSet[] = [
+  {
+    id: "frukost",
+    name: "Frukostset",
+    description: "Mugg, assiett och två skålar i samma glasyr.",
+    slugs: ["mugg", "assiett", "skalset"],
+    price: 49900,
+  },
+  {
+    id: "middag",
+    name: "Middagsset",
+    description: "Middagstallrik, assiett och fyra dricksglas för en person.",
+    slugs: ["middagstallrik", "assiett", "dricksglas"],
+    price: 54900,
+  },
+  {
+    id: "hall",
+    name: "Hallen",
+    description: "Hallbänk och väggspegel i samma trä.",
+    slugs: ["hallbank", "vaggspegel"],
+    price: 449000,
+  },
+  {
+    id: "lashorna",
+    name: "Läshörna",
+    description: "Golvlampa och sidobord att ställa bredvid fåtöljen.",
+    slugs: ["staende-golvlampa", "sidobord"],
+    price: 459000,
+  },
+];

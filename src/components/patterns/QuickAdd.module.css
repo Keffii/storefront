@@ -1,0 +1,66 @@
+/* Bottom-right of the card image (the image is square, so its height equals the card width). */
+.trigger {
+  position: absolute;
+  top: calc(100cqw - 40px - var(--space-2));
+  right: var(--space-2);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.9);
+  color: var(--color-graphite);
+  cursor: pointer;
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.trigger:active {
+  transform: scale(0.92);
+}
+
+/* With a mouse it appears on hover or focus; on touch screens it's always there. */
+@media (hover: hover) {
+  .trigger {
+    opacity: 0;
+  }
+  :global(article):hover .trigger,
+  .trigger:focus-visible {
+    opacity: 1;
+  }
+}
+
+.body {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.head {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.thumb {
+  background: var(--color-plinth-cream);
+}
+
+.name {
+  font-size: var(--text-lg);
+}
+
+.stock {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.details {
+  justify-self: center;
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

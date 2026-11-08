@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200">
+<defs>
+<linearGradient id="body" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0" stop-color="#ede9e1"/>
+<stop offset="0.45" stop-color="#E9E4DA"/>
+<stop offset="1" stop-color="#a8a49d"/>
+</linearGradient>
+<!-- r=0.5 fades fully to cream at the edges, so images sit seamlessly on cream panels. -->
+<radialGradient id="bg" cx="0.5" cy="0.5" r="0.5">
+<stop offset="0" stop-color="#FBF9F5"/>
+<stop offset="1" stop-color="#F7F4EF"/>
+</radialGradient>
+<filter id="blur"><feGaussianBlur stdDeviation="14"/></filter>
+</defs>
+<rect width="1200" height="1200" fill="url(#bg)"/>
+<ellipse cx="600" cy="975" rx="260" ry="26" fill="#000" opacity="0.10" filter="url(#blur)"/>
+<path d="M760 650 C850 650 870 780 760 830" stroke="#c6c2b9" stroke-width="34" fill="none"/>
+<path d="M450 560 L770 560 L770 920 C770 950 745 968 715 968 L505 968 C475 968 450 950 450 920 Z" fill="url(#body)"/>
+<ellipse cx="610" cy="560" rx="160" ry="24" fill="#ece7de"/>
+<ellipse cx="610" cy="563" rx="140" ry="16" fill="#5A3E2B"/>
+</svg>

@@ -30,12 +30,17 @@ describe("filters in the URL", () => {
   });
 
   it("filters by category, colour and stock", () => {
-    expect(applyFilters(products, { ...none, category: "vaser" }).map((p) => p.slug)).toEqual(["ovo-vas"]);
+    const vases = applyFilters(products, { ...none, category: "vaser" });
+    expect(vases.map((p) => p.slug)).toContain("ovo-vas");
+    expect(vases.every((p) => p.category === "vaser")).toBe(true);
     const blue = applyFilters(products, { ...none, colors: ["dimbla"] }).map((p) => p.slug);
     expect(blue).toContain("halo-bordslampa");
     expect(blue).toContain("lag-skal");
     // Låg skål in Dimblå is sold out, so "in stock" removes it.
-    expect(applyFilters(products, { ...none, colors: ["dimbla"], inStock: true }).map((p) => p.slug)).toEqual(["halo-bordslampa"]);
+    const blueInStock = applyFilters(products, { ...none, colors: ["dimbla"], inStock: true });
+    expect(blueInStock.map((p) => p.slug)).toContain("halo-bordslampa");
+    expect(blueInStock.map((p) => p.slug)).not.toContain("lag-skal");
+    expect(blueInStock.every((p) => p.variants.some((v) => v.options.color === "dimbla" && v.stock > 0))).toBe(true);
   });
 
   it("filters by the lowest variant price", () => {
@@ -51,8 +56,14 @@ describe("filters in the URL", () => {
 
   it("counts facets with the other filters applied", () => {
     const counts = facetCounts(products, { ...none, category: "belysning" });
-    expect(counts.category("vaser")).toBe(1); // category facet ignores the category filter
-    expect(counts.color("terrakotta")).toBe(0); // no lighting in terrakotta
+    // The category facet ignores the category filter...
+    expect(counts.category("vaser")).toBe(products.filter((p) => p.category === "vaser").length);
+    // ...while the colour facet counts only lighting.
+    const lightingInTerrakotta = products.filter(
+      (p) => p.category === "belysning" && p.variants.some((v) => v.options.color === "terrakotta"),
+    ).length;
+    expect(counts.color("terrakotta")).toBe(lightingInTerrakotta);
+    expect(counts.color("terrakotta")).toBeLessThan(products.filter((p) => p.variants.some((v) => v.options.color === "terrakotta")).length);
     expect(activeFilterCount({ ...none, category: "vaser", colors: ["krita", "grafit"] })).toBe(3);
   });
 });

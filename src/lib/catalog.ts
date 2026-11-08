@@ -65,6 +65,25 @@ export function toQuery(f: Filters): string {
   return s ? `?${s}` : "";
 }
 
+/** Products per "page". "Visa fler" adds another page below the ones shown. */
+export const PAGE_SIZE = 12;
+
+/** How many pages to show, from ?sida= (1 when missing or invalid). */
+export function parsePage(params: Params): number {
+  const n = Number(first(params.sida));
+  return Number.isInteger(n) && n >= 1 && n <= 50 ? n : 1;
+}
+
+/** The current filter URL with ?sida= set (dropped for page 1). */
+export function withPage(href: string, page: number): string {
+  const [path, query = ""] = href.split("?");
+  const q = new URLSearchParams(query);
+  if (page > 1) q.set("sida", String(page));
+  else q.delete("sida");
+  const s = q.toString();
+  return s ? `${path}?${s}` : path;
+}
+
 /** Full URL for a filter state: category in the path, the rest in the query. */
 export function collectionHref(f: Filters): string {
   return `/kollektion${f.category ? `/${f.category}` : ""}${toQuery(f)}`;

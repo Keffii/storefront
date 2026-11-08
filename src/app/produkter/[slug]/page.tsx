@@ -6,6 +6,10 @@ import { ComparisonTable } from "@/components/product/ComparisonTable";
 import { RatingLine } from "@/components/reviews/RatingLine";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { ProductView } from "@/components/product/ProductView";
+import { RecentlyViewed } from "@/components/product/RecentlyViewed";
+import { SetOffers } from "@/components/product/SetOffers";
+import { ProductGrid } from "@/components/patterns/ProductGrid";
+import { recommendations } from "@/lib/recommendations";
 import { SectionNav, type SectionLink } from "@/components/product/SectionNav";
 import { Accordion } from "@/components/ui/Accordion";
 import { SpecRows } from "@/components/ui/SpecRows";
@@ -45,8 +49,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { min, max } = getPriceRange(product);
   const category = getCategory(product.category);
   const faq = [...product.faq, ...sharedFaq()];
-  const [reviews, summaries] = await Promise.all([getReviews(product.slug), getRatingSummaries([product.slug])]);
+  const related = recommendations(product, catalog);
+  const [reviews, summaries] = await Promise.all([
+    getReviews(product.slug),
+    getRatingSummaries([product.slug, ...related.map((p) => p.slug)]),
+  ]);
   const summary = summaries[product.slug];
+  const relatedRatings = summaries;
 
   const addOns: AddOnChoice[] = product.addOns.flatMap((offer) => {
     const p = catalog.find((x) => x.slug === offer.slug);
@@ -189,6 +198,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             />
           </div>
         </section>
+
+        <SetOffers slug={product.slug} />
+
+        {related.length > 0 && (
+          <section className={styles.section} aria-labelledby="passar-rubrik">
+            <h2 id="passar-rubrik" className={styles.sectionTitle}>
+              Passar bra med
+            </h2>
+            <ProductGrid products={related} ratings={relatedRatings} />
+          </section>
+        )}
+
+        <RecentlyViewed current={product.slug} />
       </div>
     </>
   );

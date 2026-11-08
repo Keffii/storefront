@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200">
+<defs>
+<linearGradient id="body" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0" stop-color="#c5866b"/>
+<stop offset="0.45" stop-color="#B86B4B"/>
+<stop offset="1" stop-color="#844d36"/>
+</linearGradient>
+<!-- r=0.5 fades fully to cream at the edges, so images sit seamlessly on cream panels. -->
+<radialGradient id="bg" cx="0.5" cy="0.5" r="0.5">
+<stop offset="0" stop-color="#FBF9F5"/>
+<stop offset="1" stop-color="#F7F4EF"/>
+</radialGradient>
+<filter id="blur"><feGaussianBlur stdDeviation="14"/></filter>
+</defs>
+<rect width="1200" height="1200" fill="url(#bg)"/>
+<rect x="330" y="880" width="540" height="320" fill="#EDE7DC"/>
+<rect x="330" y="880" width="540" height="10" fill="#E3DCCF"/>
+<ellipse cx="600" cy="884" rx="200" ry="18" fill="#000" opacity="0.10" filter="url(#blur)"/>
+<g transform="translate(600 880) scale(0.72) translate(-600 -970)">
+<ellipse cx="600" cy="960" rx="230" ry="16" fill="#814b35"/>
+<path d="M400 560 L800 560 L750 945 L450 945 Z" fill="url(#body)"/>
+<rect x="380" y="545" width="440" height="44" rx="8" fill="#be7759"/>
+<ellipse cx="600" cy="548" rx="200" ry="14" fill="#5B4636"/>
+<path d="M600 545 C560 430 520 380 470 360 M600 545 C620 420 670 360 730 340 M600 545 C600 440 605 380 600 300" stroke="#5E7351" stroke-width="16" fill="none" stroke-linecap="round"/>
+<ellipse cx="465" cy="355" rx="55" ry="26" fill="#6F8A5F" transform="rotate(-25 465 355)"/>
+<ellipse cx="735" cy="335" rx="58" ry="27" fill="#6F8A5F" transform="rotate(20 735 335)"/>
+<ellipse cx="600" cy="292" rx="30" ry="58" fill="#7C9A69"/></g>
+</svg>

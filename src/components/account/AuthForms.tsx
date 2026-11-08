@@ -12,7 +12,7 @@ import {
 } from "aws-amplify/auth";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { authErrorMessage, ensureAmplify } from "./amplify-client";
 import styles from "./AuthForms.module.css";
@@ -39,19 +39,49 @@ function Field({
   hint?: ReactNode;
   inputMode?: "numeric" | "email";
 }) {
+  const id = useId();
+  const [visible, setVisible] = useState(false);
+  const isPassword = type === "password";
+  const input = (
+    <input
+      id={id}
+      type={isPassword && visible ? "text" : type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      autoComplete={autoComplete}
+      inputMode={inputMode}
+      autoCapitalize={isPassword ? "none" : undefined}
+      spellCheck={isPassword ? false : undefined}
+      required
+    />
+  );
   return (
-    <label className={styles.field}>
-      <span>{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        autoComplete={autoComplete}
-        inputMode={inputMode}
-        required
-      />
+    <div className={styles.field}>
+      <label htmlFor={id}>{label}</label>
+      {isPassword ? (
+        <div className={styles.passwordWrap}>
+          {input}
+          {/* Shows what was typed, so a mistyped password is easy to spot. */}
+          <button
+            type="button"
+            className={styles.reveal}
+            onClick={() => setVisible((v) => !v)}
+            aria-label={visible ? "Dölj lösenordet" : "Visa lösenordet"}
+            aria-pressed={visible}
+            aria-controls={id}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" stroke="currentColor" strokeWidth="1.4" />
+              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.4" />
+              {visible && <path d="M4 20 20 4" stroke="currentColor" strokeWidth="1.4" />}
+            </svg>
+          </button>
+        </div>
+      ) : (
+        input
+      )}
       {hint && <span className={styles.hint}>{hint}</span>}
-    </label>
+    </div>
   );
 }
 

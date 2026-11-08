@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { site } from "@/data/products";
-import { clampQuantity, normaliseLines, priceCart, suggestAddOn } from "@/lib/cart";
+import { clampQuantity, normaliseLines, priceCart, setsFor, suggestAddOn } from "@/lib/cart";
 import { parseCheckoutBody, toCheckoutLineItems } from "@/lib/checkout";
 import { formatPrice } from "@/lib/format";
 
@@ -94,5 +94,42 @@ describe("formatPrice", () => {
     expect(formatPrice(149500).replace(/\s/g, " ")).toBe("1 495 kr");
     expect(formatPrice(9900).replace(/\s/g, " ")).toBe("99 kr");
     expect(formatPrice(12950).replace(/\s/g, " ")).toBe("129,50 kr");
+  });
+});
+
+describe("set prices", () => {
+  const breakfast = [
+    { slug: "mugg", variantId: "krita", quantity: 1 },
+    { slug: "assiett", variantId: "krita", quantity: 1 },
+    { slug: "skalset", variantId: "krita", quantity: 1 },
+  ];
+
+  it("charges the set price for one of each", () => {
+    const c = priceCart(breakfast);
+    expect(c.subtotal - c.discount).toBe(49900);
+    expect(c.lines.every((l) => l.discountKind === "set" && l.discountedUnits === 1)).toBe(true);
+  });
+
+  it("applies once per complete set", () => {
+    const c = priceCart([{ ...breakfast[0], quantity: 2 }, { ...breakfast[1], quantity: 2 }, breakfast[2]]);
+    expect(c.discount).toBe(17500 + 14900 + 24500 - 49900);
+  });
+
+  it("needs every product of the set", () => {
+    expect(priceCart(breakfast.slice(0, 2)).discount).toBe(0);
+  });
+
+  it("splits into whole-öre Stripe lines that add up to the cart", () => {
+    const cart = priceCart([...breakfast, { ...breakfast[0], quantity: 1 }]);
+    const items = toCheckoutLineItems(cart);
+    expect(items.every((i) => Number.isInteger(i.price_data.unit_amount))).toBe(true);
+    expect(items.reduce((s, i) => s + i.quantity * i.price_data.unit_amount, 0)).toBe(cart.total - cart.shipping);
+    expect(items.some((i) => i.price_data.product_data.name.includes("setpris"))).toBe(true);
+  });
+
+  it("lists the sets a product is in, with the saving", () => {
+    const [offer] = setsFor("mugg");
+    expect(offer.set.id).toBe("frukost");
+    expect(offer.saving).toBe(17500 + 14900 + 24500 - 49900);
   });
 });

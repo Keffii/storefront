@@ -3,9 +3,9 @@
  * server (checkout route), so the customer sees exactly what Stripe charges.
  * The server never trusts client prices: it re-runs priceCart on the ids.
  */
-import { products as catalog, site } from "@/data/products";
+import { products as catalog, sets as allSets, site } from "@/data/products";
 import { DEFAULT_SHIPPING_METHOD, shippingFee, shippingMethod, type ShippingMethodId } from "./shipping";
-import type { Money, Product, Variant } from "./types";
+import type { Money, Product, ProductSet, Variant } from "./types";
 
 export const MAX_QUANTITY = 10;
 
@@ -26,6 +26,8 @@ export interface PricedLine extends CartLine {
   total: Money;
   /** Units the bundle discount applies to. */
   discountedUnits: number;
+  /** What the discount is for: an add-on bundle or a set. */
+  discountKind?: "bundle" | "set";
 }
 
 export interface PricedCart {
@@ -82,6 +84,7 @@ export function priceCart(
   input: CartLine[],
   products: Product[] = catalog,
   method: ShippingMethodId = DEFAULT_SHIPPING_METHOD,
+  sets: ProductSet[] = allSets,
 ): PricedCart {
   const lookup = (slug: string) => products.find((p) => p.slug === slug);
   const removed: CartLine[] = [];
@@ -112,9 +115,12 @@ export function priceCart(
       unitPrice,
       discount,
       discountedUnits,
+      ...(discount > 0 ? { discountKind: "bundle" as const } : {}),
       total: unitPrice * quantity - discount,
     };
   });
+
+  applySetPrices(lines, sets);
 
   const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
   const discount = lines.reduce((s, l) => s + l.discount, 0);
@@ -134,6 +140,45 @@ export function priceCart(
     freeShippingRemaining: Math.max(0, site.freeShippingThreshold - afterDiscount),
     qualifiesForFreeShipping,
   };
+}
+
+/**
+ * Set prices: for every complete set in the cart (one of each product), the
+ * set's saving is spread over its lines in whole öre, so the sum is exact
+ * and Stripe can charge each line. Lines that already have a bundle
+ * discount don't take part, so two discounts never stack on one unit.
+ */
+function applySetPrices(lines: PricedLine[], sets: ProductSet[]) {
+  for (const set of sets) {
+    const members = set.slugs.map((slug) => lines.find((l) => l.slug === slug && l.discount === 0));
+    if (members.some((m) => !m)) continue;
+    const ms = members as PricedLine[];
+    const count = Math.min(...ms.map((m) => m.quantity));
+    const full = ms.reduce((s, m) => s + m.unitPrice, 0);
+    const saving = full - set.price;
+    if (count < 1 || saving <= 0) continue;
+    let left = saving;
+    ms.forEach((m, i) => {
+      const share = i === ms.length - 1 ? left : Math.round((saving * m.unitPrice) / full);
+      left -= share;
+      m.discount = share * count;
+      m.discountedUnits = count;
+      m.discountKind = "set";
+      m.total = m.unitPrice * m.quantity - m.discount;
+    });
+  }
+}
+
+/** Sets a product belongs to, with their full price and saving. */
+export function setsFor(slug: string, products: Product[] = catalog, sets: ProductSet[] = allSets) {
+  return sets
+    .filter((s) => s.slugs.includes(slug))
+    .map((s) => {
+      const items = s.slugs.map((x) => products.find((p) => p.slug === x)).filter((p): p is Product => Boolean(p));
+      const full = items.reduce((sum, p) => sum + (p.variants.find((v) => v.id === p.defaultVariantId) ?? p.variants[0]).price, 0);
+      return { set: s, items, full, saving: full - s.price };
+    })
+    .filter((s) => s.items.length === s.set.slugs.length && s.saving > 0);
 }
 
 /**

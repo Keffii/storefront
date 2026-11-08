@@ -13,8 +13,37 @@
   font-size: var(--text-sm);
 }
 
-.field > span:first-child {
+.field > span:first-child,
+.field > label {
   color: var(--text-secondary);
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.passwordWrap input {
+  padding-right: 52px;
+}
+
+.reveal {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.reveal:hover,
+.reveal[aria-pressed="true"] {
+  color: var(--text);
 }
 
 .field input {

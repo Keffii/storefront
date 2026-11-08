@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
+import { QuickAdd } from "./QuickAdd";
 import { RatingLine } from "@/components/reviews/RatingLine";
 import { Badge } from "@/components/ui/Badge";
 import { Price } from "@/components/ui/Price";
@@ -52,6 +53,7 @@ export function ProductCard({
     <article className={styles.card}>
       {/* Outside the link: a button can't sit inside an <a>. */}
       <FavoriteButton slug={product.slug} name={product.name} />
+      {inStock && <QuickAdd product={product} />}
       <Link href={href} className={styles.link}>
         <div className={styles.media}>
           <Image

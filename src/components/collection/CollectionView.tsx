@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { ProductGrid } from "@/components/patterns/ProductGrid";
 import { Button } from "@/components/ui/Button";
 import { useCatalog } from "@/components/inventory/InventoryProvider";
@@ -11,7 +12,10 @@ import {
   applyFilters,
   collectionHref,
   facetCounts,
+  PAGE_SIZE,
   parseFilters,
+  parsePage,
+  withPage,
   PRICE_RANGES,
   type Filters,
 } from "@/lib/catalog";
@@ -57,6 +61,20 @@ export function CollectionView({ category, ratings }: ViewProps) {
     category,
   );
   const list = applyFilters(products, filters);
+  const page = parsePage(params);
+  const shown = list.slice(0, page * PAGE_SIZE);
+  const results = useRef<HTMLDivElement>(null);
+
+  // "Visa fler": render the next page synchronously, then move keyboard focus
+  // to the first new product so keyboard and screen-reader users continue there.
+  const showMore = () => {
+    const firstNew = shown.length;
+    const next = withPage(window.location.pathname + window.location.search, page + 1);
+    window.history.replaceState(null, "", next);
+    flushSync(() => setSearch(window.location.search));
+    results.current?.querySelectorAll("article")[firstNew]?.querySelector<HTMLAnchorElement>(":scope > a[href]")?.focus();
+  };
+
   const counts = facetCounts(products, filters);
   // The category is the page itself, so only the query filters count.
   const activeCount = activeFilterCount({ ...filters, category: null });
@@ -86,7 +104,7 @@ export function CollectionView({ category, ratings }: ViewProps) {
         onFilterChange={navigate}
       />
 
-      <div className={styles.results}>
+      <div className={styles.results} ref={results}>
         {chips.length > 0 && (
           <ul role="list" className={styles.chips} aria-label="Aktiva filter">
             {chips.map((c) => (
@@ -125,7 +143,24 @@ export function CollectionView({ category, ratings }: ViewProps) {
         {list.length > 0 ? (
           <>
             <h2 className="visually-hidden">Produkter</h2>
-            <ProductGrid products={list} priorityCount={2} ratings={ratings} />
+            <ProductGrid products={shown} priorityCount={2} ratings={ratings} />
+            <div className={styles.more}>
+              <p className={styles.moreCount} aria-live="polite">
+                Visar {shown.length} av {list.length} produkter
+              </p>
+              {shown.length < list.length && (
+                <a
+                  href={withPage(collectionHref(filters), page + 1)}
+                  className={styles.moreButton}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    showMore();
+                  }}
+                >
+                  Visa fler
+                </a>
+              )}
+            </div>
           </>
         ) : (
           <div className={styles.empty}>

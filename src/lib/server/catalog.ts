@@ -31,7 +31,11 @@ export const getAllProducts = unstable_cache(
   async (): Promise<Product[]> => {
     if (!isDbConfigured()) return seedProducts;
     try {
-      return (await readCatalog()) ?? seedProducts;
+      const stored = await readCatalog();
+      if (!stored) return seedProducts;
+      // Products added to the data file after the first admin save still show up.
+      const known = new Set(stored.map((p) => p.slug));
+      return [...stored, ...seedProducts.filter((p) => !known.has(p.slug))];
     } catch (err) {
       console.warn("[catalog] read failed:", (err as Error).name);
       return seedProducts;

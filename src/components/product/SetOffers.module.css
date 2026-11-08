@@ -1,0 +1,83 @@
+.section {
+  margin-top: var(--space-8);
+}
+
+.title {
+  margin-bottom: var(--space-5);
+  font-size: var(--text-2xl);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.card {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-plinth-cream);
+}
+
+@media (min-width: 900px) {
+  .card {
+    grid-template-columns: 3fr 2fr;
+    align-items: center;
+  }
+}
+
+.items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.item {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  width: 104px;
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.item:hover span {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.thumb {
+  background: var(--color-paper);
+}
+
+.current {
+  font-weight: 500;
+}
+
+.info {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.name {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.description,
+.full {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.price {
+  margin-bottom: var(--space-2);
+}
+
+.price strong {
+  font-size: var(--text-lg);
+  font-weight: 500;
+}

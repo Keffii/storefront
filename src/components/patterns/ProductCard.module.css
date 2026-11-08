@@ -1,5 +1,7 @@
 .card {
   position: relative;
+  /* Lets overlay buttons place themselves relative to the square image (100cqw). */
+  container-type: inline-size;
 }
 
 .link {

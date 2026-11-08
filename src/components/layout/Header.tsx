@@ -2,6 +2,7 @@ import Link from "next/link";
 import { categories, site } from "@/data/products";
 import { AccountLink } from "@/components/account/AccountLink";
 import { CartButton } from "@/components/cart/CartButton";
+import { SearchDialog } from "@/components/search/SearchDialog";
 import { MobileMenu } from "./MobileMenu";
 import styles from "./Header.module.css";
 
@@ -33,6 +34,7 @@ export function Header() {
         </nav>
 
         <div className={styles.actions}>
+          <SearchDialog />
           <AccountLink />
           <CartButton />
         </div>

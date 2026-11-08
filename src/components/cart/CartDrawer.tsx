@@ -22,6 +22,11 @@ import { giftCardReduction } from "@/lib/gift-cards";
 import { useDelivery } from "./deliveryStore";
 import styles from "./CartDrawer.module.css";
 
+function discountLabel(kinds: (string | undefined)[]) {
+  const used = new Set(kinds.filter(Boolean));
+  return used.size === 1 ? (used.has("set") ? "Setrabatt" : "Paketrabatt") : "Rabatt";
+}
+
 type CheckoutState = { status: "idle" } | { status: "loading" } | { status: "error"; message: string };
 
 export function CartDrawer() {
@@ -69,7 +74,7 @@ export function CartDrawer() {
           </div>
           {cart.discount > 0 && (
             <div className={styles.saving}>
-              <dt>Paketrabatt</dt>
+              <dt>{discountLabel(cart.lines.map((l) => l.discountKind))}</dt>
               <dd>−{formatPrice(cart.discount)}</dd>
             </div>
           )}
@@ -157,7 +162,11 @@ export function CartDrawer() {
                     </Link>
                     <Price amount={l.total} before={l.discount > 0 ? l.unitPrice * l.quantity : undefined} size="sm" />
                   </div>
-                  {l.discount > 0 && <p className={styles.lineNote}>Paketpris med {l.discountedUnits} st</p>}
+                  {l.discount > 0 && (
+                    <p className={styles.lineNote}>
+                      {l.discountKind === "set" ? `Setpris, ${l.discountedUnits} st` : `Paketpris med ${l.discountedUnits} st`}
+                    </p>
+                  )}
                   <div className={styles.lineActions}>
                     <QuantityStepper
                       size="sm"

@@ -3,10 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { STATUS_LABELS } from "@/app/admin/status";
+import { OrderTimeline } from "@/components/orders/OrderTimeline";
 import { Button } from "@/components/ui/Button";
 import { canViewOrder, reorderLines } from "@/lib/accounts";
 import { formatPrice } from "@/lib/format";
-import { receiptPath } from "@/lib/receipt-token";
+import { receiptPath, returnPath } from "@/lib/receipt-token";
+import { canStartReturn, refundedSoFar } from "@/lib/returns";
+import { trackingLink } from "@/lib/shipping";
 import { getSession } from "@/lib/server/auth";
 import { getCatalogWithStock } from "@/lib/server/catalog";
 import { isDbConfigured } from "@/lib/server/config";
@@ -18,8 +21,6 @@ import styles from "../../konto.module.css";
 
 export const metadata: Metadata = { title: "Order", robots: { index: false } };
 export const dynamic = "force-dynamic";
-
-const dateTime = new Intl.DateTimeFormat("sv-SE", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Stockholm" });
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -34,11 +35,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const imageFor = (slug: string, variantId: string) =>
     catalog.find((p) => p.slug === slug)?.variants.find((v) => v.id === variantId)?.images[0];
 
-  const steps = [
-    { label: "Beställd", done: true, at: order.createdAt },
-    { label: "Betald", done: order.status === "paid" || order.status === "shipped", at: order.status !== "pending_payment" ? order.createdAt : null },
-    { label: "Skickad", done: order.status === "shipped", at: order.shippedAt ?? null },
-  ];
+  const refunded = refundedSoFar(order);
+  const showReturn = canStartReturn(order) || (order.returns?.length ?? 0) > 0;
 
   return (
     <div className={`container ${styles.page}`}>
@@ -51,19 +49,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <span className={`${styles.badge} ${styles[order.status]}`}>{STATUS_LABELS[order.status]}</span>
       </div>
 
-      {order.status !== "failed" && (
-        <ol className={styles.timeline} aria-label="Orderstatus">
-          {steps.map((s) => (
-            <li key={s.label} className={`${styles.step} ${s.done ? styles.stepDone : ""}`}>
-              <span>
-                {s.label}
-                {s.done ? "" : " (inte än)"}
-              </span>
-              {s.done && s.at && <span className={styles.stepDate}>{dateTime.format(new Date(s.at))}</span>}
-            </li>
-          ))}
-        </ol>
-      )}
+      <OrderTimeline
+        status={order.status}
+        createdAt={order.createdAt}
+        shippedAt={order.shippedAt}
+        cancelledAt={order.cancelledAt}
+        tracking={trackingLink(order.carrier, order.trackingNumber)}
+        events={order.history}
+      />
 
       <div className={styles.detailGrid}>
         <section className={styles.card} aria-labelledby="order-lines">
@@ -94,6 +87,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <dt>Totalt</dt>
               <dd>{formatPrice(order.total)}</dd>
             </div>
+            {refunded > 0 && (
+              <div>
+                <dt>Återbetalt</dt>
+                <dd>−{formatPrice(refunded)}</dd>
+              </div>
+            )}
             <div>
               <dt>Varav moms (25 %)</dt>
               <dd>{formatPrice(vatIncluded(order.total))}</dd>
@@ -106,6 +105,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 Visa kvitto
               </Button>
             )}
+            {showReturn && (
+              <Button href={returnPath(order.id)} variant="ghost">
+                {order.returns?.length ? "Visa retur" : "Returnera varor"}
+              </Button>
+            )}
           </div>
         </section>
 
@@ -113,6 +117,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <h2 id="order-delivery" className="caption">
             Leverans och betalning
           </h2>
+          {order.delivery && (
+            <p className={styles.muted}>
+              {order.delivery.label}
+              {order.delivery.pickupPoint && (
+                <>
+                  : {order.delivery.pickupPoint.name}, {order.delivery.pickupPoint.street}, {order.delivery.pickupPoint.postalCode}{" "}
+                  {order.delivery.pickupPoint.city}
+                </>
+              )}
+            </p>
+          )}
           {order.address ? (
             <address className={styles.muted} style={{ fontStyle: "normal" }}>
               {order.name}

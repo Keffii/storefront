@@ -3,7 +3,9 @@ import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import { site } from "@/data/products";
 import { estimateDelivery, formatDeliveryRange } from "@/lib/delivery";
 import { formatPrice } from "@/lib/format";
-import { receiptPath } from "@/lib/receipt-token";
+import { receiptPath, returnPath } from "@/lib/receipt-token";
+import { RETURN_REASONS, type OrderReturn } from "@/lib/returns";
+import { shippingMethod, trackingLink } from "@/lib/shipping";
 import { absoluteUrl } from "@/lib/site-url";
 import { vatIncluded } from "@/lib/vat";
 import { backend } from "./config";
@@ -78,21 +80,22 @@ ${row("Varav moms (25 %)", formatPrice(vatIncluded(o.total)))}</table>`;
 }
 
 function address(o: Order): string {
-  if (!o.address) return "";
+  const p = o.delivery?.pickupPoint;
+  const method = o.delivery ? `<p style="margin:20px 0 0;font-size:14px;line-height:1.6;"><strong>Leveranssätt</strong><br>${esc(o.delivery.label)}${p ? `<br>${esc(p.name)}, ${esc(p.street)}, ${esc(`${p.postalCode} ${p.city}`)}<br>Öppet ${esc(p.hours)}` : ""}</p>` : "";
+  if (!o.address) return method;
   const a = o.address;
-  return `<p style="margin:20px 0 0;font-size:14px;line-height:1.6;"><strong>Leveransadress</strong><br>${esc(o.name ?? "")}<br>${esc(a.line1 ?? "")}${a.line2 ? `<br>${esc(a.line2)}` : ""}<br>${esc(`${a.postalCode ?? ""} ${a.city ?? ""}`)}</p>`;
+  return `${method}<p style="margin:20px 0 0;font-size:14px;line-height:1.6;"><strong>Leveransadress</strong><br>${esc(o.name ?? "")}<br>${esc(a.line1 ?? "")}${a.line2 ? `<br>${esc(a.line2)}` : ""}<br>${esc(`${a.postalCode ?? ""} ${a.city ?? ""}`)}</p>`;
 }
+
+const DEMO_NOTE = "Det här är en portfoliodemo. Inga varor skickas och inga pengar dras.";
+const paragraph = (html: string) => `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;">${html}</p>`;
 
 export const button = (href: string, label: string) =>
   `<p style="margin:24px 0 0;"><a href="${href}" style="display:inline-block;padding:12px 20px;background:#1f1f1f;color:#ffffff;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">${label}</a></p>`;
 
 export function orderConfirmationEmail(o: Order) {
   const estimate = formatDeliveryRange(
-    estimateDelivery(new Date(o.createdAt), {
-      cutoffHour: site.shippingCutoffHour,
-      minDays: site.deliveryDays.min,
-      maxDays: site.deliveryDays.max,
-    }),
+    estimateDelivery(new Date(o.createdAt), shippingMethod(o.delivery?.method)),
   );
   const subject = `Orderbekräftelse ${orderNumber(o)}`;
   const intro = `Tack för din beställning! Vi har tagit emot order ${orderNumber(o)}. Beräknad leverans: <strong>${estimate}</strong>.`;
@@ -113,10 +116,70 @@ export function orderConfirmationEmail(o: Order) {
 
 export function shippedEmail(o: Order) {
   const subject = `Din order ${orderNumber(o)} är skickad`;
-  const intro = `Order ${orderNumber(o)} har lämnat vårt lager och är på väg till dig.`;
-  const html = layout("Din order är skickad", intro, linesTable(o) + address(o));
-  const text = `Order ${orderNumber(o)} har lämnat vårt lager och är på väg till dig.\n\nDet här är en portfoliodemo. Inga varor skickas och inga pengar dras.`;
+  const track = trackingLink(o.carrier, o.trackingNumber);
+  const intro = `Order ${orderNumber(o)} har lämnat vårt lager och är på väg till dig.${track ? ` Paketet skickas med ${esc(track.label)}, kollinummer ${esc(track.number)}.` : ""}`;
+  const html = layout("Din order är skickad", intro, (track ? button(track.url, "Spåra paketet") : "") + linesTable(o) + address(o));
+  const text = [
+    `Order ${orderNumber(o)} har lämnat vårt lager och är på väg till dig.`,
+    track ? `Spåra paketet (${track.label}, ${track.number}): ${track.url}` : "",
+    "",
+    DEMO_NOTE,
+  ].join("\n");
   return { subject, html, text };
+}
+
+const returnLines = (o: Order, r: OrderReturn) => r.items.map((i) => `${i.quantity} × ${o.lines[i.lineIndex]?.name ?? "Vara"}`);
+
+export function returnRequestedEmail(o: Order, r: OrderReturn) {
+  const subject = `Retur ${r.id} för order ${orderNumber(o)}`;
+  const intro = `Vi har tagit emot din returanmälan ${r.id}. Så här gör du:`;
+  const steps = `<ol style="margin:16px 0 0;padding-left:20px;font-size:14px;line-height:1.8;">
+<li>Packa varorna väl, gärna i originalförpackningen.</li>
+<li>Lägg en lapp med returnumret <strong>${r.id}</strong> i paketet.</li>
+<li>Lämna paketet hos ett PostNord-ombud. I en riktig butik följer en förbetald returetikett med här.</li>
+</ol>`;
+  const html = layout(
+    "Returen är anmäld",
+    intro,
+    steps +
+      paragraph(`<strong>Varor</strong><br>${returnLines(o, r).map(esc).join("<br>")}<br>Anledning: ${esc(RETURN_REASONS[r.reason])}`) +
+      paragraph("Vi återbetalar till samma betalsätt inom några dagar efter att paketet kommit fram.") +
+      button(absoluteUrl(returnPath(o.id)), "Visa returen"),
+  );
+  const text = [intro, `Returnummer: ${r.id}`, ...returnLines(o, r), "", absoluteUrl(returnPath(o.id)), "", DEMO_NOTE].join("\n");
+  return { subject, html, text };
+}
+
+export function returnReceivedEmail(o: Order, r: OrderReturn) {
+  const subject = `Vi har fått din retur ${r.id}`;
+  const intro = `Paketet med retur ${r.id} har kommit fram. Återbetalningen behandlas nu.`;
+  return { subject, html: layout("Returen har kommit fram", intro, ""), text: `${intro}\n\n${DEMO_NOTE}` };
+}
+
+export function refundEmail(o: Order, amount: number, why: string) {
+  const subject = `Återbetalning för order ${orderNumber(o)}`;
+  const intro = `Vi har återbetalat <strong>${formatPrice(amount)}</strong> (${esc(why)}). Pengarna syns på kontot eller i Klarna-appen inom 5–10 bankdagar.`;
+  return {
+    subject,
+    html: layout("Återbetalningen är gjord", intro, button(absoluteUrl(receiptPath(o.id)), "Visa kvitto")),
+    text: `Vi har återbetalat ${formatPrice(amount)} (${why}) för order ${orderNumber(o)}.\n\n${DEMO_NOTE}`,
+  };
+}
+
+export function cancelledEmail(o: Order) {
+  const subject = `Order ${orderNumber(o)} är avbruten`;
+  const intro = `Vi har avbrutit order ${orderNumber(o)} och återbetalat <strong>${formatPrice(o.total)}</strong>. Pengarna syns på kontot eller i Klarna-appen inom 5–10 bankdagar.`;
+  return {
+    subject,
+    html: layout("Ordern är avbruten", intro, linesTable(o)),
+    text: `Order ${orderNumber(o)} är avbruten och ${formatPrice(o.total)} återbetalas.\n\n${DEMO_NOTE}`,
+  };
+}
+
+/** Sends one of the templates above to the order's email address. */
+export async function sendOrderEmail(o: Order, m: { subject: string; html: string; text: string }): Promise<boolean> {
+  if (!o.email) return false;
+  return sendEmail(o.email, m.subject, m.html, m.text);
 }
 
 export async function sendOrderConfirmation(o: Order): Promise<boolean> {

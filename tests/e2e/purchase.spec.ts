@@ -64,3 +64,37 @@ test("the confirmation page handles a missing session", async ({ page }) => {
   await page.goto("/tack?session_id=cs_test_doesnotexist");
   await expect(page.getByRole("heading", { name: "Vi hittade ingen beställning" })).toBeVisible();
 });
+
+test("delivery method and pickup point are chosen in the cart", async ({ page }) => {
+  await page.goto("/produkter/lag-skal");
+  await page.getByRole("button", { name: /Lägg i varukorgen/ }).first().click();
+  const cart = page.getByRole("dialog", { name: /Varukorg/ });
+  const totals = cart.locator("dl").first();
+
+  // Ombud is the default and offers nearby (demo) pickup points.
+  await expect(cart.getByRole("radio", { name: /Ombud/ })).toBeChecked();
+  const points = cart.getByRole("radiogroup", { name: "Ombud" });
+  await expect(points.getByRole("radio")).toHaveCount(4);
+  await expect(points.getByRole("radio").first()).toBeChecked();
+  await cart.getByLabel("Postnummer").fill("17145");
+  await cart.getByRole("button", { name: "Visa ombud" }).click();
+  await expect(points.getByRole("radio", { name: /Solna/ })).toBeChecked();
+  await expect(totals).toContainText("49 kr");
+
+  // Express changes the shipping price and the product page estimate.
+  await cart.getByRole("radio", { name: /Express/ }).check();
+  await expect(totals).toContainText("149 kr");
+  await expect(points).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(page.getByText(/^Express /).first()).toBeVisible();
+
+  // The choice survives a reload.
+  await page.reload();
+  await page.getByRole("button", { name: /Varukorg, 1 vara/ }).click();
+  await expect(page.getByRole("dialog", { name: /Varukorg/ }).getByRole("radio", { name: /Express/ })).toBeChecked();
+});
+
+test("return pages don't reveal orders without a valid link", async ({ page }) => {
+  const res = await page.goto("/retur/cs_test_doesnotexist?t=wrong");
+  expect(res?.status()).toBe(404);
+});

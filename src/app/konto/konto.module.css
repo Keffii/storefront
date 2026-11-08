@@ -150,29 +150,8 @@
   color: var(--color-danger);
 }
 
-.timeline {
-  display: flex;
-  gap: var(--space-2);
-  counter-reset: step;
-}
-
-.step {
-  flex: 1;
-  display: grid;
-  gap: var(--space-1);
-  padding-top: var(--space-3);
-  border-top: 3px solid var(--color-option-mist);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
-.stepDone {
-  border-top-color: var(--color-graphite);
-  color: var(--text);
-}
-
-.stepDate {
-  font-size: var(--text-xs);
+.cancelled {
+  background: var(--color-option-mist);
   color: var(--text-secondary);
 }
 

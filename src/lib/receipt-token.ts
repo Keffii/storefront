@@ -20,3 +20,6 @@ export function isValidReceiptToken(orderId: string, token: string): boolean {
 }
 
 export const receiptPath = (orderId: string) => `/kvitto/${orderId}?t=${receiptToken(orderId)}`;
+
+/** The return page accepts the same token: whoever has the receipt link has the order. */
+export const returnPath = (orderId: string) => `/retur/${orderId}?t=${receiptToken(orderId)}`;

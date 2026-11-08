@@ -7,6 +7,8 @@ import { sendOrderConfirmation } from "@/lib/server/email";
 import { decrementStock, INVENTORY_TAG } from "@/lib/server/inventory";
 import { createOrder, getOrder, markStockIssues, setOrderStatus, type Order, type OrderLine } from "@/lib/server/orders";
 import { stripe } from "@/lib/server/stripe";
+import { pickupPoints } from "@/lib/pickup-points";
+import { isShippingMethodId, shippingMethod } from "@/lib/shipping";
 
 export const dynamic = "force-dynamic";
 
@@ -129,7 +131,18 @@ async function toOrder(session: Stripe.Checkout.Session): Promise<Order> {
     paymentMethod: await paymentMethodType(session),
     // Set by our checkout route for signed-in customers (a Cognito sub).
     customerSub: /^[0-9a-f-]{36}$/.test(session.client_reference_id ?? "") ? session.client_reference_id : null,
+    delivery: await deliveryFrom(session),
+    history: [],
   };
+}
+
+/** The delivery method and pickup point our checkout route put in the session metadata. */
+async function deliveryFrom(session: Stripe.Checkout.Session): Promise<Order["delivery"]> {
+  const id = session.metadata?.shippingMethod;
+  if (!isShippingMethodId(id)) return null;
+  const method = shippingMethod(id);
+  const pickupPoint = session.metadata?.pickupPointId ? await pickupPoints.get(session.metadata.pickupPointId) : null;
+  return { method: method.id, label: method.label, pickupPoint };
 }
 
 /** "card" or "klarna": the method the customer actually used. */

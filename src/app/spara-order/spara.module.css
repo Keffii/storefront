@@ -70,3 +70,8 @@
   font-size: var(--text-sm);
   color: var(--text-secondary);
 }
+
+.delivery {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}

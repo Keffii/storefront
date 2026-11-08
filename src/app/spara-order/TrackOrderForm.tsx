@@ -31,7 +31,15 @@ export function TrackOrderForm() {
             <h2 className={styles.h2}>
               Order {state.order.number}: {state.order.statusLabel}
             </h2>
-            <OrderTimeline status={state.order.status} createdAt={state.order.createdAt} shippedAt={state.order.shippedAt} />
+            <OrderTimeline
+              status={state.order.status}
+              createdAt={state.order.createdAt}
+              shippedAt={state.order.shippedAt}
+              cancelledAt={state.order.cancelledAt}
+              tracking={state.order.tracking}
+              events={state.order.events}
+            />
+            {state.order.delivery && <p className={styles.delivery}>{state.order.delivery}</p>}
             <ul className={styles.items}>
               {state.order.items.map((i, n) => (
                 <li key={n}>
@@ -39,6 +47,13 @@ export function TrackOrderForm() {
                 </li>
               ))}
             </ul>
+            {state.order.returnUrl && (
+              <div>
+                <Button href={state.order.returnUrl} variant="secondary">
+                  {state.order.hasReturns ? "Visa retur" : "Returnera varor"}
+                </Button>
+              </div>
+            )}
           </section>
         )}
       </div>

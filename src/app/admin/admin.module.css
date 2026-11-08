@@ -289,3 +289,85 @@
     grid-template-columns: 3fr 2fr;
   }
 }
+
+.cancelled {
+  background: var(--color-option-mist);
+  color: var(--text-secondary);
+}
+
+.column {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.select {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-footer-ash);
+  border-radius: var(--radius-sm);
+  background: var(--color-paper);
+  font-size: var(--text-md);
+}
+
+.shipForm,
+.refundForm,
+.dangerForm {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.shipForm .searchInput {
+  width: 100%;
+}
+
+.dangerForm {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: var(--space-2);
+  align-items: start;
+  font-size: var(--text-sm);
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--color-graphite);
+}
+
+.returnItem {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.returnItem:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.returnHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

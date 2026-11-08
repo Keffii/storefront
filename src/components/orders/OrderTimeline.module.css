@@ -29,3 +29,33 @@
 .failed {
   color: var(--color-danger);
 }
+
+.wrap {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tracking {
+  font-size: var(--text-sm);
+}
+
+.tracking a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.events {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-plinth-cream);
+  font-size: var(--text-sm);
+}
+
+.events li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}

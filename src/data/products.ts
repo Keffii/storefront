@@ -453,7 +453,7 @@ export function sharedFaq(): FaqItem[] {
     },
     {
       question: "Vad kostar frakten?",
-      answer: `Frakten kostar ${kr(site.shippingFee)} och är fri när du handlar för minst ${kr(site.freeShippingThreshold)}.`,
+      answer: `Ombud kostar ${kr(site.shippingFee)} och hemleverans 79 kr. Båda är gratis när du handlar för minst ${kr(site.freeShippingThreshold)}. Express till nästa vardag kostar 149 kr. Du väljer leveranssätt i varukorgen.`,
     },
     {
       question: "Kan jag ångra mitt köp?",

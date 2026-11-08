@@ -3,9 +3,18 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { formatPrice } from "@/lib/format";
+import {
+  canCancel,
+  EVENT_LABELS,
+  RETURN_REASONS,
+  RETURN_STATUS_LABELS,
+  refundedSoFar,
+  suggestedRefund,
+} from "@/lib/returns";
+import { CARRIERS, trackingLink } from "@/lib/shipping";
 import { getAdminState } from "@/lib/server/auth";
 import { getOrder } from "@/lib/server/orders";
-import { markShipped, markUnshipped } from "../../actions";
+import { cancelOrder, markShipped, markUnshipped, receiveReturn, refundReturn, rejectReturn } from "../../actions";
 import { STATUS_LABELS } from "../../status";
 import styles from "../../admin.module.css";
 
@@ -13,6 +22,7 @@ export const metadata: Metadata = { title: "Order", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 const dateTime = new Intl.DateTimeFormat("sv-SE", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Stockholm" });
+const kronor = (ore: number) => (ore / 100).toFixed(2).replace(/\.00$/, "");
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const state = await getAdminState();
@@ -21,6 +31,10 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const order = /^cs_(test|live)_[A-Za-z0-9]+$/.test(id) ? await getOrder(id) : null;
   if (!order) notFound();
+
+  const refunded = refundedSoFar(order);
+  const track = trackingLink(order.carrier, order.trackingNumber);
+  const pickup = order.delivery?.pickupPoint;
 
   return (
     <div className={`container ${styles.page}`}>
@@ -43,29 +57,127 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       ) : null}
 
       <div className={styles.detailGrid}>
-        <section className={styles.card} aria-labelledby="lines-title">
-          <h2 id="lines-title" className="caption">
-            Varor
-          </h2>
-          <ul role="list" className={styles.lines}>
-            {order.lines.map((l, i) => (
-              <li key={i}>
-                <span>
-                  {l.quantity} × {l.slug ? <Link href={`/produkter/${l.slug}?variant=${l.variantId}`}>{l.name}</Link> : l.name}
-                </span>
-                <span>{formatPrice(l.total)}</span>
+        <div className={styles.column}>
+          <section className={styles.card} aria-labelledby="lines-title">
+            <h2 id="lines-title" className="caption">
+              Varor
+            </h2>
+            <ul role="list" className={styles.lines}>
+              {order.lines.map((l, i) => (
+                <li key={i}>
+                  <span>
+                    {l.quantity} × {l.slug ? <Link href={`/produkter/${l.slug}?variant=${l.variantId}`}>{l.name}</Link> : l.name}
+                  </span>
+                  <span>{formatPrice(l.total)}</span>
+                </li>
+              ))}
+              <li>
+                <span>Frakt{order.delivery ? ` (${order.delivery.label})` : ""}</span>
+                <span>{order.shipping ? formatPrice(order.shipping) : "Fri"}</span>
               </li>
-            ))}
-            <li>
-              <span>Frakt</span>
-              <span>{order.shipping ? formatPrice(order.shipping) : "Fri"}</span>
-            </li>
-            <li className={styles.totalLine}>
-              <span>Totalt</span>
-              <span>{formatPrice(order.total)}</span>
-            </li>
-          </ul>
-        </section>
+              <li className={styles.totalLine}>
+                <span>Totalt</span>
+                <span>{formatPrice(order.total)}</span>
+              </li>
+              {refunded > 0 && (
+                <li>
+                  <span>Återbetalt</span>
+                  <span>−{formatPrice(refunded)}</span>
+                </li>
+              )}
+            </ul>
+          </section>
+
+          {order.returns?.length ? (
+            <section className={styles.card} aria-labelledby="returns-title">
+              <h2 id="returns-title" className="caption">
+                Returer
+              </h2>
+              {order.returns.map((r) => (
+                <article key={r.id} className={styles.returnItem}>
+                  <div className={styles.returnHead}>
+                    <strong>{r.id}</strong>
+                    <span className={styles.note}>{RETURN_STATUS_LABELS[r.status]}</span>
+                  </div>
+                  <ul role="list" className={styles.lines}>
+                    {r.items.map((i) => (
+                      <li key={i.lineIndex}>
+                        <span>
+                          {i.quantity} × {order.lines[i.lineIndex]?.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className={styles.note}>
+                    {RETURN_REASONS[r.reason]}
+                    {r.comment ? `: ”${r.comment}”` : ""} · anmäld {dateTime.format(new Date(r.createdAt))}
+                    {r.refundAmount ? ` · återbetalt ${formatPrice(r.refundAmount)}` : ""}
+                  </p>
+                  {r.status === "requested" && (
+                    <div className={styles.actionsRow}>
+                      <form action={receiveReturn}>
+                        <input type="hidden" name="id" value={order.id} />
+                        <input type="hidden" name="returnId" value={r.id} />
+                        <Button type="submit">Markera mottagen</Button>
+                      </form>
+                      <form action={rejectReturn}>
+                        <input type="hidden" name="id" value={order.id} />
+                        <input type="hidden" name="returnId" value={r.id} />
+                        <Button type="submit" variant="ghost">
+                          Avslå
+                        </Button>
+                      </form>
+                    </div>
+                  )}
+                  {r.status === "received" && (
+                    <form action={refundReturn} className={styles.refundForm}>
+                      <input type="hidden" name="id" value={order.id} />
+                      <input type="hidden" name="returnId" value={r.id} />
+                      <label className={styles.field}>
+                        <span>Belopp att återbetala (kr)</span>
+                        <input
+                          name="amount"
+                          inputMode="decimal"
+                          defaultValue={kronor(suggestedRefund(order, r))}
+                          className={styles.qtyInput}
+                          required
+                        />
+                      </label>
+                      <Button type="submit">Återbetala via Stripe</Button>
+                      <p className={styles.note}>
+                        Förslaget är varornas pris efter rabatt. Frakten ingår bara när hela ordern returneras. Sänk beloppet för en
+                        delvis återbetalning, till exempel om en vara kom tillbaka skadad.
+                      </p>
+                    </form>
+                  )}
+                </article>
+              ))}
+            </section>
+          ) : null}
+
+          {order.history?.length ? (
+            <section className={styles.card} aria-labelledby="history-title">
+              <h2 id="history-title" className="caption">
+                Historik
+              </h2>
+              <ul role="list" className={styles.lines}>
+                <li>
+                  <span>Lagd</span>
+                  <span className={styles.note}>{dateTime.format(new Date(order.createdAt))}</span>
+                </li>
+                {order.history.map((e, i) => (
+                  <li key={i}>
+                    <span>
+                      {EVENT_LABELS[e.type]}
+                      {e.note ? `: ${e.note}` : ""}
+                    </span>
+                    <span className={styles.note}>{dateTime.format(new Date(e.at))}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
 
         <section className={styles.card} aria-labelledby="customer-title">
           <h2 id="customer-title" className="caption">
@@ -75,6 +187,18 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <div>
               <dt>E-post</dt>
               <dd>{order.email ?? "–"}</dd>
+            </div>
+            <div>
+              <dt>Leveranssätt</dt>
+              <dd>
+                {order.delivery?.label ?? "Standard"}
+                {pickup && (
+                  <>
+                    <br />
+                    {pickup.name}, {pickup.street}, {pickup.postalCode} {pickup.city}
+                  </>
+                )}
+              </dd>
             </div>
             <div>
               <dt>Adress</dt>
@@ -97,23 +221,62 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             {order.shippedAt && (
               <div>
                 <dt>Skickad</dt>
-                <dd>{dateTime.format(new Date(order.shippedAt))}</dd>
+                <dd>
+                  {dateTime.format(new Date(order.shippedAt))}
+                  {track && (
+                    <>
+                      <br />
+                      <a href={track.url} target="_blank" rel="noopener noreferrer">
+                        {track.label} {track.number}
+                      </a>
+                    </>
+                  )}
+                </dd>
               </div>
             )}
           </dl>
+
           {order.status === "paid" && (
-            <form action={markShipped}>
+            <form action={markShipped} className={styles.shipForm}>
               <input type="hidden" name="id" value={order.id} />
+              <label className={styles.field}>
+                <span>Transportör</span>
+                <select name="carrier" className={styles.select} defaultValue={order.delivery?.method === "hem" ? "budbee" : "postnord"}>
+                  {Object.entries(CARRIERS).map(([value, c]) => (
+                    <option key={value} value={value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.field}>
+                <span>Kollinummer</span>
+                <input name="trackingNumber" className={styles.searchInput} required minLength={6} maxLength={40} />
+              </label>
               <Button type="submit" fullWidth>
                 Markera som skickad
               </Button>
             </form>
           )}
-          {order.status === "shipped" && (
+          {order.status === "shipped" && !order.returns?.length && (
             <form action={markUnshipped}>
               <input type="hidden" name="id" value={order.id} />
               <Button type="submit" variant="ghost">
                 Ångra: markera som ej skickad
+              </Button>
+            </form>
+          )}
+          {canCancel(order) && (
+            <form action={cancelOrder} className={styles.dangerForm}>
+              <input type="hidden" name="id" value={order.id} />
+              <label className={styles.check}>
+                <input type="checkbox" required />
+                <span>
+                  Avbryt ordern. Kunden får tillbaka {formatPrice(order.total - refunded)} och varorna läggs tillbaka i lager.
+                </span>
+              </label>
+              <Button type="submit" variant="secondary">
+                Avbryt och återbetala
               </Button>
             </form>
           )}

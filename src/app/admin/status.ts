@@ -5,4 +5,5 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   paid: "Betald",
   shipped: "Skickad",
   failed: "Misslyckad",
+  cancelled: "Avbruten",
 };

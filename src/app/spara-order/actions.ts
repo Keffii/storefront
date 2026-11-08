@@ -3,12 +3,31 @@
 import { headers } from "next/headers";
 import { createHash } from "node:crypto";
 import { STATUS_LABELS } from "@/app/admin/status";
+import { returnPath } from "@/lib/receipt-token";
+import { canStartReturn, type OrderEvent } from "@/lib/returns";
+import { trackingLink } from "@/lib/shipping";
 import { hashSalt, isDbConfigured } from "@/lib/server/config";
 import { listOrders } from "@/lib/server/orders";
 import { rateLimit } from "@/lib/server/ratelimit";
 
 export type TrackResult =
-  | { ok: true; order: { number: string; status: string; statusLabel: string; createdAt: string; shippedAt: string | null; items: { name: string; quantity: number }[] } }
+  | {
+      ok: true;
+      order: {
+        number: string;
+        status: string;
+        statusLabel: string;
+        createdAt: string;
+        shippedAt: string | null;
+        cancelledAt: string | null;
+        tracking: { label: string; number: string; url: string } | null;
+        events: OrderEvent[];
+        delivery: string | null;
+        returnUrl: string | null;
+        hasReturns: boolean;
+        items: { name: string; quantity: number }[];
+      };
+    }
   | { ok: false; message: string };
 
 /**
@@ -39,6 +58,15 @@ export async function trackOrderAction(_: TrackResult | null, formData: FormData
       statusLabel: STATUS_LABELS[order.status],
       createdAt: order.createdAt,
       shippedAt: order.shippedAt ?? null,
+      cancelledAt: order.cancelledAt ?? null,
+      tracking: trackingLink(order.carrier, order.trackingNumber),
+      events: order.history ?? [],
+      delivery: order.delivery
+        ? `${order.delivery.label}${order.delivery.pickupPoint ? `: ${order.delivery.pickupPoint.name}, ${order.delivery.pickupPoint.street}` : ""}`
+        : null,
+      // Proving the email is enough to manage the order, like the receipt link in the confirmation.
+      returnUrl: canStartReturn(order) || order.returns?.length ? returnPath(order.id) : null,
+      hasReturns: Boolean(order.returns?.length),
       items: order.lines.map((l) => ({ name: l.name, quantity: l.quantity })),
     },
   };

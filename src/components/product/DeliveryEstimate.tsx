@@ -1,20 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { site } from "@/data/products";
+import { useDelivery } from "@/components/cart/deliveryStore";
 import {
   estimateDelivery,
   formatCountdown,
   formatDeliveryRange,
   type DeliveryEstimate as Estimate,
 } from "@/lib/delivery";
+import { shippingMethod } from "@/lib/shipping";
 import styles from "./DeliveryEstimate.module.css";
-
-const config = {
-  cutoffHour: site.shippingCutoffHour,
-  minDays: site.deliveryDays.min,
-  maxDays: site.deliveryDays.max,
-};
 
 /**
  * Computed in the browser from the visitor's clock (in Stockholm time), so a
@@ -23,13 +18,15 @@ const config = {
  */
 export function DeliveryEstimate({ soldOut }: { soldOut?: boolean }) {
   const [estimate, setEstimate] = useState<Estimate | null>(null);
+  const [delivery] = useDelivery();
+  const method = shippingMethod(delivery.method);
 
   useEffect(() => {
-    const update = () => setEstimate(estimateDelivery(new Date(), config));
+    const update = () => setEstimate(estimateDelivery(new Date(), method));
     update();
     const id = window.setInterval(update, 60_000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [method]);
 
   if (soldOut) return null;
 
@@ -43,17 +40,19 @@ export function DeliveryEstimate({ soldOut }: { soldOut?: boolean }) {
       {estimate ? (
         <p className={styles.text}>
           <span>
-            Leverans <strong>{formatDeliveryRange(estimate)}</strong>
+            {method.label} <strong>{formatDeliveryRange(estimate)}</strong>
           </span>
           <span className={styles.sub}>
             {estimate.shipsToday && estimate.minutesToCutoff !== null
               ? `Beställ inom ${formatCountdown(estimate.minutesToCutoff)} så skickas den i dag`
-              : `Beställ före kl. ${site.shippingCutoffHour} på vardagar så skickas den samma dag`}
+              : `Beställ före kl. ${method.cutoffHour} på vardagar så skickas den samma dag`}
           </span>
         </p>
       ) : (
         <p className={styles.text}>
-          <span>Leverans inom {site.deliveryDays.min}–{site.deliveryDays.max} vardagar</span>
+          <span>
+            {method.label} inom {method.minDays === method.maxDays ? method.minDays : `${method.minDays}–${method.maxDays}`} vardagar
+          </span>
           <span className={styles.sub}>Beräknar leveransdatum …</span>
         </p>
       )}

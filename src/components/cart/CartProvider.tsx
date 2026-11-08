@@ -13,6 +13,7 @@ import {
 import { useCatalog } from "@/components/inventory/InventoryProvider";
 import { priceCart, type PricedCart } from "@/lib/cart";
 import { cartStore } from "./cartStore";
+import { useDelivery } from "./deliveryStore";
 
 interface CartContextValue {
   cart: PricedCart;
@@ -36,7 +37,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const ready = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const [isOpen, setOpen] = useState(false);
   const catalog = useCatalog();
-  const cart = useMemo(() => priceCart(lines, catalog), [lines, catalog]);
+  const [delivery] = useDelivery();
+  const cart = useMemo(() => priceCart(lines, catalog, delivery.method), [lines, catalog, delivery.method]);
 
   // Coming back from a cancelled Stripe checkout: reopen the cart.
   useEffect(() => {

@@ -4,6 +4,7 @@
  * The server never trusts client prices: it re-runs priceCart on the ids.
  */
 import { products as catalog, site } from "@/data/products";
+import { DEFAULT_SHIPPING_METHOD, shippingFee, shippingMethod, type ShippingMethodId } from "./shipping";
 import type { Money, Product, Variant } from "./types";
 
 export const MAX_QUANTITY = 10;
@@ -35,6 +36,7 @@ export interface PricedCart {
   subtotal: Money; // before discounts
   discount: Money;
   shipping: Money;
+  shippingMethod: ShippingMethodId;
   total: Money;
   freeShippingRemaining: Money;
   qualifiesForFreeShipping: boolean;
@@ -76,7 +78,11 @@ function bundleDiscountFor(addOnSlug: string, lines: { product: Product; quantit
   return { perUnit, parentUnits };
 }
 
-export function priceCart(input: CartLine[], products: Product[] = catalog): PricedCart {
+export function priceCart(
+  input: CartLine[],
+  products: Product[] = catalog,
+  method: ShippingMethodId = DEFAULT_SHIPPING_METHOD,
+): PricedCart {
   const lookup = (slug: string) => products.find((p) => p.slug === slug);
   const removed: CartLine[] = [];
   const resolved: { line: CartLine; product: Product; variant: Variant; quantity: number }[] = [];
@@ -114,7 +120,7 @@ export function priceCart(input: CartLine[], products: Product[] = catalog): Pri
   const discount = lines.reduce((s, l) => s + l.discount, 0);
   const afterDiscount = subtotal - discount;
   const qualifiesForFreeShipping = afterDiscount >= site.freeShippingThreshold;
-  const shipping = lines.length === 0 || qualifiesForFreeShipping ? 0 : site.shippingFee;
+  const shipping = shippingFee(shippingMethod(method), afterDiscount, lines.length === 0);
 
   return {
     lines,
@@ -123,6 +129,7 @@ export function priceCart(input: CartLine[], products: Product[] = catalog): Pri
     subtotal,
     discount,
     shipping,
+    shippingMethod: shippingMethod(method).id,
     total: afterDiscount + shipping,
     freeShippingRemaining: Math.max(0, site.freeShippingThreshold - afterDiscount),
     qualifiesForFreeShipping,

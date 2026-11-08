@@ -1,8 +1,11 @@
 import "server-only";
+import type { OrderEvent, OrderReturn, OrderRefund } from "@/lib/returns";
+import type { PickupPoint } from "@/lib/pickup-points";
+import type { CarrierId, ShippingMethodId } from "@/lib/shipping";
 import type { Money } from "@/lib/types";
 import { db, GetCommand, isConditionFailure, PutCommand, QueryCommand, table, UpdateCommand } from "./db";
 
-export type OrderStatus = "pending_payment" | "paid" | "shipped" | "failed";
+export type OrderStatus = "pending_payment" | "paid" | "shipped" | "failed" | "cancelled";
 
 export interface OrderLine {
   slug: string;
@@ -39,6 +42,14 @@ export interface Order {
   /** Cognito sub of the account that placed or claimed the order. */
   customerSub?: string | null;
   anonymisedAt?: string;
+  delivery?: { method: ShippingMethodId; label: string; pickupPoint?: PickupPoint | null } | null;
+  carrier?: CarrierId | null;
+  trackingNumber?: string | null;
+  returns?: OrderReturn[];
+  refunds?: OrderRefund[];
+  refundedTotal?: Money;
+  cancelledAt?: string;
+  history?: OrderEvent[];
 }
 
 const key = (id: string) => ({ pk: `ORDER#${id}`, sk: "ORDER" });
@@ -121,4 +132,33 @@ export async function setOrderStatus(id: string, next: OrderStatus, from: OrderS
     if (isConditionFailure(err)) return false;
     throw err;
   }
+}
+
+/**
+ * Read-modify-write with optimistic locking on updatedAt: two admins (or an
+ * admin and a customer) acting at once can't overwrite each other. `mutate`
+ * returns the new order, or null to leave it unchanged. Retries a few times.
+ */
+export async function updateOrder(id: string, mutate: (order: Order) => Order | null): Promise<Order | null> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await db().send(new GetCommand({ TableName: table(), Key: key(id) }));
+    if (!res.Item) return null;
+    const current = res.Item as Order & Record<string, unknown>;
+    const next = mutate(structuredClone(current));
+    if (!next) return null;
+    try {
+      await db().send(
+        new PutCommand({
+          TableName: table(),
+          Item: { ...current, ...next, ...key(id), updatedAt: new Date().toISOString() },
+          ConditionExpression: "updatedAt = :old",
+          ExpressionAttributeValues: { ":old": current.updatedAt },
+        }),
+      );
+      return { ...next, updatedAt: new Date().toISOString() };
+    } catch (err) {
+      if (!isConditionFailure(err)) throw err;
+    }
+  }
+  throw new Error("Order was changed by someone else, try again");
 }

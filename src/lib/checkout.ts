@@ -3,6 +3,7 @@
  * Stripe SDK so it can be unit-tested; the route passes the result through.
  */
 import type { PricedCart } from "./cart";
+import { DEFAULT_SHIPPING_METHOD, isShippingMethodId, type ShippingMethodId } from "./shipping";
 import { variantLabel } from "./variants";
 
 export interface CheckoutLineItem {
@@ -50,4 +51,15 @@ export function parseCheckoutBody(body: unknown): { slug: string; variantId: str
     parsed.push({ slug, variantId, quantity });
   }
   return parsed;
+}
+
+/** Validates the delivery part of the body. Missing means the default method. */
+export function parseDelivery(body: unknown): { method: ShippingMethodId; pickupPointId: string | null } | null {
+  const d = body && typeof body === "object" ? (body as { delivery?: unknown }).delivery : undefined;
+  if (d === undefined || d === null) return { method: DEFAULT_SHIPPING_METHOD, pickupPointId: null };
+  if (typeof d !== "object") return null;
+  const { method, pickupPointId } = d as Record<string, unknown>;
+  if (!isShippingMethodId(method)) return null;
+  if (pickupPointId !== null && pickupPointId !== undefined && (typeof pickupPointId !== "string" || pickupPointId.length > 40)) return null;
+  return { method, pickupPointId: method === "ombud" && typeof pickupPointId === "string" ? pickupPointId : null };
 }

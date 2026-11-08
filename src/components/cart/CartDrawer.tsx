@@ -12,9 +12,12 @@ import { site } from "@/data/products";
 import { track } from "@/lib/analytics";
 import { MAX_QUANTITY, suggestAddOn } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
+import { shippingMethod } from "@/lib/shipping";
 import { vatIncluded } from "@/lib/vat";
 import { variantLabel } from "@/lib/variants";
 import { useCart } from "./CartProvider";
+import { DeliveryPicker } from "./DeliveryPicker";
+import { useDelivery } from "./deliveryStore";
 import styles from "./CartDrawer.module.css";
 
 type CheckoutState = { status: "idle" } | { status: "loading" } | { status: "error"; message: string };
@@ -23,6 +26,7 @@ export function CartDrawer() {
   const { cart, isOpen, close, add, setQuantity, remove } = useCart();
   const [checkout, setCheckout] = useState<CheckoutState>({ status: "idle" });
   const catalog = useCatalog();
+  const [delivery] = useDelivery();
   const suggestion = suggestAddOn(cart, catalog);
   const progress = Math.min(1, (site.freeShippingThreshold - cart.freeShippingRemaining) / site.freeShippingThreshold);
 
@@ -35,6 +39,7 @@ export function CartDrawer() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           lines: cart.lines.map((l) => ({ slug: l.slug, variantId: l.variantId, quantity: l.quantity })),
+          delivery: { method: delivery.method, pickupPointId: delivery.method === "ombud" ? delivery.pickupPointId : null },
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { url?: string; message?: string };
@@ -63,7 +68,7 @@ export function CartDrawer() {
             </div>
           )}
           <div>
-            <dt>Frakt</dt>
+            <dt>Frakt, {shippingMethod(cart.shippingMethod).label.toLowerCase()}</dt>
             <dd>{cart.shipping === 0 ? "Fri" : formatPrice(cart.shipping)}</dd>
           </div>
           <div className={styles.total}>
@@ -101,7 +106,7 @@ export function CartDrawer() {
           <div className={styles.shipping} aria-live="polite">
             <p>
               {cart.qualifiesForFreeShipping ? (
-                <strong>Du har fri frakt!</strong>
+                <strong>{cart.shipping === 0 ? "Du har fri frakt!" : "Fri frakt med ombud eller hemleverans"}</strong>
               ) : (
                 <>
                   Handla för <strong>{formatPrice(cart.freeShippingRemaining)}</strong> till för fri frakt
@@ -183,6 +188,8 @@ export function CartDrawer() {
               </div>
             </aside>
           )}
+
+          <DeliveryPicker amount={cart.subtotal - cart.discount} />
         </div>
       )}
     </Drawer>

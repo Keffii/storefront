@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { site } from "@/data/products";
 import { priceCart } from "@/lib/cart";
 import { shortages } from "@/lib/inventory";
 import { getSession } from "@/lib/server/auth";
 import { getLiveProducts } from "@/lib/server/catalog";
 import { getProfile, saveProfile } from "@/lib/server/customers";
-import { parseCheckoutBody, toCheckoutLineItems } from "@/lib/checkout";
+import { parseCheckoutBody, parseDelivery, toCheckoutLineItems } from "@/lib/checkout";
+import { pickupPoints } from "@/lib/pickup-points";
+import { shippingMethod } from "@/lib/shipping";
 import { isStripeConfigured } from "@/lib/server/config";
 import { requestOrigin } from "@/lib/server/origin";
 import { stripe } from "@/lib/server/stripe";
@@ -28,12 +29,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const lines = parseCheckoutBody(await req.json().catch(() => null));
-  if (!lines) return NextResponse.json({ message: "Varukorgen kunde inte läsas." }, { status: 400 });
+  const body: unknown = await req.json().catch(() => null);
+  const lines = parseCheckoutBody(body);
+  const delivery = parseDelivery(body);
+  if (!lines || !delivery) return NextResponse.json({ message: "Varukorgen kunde inte läsas." }, { status: 400 });
+  const method = shippingMethod(delivery.method);
+  const pickupPoint = method.id === "ombud" && delivery.pickupPointId ? await pickupPoints.get(delivery.pickupPointId) : null;
+  if (method.id === "ombud" && !pickupPoint) {
+    return NextResponse.json({ message: "Välj ett ombud i varukorgen innan du går till kassan." }, { status: 400 });
+  }
 
   // Live stock, uncached: the cart in the browser may be a minute behind.
   const liveProducts = await getLiveProducts();
-  const cart = priceCart(lines, liveProducts);
+  const cart = priceCart(lines, liveProducts, method.id);
   const short = shortages(
     cart.lines.map((l) => ({ slug: l.slug, variantId: l.variantId, quantity: l.quantity })),
     liveProducts,
@@ -67,16 +75,16 @@ export async function POST(req: NextRequest) {
         {
           shipping_rate_data: {
             type: "fixed_amount",
-            display_name: cart.shipping === 0 ? "Fri frakt" : "Standardfrakt",
+            display_name: pickupPoint ? `${method.label}: ${pickupPoint.name}` : method.label,
             fixed_amount: { amount: cart.shipping, currency: "sek" },
             delivery_estimate: {
-              minimum: { unit: "business_day", value: site.deliveryDays.min },
-              maximum: { unit: "business_day", value: site.deliveryDays.max + 1 },
+              minimum: { unit: "business_day", value: method.minDays },
+              maximum: { unit: "business_day", value: method.maxDays + 1 },
             },
           },
         },
       ],
-      metadata: { arm },
+      metadata: { arm, shippingMethod: method.id, pickupPointId: pickupPoint?.id ?? "" },
       success_url: `${origin}/tack?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?kassa=avbruten`,
     });

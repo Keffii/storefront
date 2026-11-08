@@ -112,6 +112,15 @@ export default async function ReceiptPage({
             <dt>Att betala</dt>
             <dd>{formatPrice(order.total)}</dd>
           </div>
+          {order.refunds?.map((r) => (
+            <div key={r.id}>
+              <dt>
+                Återbetalt {r.reason === "cancellation" ? "(avbruten order)" : r.returnId ? `(retur ${r.returnId})` : ""},{" "}
+                {new Date(r.at).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" })}
+              </dt>
+              <dd>−{formatPrice(r.amount)}</dd>
+            </div>
+          ))}
         </dl>
 
         <p className={styles.demo}>

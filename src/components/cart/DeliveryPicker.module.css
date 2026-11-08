@@ -1,0 +1,120 @@
+.fieldset {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.methods,
+.points {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.method,
+.point {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--color-footer-ash);
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+.method:has(.radio:checked),
+.point:has(.radio:checked) {
+  box-shadow: inset 0 0 0 1px var(--color-graphite);
+  background: var(--color-linen-sand);
+}
+
+.method:has(.radio:focus-visible),
+.point:has(.radio:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.radio {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--color-graphite);
+}
+
+.methodBody {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.methodTop {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.methodName {
+  font-weight: 500;
+}
+
+.methodSub {
+  color: var(--text-secondary);
+}
+
+.pickup {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.postal {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+  align-items: end;
+}
+
+.postalLabel {
+  grid-column: 1 / -1;
+  font-size: var(--text-sm);
+}
+
+.input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-footer-ash);
+  border-radius: var(--radius-sm);
+  background: var(--color-paper);
+  font-size: var(--text-md);
+}
+
+.search {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-graphite);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.search:hover {
+  background: var(--color-linen-sand);
+}
+
+.demo {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-muted);
+}

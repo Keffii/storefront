@@ -75,7 +75,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const jsonLd = [
     productJsonLd(product, summary),
     breadcrumbJsonLd([
-      { name: "Start", path: "/" },
+      { name: "Startsida", path: "/" },
       ...(category ? [categoryBreadcrumb(category)] : []),
       { name: product.name, path: `/produkter/${product.slug}` },
     ]),
@@ -89,7 +89,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <nav aria-label="Brödsmulor" className={styles.breadcrumbs}>
           <ol role="list">
             <li>
-              <Link href="/">Start</Link>
+              <Link href="/">Startsida</Link>
             </li>
             {category && (
               <li>

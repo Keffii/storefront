@@ -10,7 +10,7 @@ import styles from "./kollektion.module.css";
 export async function CollectionPage({ category }: { category: Category | null }) {
   const ratings = await getRatingSummaries((await getCatalog()).map((p) => p.slug));
   const crumbs = [
-    { name: "Start", path: "/" },
+    { name: "Startsida", path: "/" },
     { name: "Alla produkter", path: "/kollektion" },
     ...(category ? [categoryBreadcrumb(category)] : []),
   ];
@@ -22,7 +22,7 @@ export async function CollectionPage({ category }: { category: Category | null }
         <nav aria-label="Brödsmulor" className={styles.breadcrumbs}>
           <ol role="list">
             <li>
-              <Link href="/">Start</Link>
+              <Link href="/">Startsida</Link>
             </li>
             {category ? (
               <>

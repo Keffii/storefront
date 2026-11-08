@@ -8,7 +8,7 @@
         "http://localhost:3400/kollektion",
         "http://localhost:3400/produkter/halo-bordslampa"
       ],
-      "numberOfRuns": 3,
+      "numberOfRuns": 5,
       "settings": {
         "chromeFlags": "--no-sandbox --headless=new",
         "extraHeaders": "{\"Cookie\": \"objekt_consent=necessary\"}"

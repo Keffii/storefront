@@ -16,7 +16,10 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never", outputFolder: "playwright-visual-report" }]] : "list",
   expect: {
-    toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: "disabled", caret: "hide" },
+    // An absolute pixel budget: baselines come from the same runner image, so
+    // real noise is tiny, and a ratio would let a changed heading slip through
+    // on a tall full-page screenshot (1 % of a page is a lot of pixels).
+    toHaveScreenshot: { maxDiffPixels: 200, animations: "disabled", caret: "hide" },
   },
   use: {
     baseURL,

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { CookieBanner } from "@/components/consent/CookieBanner";
+import { TagManager } from "@/components/consent/TagManager";
 import { DemoBar } from "@/components/layout/DemoBar";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
@@ -63,6 +64,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <Footer />
             <CartDrawer />
             <CookieBanner />
+            <TagManager />
           </CartProvider>
           </InventoryProvider>
         </ToastProvider>

@@ -1,5 +1,6 @@
 "use client";
 
+import { itemFor, pushEcommerce } from "@/lib/datalayer";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
@@ -43,6 +44,7 @@ export function CartDrawer() {
   async function startCheckout() {
     setCheckout({ status: "loading" });
     track({ name: "checkout_started", value: cart.total, items: cart.itemCount });
+    pushEcommerce("begin_checkout", { value: cart.total, items: cart.lines.map((l) => itemFor(l.product, l.variant, l.quantity)) });
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",

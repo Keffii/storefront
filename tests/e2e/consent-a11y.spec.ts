@@ -25,6 +25,26 @@ test("nothing is tracked until the visitor accepts statistics", async ({ page })
   await expect(page.getByRole("region", { name: "Cookies" })).toBeVisible();
 });
 
+test("dataLayer stays empty before consent and gets GA4 ecommerce events after", async ({ page }) => {
+  await page.goto("/produkter/ovo-vas");
+  await page.getByRole("button", { name: /Lägg i varukorgen/ }).first().click();
+  await page.keyboard.press("Escape");
+  expect(await page.evaluate(() => window.dataLayer ?? [])).toEqual([]);
+
+  await page.getByRole("region", { name: "Cookies" }).getByRole("button", { name: "Godkänn statistik" }).click();
+  await page.getByRole("button", { name: /Lägg i varukorgen/ }).first().click();
+  const layer = (await page.evaluate(() => window.dataLayer ?? [])) as Record<string, unknown>[];
+  const add = layer.find((e) => e.event === "add_to_cart") as { ecommerce: { currency: string; value: number; items: Record<string, unknown>[] } };
+  expect(add).toBeDefined();
+  expect(add.ecommerce.currency).toBe("SEK");
+  expect(add.ecommerce.value).toBe(595);
+  expect(add.ecommerce.items[0]).toMatchObject({ item_id: "OVO-TERRAKOTTA-S", item_name: "Ovo vas", price: 595, quantity: 1 });
+  // GA4 recommends clearing the previous ecommerce object before each event.
+  expect(layer[layer.indexOf(add) - 1]).toEqual({ ecommerce: null });
+  // No tag manager loads without NEXT_PUBLIC_GTM_ID.
+  expect(await page.locator("#gtm-script").count()).toBe(0);
+});
+
 test("declining keeps tracking off", async ({ page }) => {
   const events: string[] = [];
   page.on("request", (r) => r.url().includes("/api/events") && events.push(r.url()));
@@ -35,7 +55,16 @@ test("declining keeps tracking off", async ({ page }) => {
   expect(events).toHaveLength(0);
 });
 
-const pages = ["/", "/kollektion", "/produkter/halo-bordslampa", "/om-projektet"];
+const pages = [
+  "/",
+  "/kollektion",
+  "/produkter/halo-bordslampa",
+  "/om-projektet",
+  "/kundservice",
+  "/integritetspolicy",
+  "/frakt-och-returer",
+  "/presentkort",
+];
 
 for (const path of pages) {
   test(`no serious accessibility violations on ${path}`, async ({ page, baseURL }) => {

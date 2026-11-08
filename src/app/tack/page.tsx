@@ -8,6 +8,9 @@ import { stripe } from "@/lib/server/stripe";
 import { receiptPath } from "@/lib/receipt-token";
 import { vatIncluded } from "@/lib/vat";
 import { ClearCart } from "./ClearCart";
+import { PurchaseEvent } from "./PurchaseEvent";
+import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
+import { getCatalog } from "@/lib/server/catalog";
 import styles from "./tack.module.css";
 
 export const metadata: Metadata = {
@@ -20,7 +23,7 @@ export const dynamic = "force-dynamic";
 async function loadSession(id: string | undefined): Promise<Stripe.Checkout.Session | null> {
   if (!id || !isStripeConfigured() || !/^cs_(test|live)_[A-Za-z0-9]+$/.test(id)) return null;
   try {
-    return await stripe().checkout.sessions.retrieve(id, { expand: ["line_items"] });
+    return await stripe().checkout.sessions.retrieve(id, { expand: ["line_items.data.price.product"] });
   } catch {
     return null;
   }
@@ -41,12 +44,30 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
   }
 
   const paid = session.payment_status === "paid";
+  const catalog = await getCatalog();
   const shipping = session.collected_information?.shipping_details;
   const orderNumber = session.id.slice(-8).toUpperCase();
 
   return (
     <div className={`container ${styles.page}`}>
       <ClearCart />
+      {paid && (
+        <PurchaseEvent
+          id={session.id}
+          value={session.amount_total ?? 0}
+          shipping={session.shipping_cost?.amount_total ?? 0}
+          items={(session.line_items?.data ?? []).map((li) => {
+            const meta = (li.price?.product as Stripe.Product | undefined)?.metadata ?? {};
+            const variant = catalog.find((p) => p.slug === meta.slug)?.variants.find((v) => v.id === meta.variantId);
+            return {
+              item_id: variant?.sku ?? meta.slug ?? li.id,
+              item_name: li.description ?? "",
+              price: (li.price?.unit_amount ?? 0) / 100,
+              quantity: li.quantity ?? 1,
+            };
+          })}
+        />
+      )}
       <p className="caption">Order {orderNumber}</p>
       <h1 className={styles.title}>{paid ? "Tack för din beställning!" : "Vi väntar på betalningen"}</h1>
       <p className={styles.lead}>
@@ -122,6 +143,12 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
           Fortsätt handla
         </Button>
       </div>
+
+      {paid && (
+        <section className={styles.card} aria-label="Nyhetsbrev">
+          <NewsletterForm source="purchase" />
+        </section>
+      )}
     </div>
   );
 }

@@ -25,7 +25,7 @@ const ses = () => (client ??= new SESv2Client({ region: backend.region }));
 
 export const isEmailConfigured = () => Boolean(from());
 
-export async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
+export async function sendEmail(to: string, subject: string, html: string, text: string, replyTo?: string): Promise<boolean> {
   const sender = from();
   if (!sender) return false;
   try {
@@ -33,6 +33,7 @@ export async function sendEmail(to: string, subject: string, html: string, text:
       new SendEmailCommand({
         FromEmailAddress: `${site.brandName} <${sender}>`,
         Destination: { ToAddresses: [to] },
+        ...(replyTo ? { ReplyToAddresses: [replyTo] } : {}),
         Content: {
           Simple: {
             Subject: { Data: subject, Charset: "UTF-8" },

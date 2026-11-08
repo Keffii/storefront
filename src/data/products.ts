@@ -529,7 +529,7 @@ export function sharedFaq(): FaqItem[] {
     },
     {
       question: "Hur kan jag betala?",
-      answer: "Med kort (Visa, Mastercard) eller Klarna. Betalningen hanteras av Stripe. Det här är en portfoliodemo, så inga riktiga betalningar genomförs.",
+      answer: "Med kort (Visa, Mastercard), Apple Pay, Google Pay eller Klarna. Betalningen hanteras av Stripe. Det här är en portfoliodemo, så inga riktiga betalningar genomförs.",
     },
   ];
 }

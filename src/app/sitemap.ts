@@ -22,6 +22,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     })),
     { url: absoluteUrl("/presentkort"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    ...["/kundservice", "/frakt-och-returer", "/kopvillkor", "/integritetspolicy", "/tillganglighet"].map((path) => ({
+      url: absoluteUrl(path),
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.3,
+    })),
     { url: absoluteUrl("/om-projektet"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
 }

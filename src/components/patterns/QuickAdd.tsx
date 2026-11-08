@@ -1,5 +1,6 @@
 "use client";
 
+import { itemFor, pushEcommerce } from "@/lib/datalayer";
 import Image from "next/image";
 import { useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
@@ -67,6 +68,7 @@ export function QuickAdd({ product }: { product: Product }) {
             disabled={level === "sold-out"}
             onClick={() => {
               track({ name: "add_to_cart", product: product.slug, variant: variant.id, quantity: 1, value: variant.price });
+              pushEcommerce("add_to_cart", { value: variant.price, items: [itemFor(product, variant)] });
               setOpen(false);
               add([{ slug: product.slug, variantId: variant.id, quantity: 1 }]);
             }}

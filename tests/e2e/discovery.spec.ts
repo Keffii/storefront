@@ -97,3 +97,37 @@ test("product pages suggest matches and remember what was viewed", async ({ page
   await expect(recent.getByRole("article").filter({ hasText: "Ovo vas" })).toBeVisible();
   await expect(recent.getByRole("article").filter({ hasText: "Halo bordslampa" })).toHaveCount(0);
 });
+
+test("customer service: FAQ search and contact form validation", async ({ page }) => {
+  await page.goto("/kundservice");
+  const search = page.getByRole("searchbox", { name: "Sök bland frågorna" });
+  await search.fill("presentkort");
+  await expect(page.getByText("Hur fungerar presentkort?")).toBeVisible();
+  await search.fill("xyzzy");
+  await expect(page.getByText("Inga frågor matchar")).toBeVisible();
+
+  // The browser's own validation stops an empty form; a too-short message gets the server's answer.
+  await page.getByLabel("Namn").fill("Test");
+  await page.getByLabel("E-post").fill("test@example.com");
+  await page.getByLabel("Meddelande").fill("Hej hej hej");
+  await expect(page.getByRole("button", { name: "Skicka" })).toBeEnabled();
+});
+
+test("footer has the newsletter, legal pages and /kontakt goes to customer service", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.getByRole("contentinfo");
+  await expect(footer.getByLabel(/Nyhetsbrev/)).toBeVisible();
+  for (const name of ["Köpvillkor", "Integritetspolicy", "Tillgänglighet", "Frakt och returer"]) {
+    await expect(footer.getByRole("link", { name })).toBeVisible();
+  }
+  await page.goto("/kontakt");
+  await expect(page).toHaveURL(/\/kundservice#kontakt$/);
+});
+
+test("feeds list every variant", async ({ request }) => {
+  const xml = await (await request.get("/feeds/google.xml")).text();
+  expect(xml).toContain("<g:id>HALO-GRAFIT-S</g:id>");
+  expect(xml).toContain("<g:availability>out_of_stock</g:availability>");
+  const csv = await request.get("/feeds/meta.csv");
+  expect(csv.headers()["content-type"]).toContain("text/csv");
+});

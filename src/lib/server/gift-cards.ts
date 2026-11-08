@@ -49,7 +49,15 @@ export async function issueGiftCard(input: Omit<GiftCard, "code" | "balance" | "
       await db().send(
         new PutCommand({
           TableName: table(),
-          Item: { ...key(card.code), gsi1pk: "GIFTCARDS", gsi1sk: card.createdAt, type: "giftcard", ...card },
+          Item: {
+            ...key(card.code),
+            gsi1pk: "GIFTCARDS",
+            gsi1sk: card.createdAt,
+            type: "giftcard",
+            ...card,
+            // Removed three months after it expires (see the privacy policy).
+            ttl: Math.floor(new Date(card.expiresAt).getTime() / 1000) + 90 * 86400,
+          },
           ConditionExpression: "attribute_not_exists(pk)",
         }),
       );

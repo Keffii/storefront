@@ -1,5 +1,6 @@
 "use client";
 
+import { itemFor, pushEcommerce } from "@/lib/datalayer";
 import { useEffect, useState, type ReactNode } from "react";
 import { FloatingBuyCard } from "@/components/patterns/FloatingBuyCard";
 import { track } from "@/lib/analytics";
@@ -37,6 +38,8 @@ export function ProductView({ product: initialProduct, addOns, priceFrom, rating
     const fromUrl = new URLSearchParams(window.location.search).get("variant");
     if (fromUrl && findVariantById(initialProduct, fromUrl)) setVariantId(fromUrl);
     track({ name: "product_view", product: slug });
+    const shown = findVariantById(initialProduct, fromUrl) ?? findVariantById(initialProduct, initialProduct.defaultVariantId) ?? initialProduct.variants[0];
+    pushEcommerce("view_item", { value: shown.price, items: [itemFor(initialProduct, shown)] });
   }, [slug, initialProduct]);
 
   const [preview, setPreview] = useState<typeof variant | null>(null);

@@ -1,5 +1,6 @@
 "use client";
 
+import { itemFor, pushEcommerce } from "@/lib/datalayer";
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useCart } from "@/components/cart/CartProvider";
@@ -97,6 +98,10 @@ export function BuyBox({
       variant: variant.id,
       quantity,
       value: variant.price * quantity,
+    });
+    pushEcommerce("add_to_cart", {
+      value: variant.price * quantity + extras.reduce((s, a) => s + (a.variant.price - a.discount) * quantity, 0),
+      items: [itemFor(product, variant, quantity), ...extras.map((a) => itemFor(a.product, a.variant, quantity))],
     });
     setChosenAddOns(new Set());
   }

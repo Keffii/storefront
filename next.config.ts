@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
         destination: "/kollektion/:kategori",
         permanent: true,
       },
+      { source: "/kontakt", destination: "/kundservice#kontakt", permanent: true },
     ];
   },
   async headers() {

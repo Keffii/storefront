@@ -2,6 +2,8 @@
 
 [Svenska](#svenska) · [English](#english)
 
+**Live:** https://main.d9wg0b1285wyg.amplifyapp.com
+
 A complete e-commerce storefront built as a portfolio project: Next.js and TypeScript on AWS Amplify, Stripe Checkout in test mode, orders and reviews in DynamoDB. The brand and products are made up. No real payments are taken.
 
 ---
@@ -29,7 +31,7 @@ All produktdata finns i en fil, [`src/data/products.ts`](src/data/products.ts). 
 | Mätare för fri frakt och ett förslag på tillbehör i varukorgen | Höjer ordervärdet, och frakten är aldrig en överraskning. |
 | Tillbehör till paketpris ("Köp till och spara") | Rabatten räknas om på servern vid varje köp och går inte att manipulera från webbläsaren. |
 | Färgprickar på produktkorten som visar produkten i den färgen | Kunden ser färgen innan hen klickar och landar direkt på rätt variant. |
-| Filter och sortering i adressfältet, renderat på servern | Länkar går att dela och sökmotorer ser samma sida som besökaren. |
+| Kategorier som egna, förgenererade sidor och övriga filter i adressfältet | Kategorisidorna laddar snabbt från CDN:en och syns i sökmotorer. Filtrerade vyer går att dela och bakåtknappen tar bort senaste filtret. |
 | A/B-test på köpknappen (B visar totalpriset) | Mäts per variant i adminvyn, för de besökare som godkänt statistik. |
 
 Det här valde jag bort: nedräkningar, påhittade "tidigare priser", popup med lyckohjul, video som startar av sig själv och förifyllda recensioner. Statistik räknas först när besökaren har godkänt det, och båda knapparna i cookiebannern är lika stora. Sådana knep kan ge fler köp på kort sikt, men de kostar förtroende och gör siffrorna i ett A/B-test mindre pålitliga.
@@ -71,19 +73,19 @@ flowchart LR
   N -->|verify tokens| C
 ```
 
-- **Next.js 15, App Router, TypeScript.** Product pages are statically generated with incremental revalidation (every 10 minutes, and immediately through `revalidateTag` when a review arrives). The collection page renders from the URL on the server.
+- **Next.js 15, App Router, TypeScript.** Product pages are statically generated with incremental revalidation (every 10 minutes, and immediately through `revalidateTag` when a review arrives). Each category is its own statically generated page (`/kollektion/vaser`), cached at the CDN and indexable. Colour, price, stock and sort live in the query string and apply in the browser through `useSearchParams`; the static HTML holds the unfiltered list, so the page works before JavaScript loads. Old `?kategori=` links redirect permanently.
 - **Cart.** Pure pricing in [`src/lib/cart.ts`](src/lib/cart.ts), shared by the browser and the server. The checkout route recalculates every price from the catalogue and only trusts ids and quantities from the client. The cart is stored in `localStorage` and synced across tabs with `useSyncExternalStore`.
 - **Stripe.** [`/api/checkout`](src/app/api/checkout/route.ts) creates a Checkout Session (card and Klarna, SEK, Swedish shipping). A line with a bundle discount is split into discounted and full-price units, because Stripe has no per-line discount for inline prices. [`/api/stripe/webhook`](src/app/api/stripe/webhook/route.ts) verifies the signature on the raw body and writes the order with a conditional put, so Stripe's retries can't create duplicates. It also handles Klarna's asynchronous success and failure events. Live keys are refused.
 - **DynamoDB, single table.** Orders (with a GSI for the admin list), reviews with a per-product summary item updated in the same transaction, fixed-window rate limits keyed by salted IP hashes, and daily analytics counters. TTL expires the rate-limit and metrics items. See [`src/lib/server/db.ts`](src/lib/server/db.ts).
 - **Amplify Gen 2 backend** in [`amplify/`](amplify/backend.ts). It defines the Cognito user pool (invite only, `admin` group), the table, and a least-privilege IAM role for the SSR compute that can only read and write that table.
 - **Admin.** `/admin` checks the Cognito session on the server with Amplify's Next.js adapter and requires the `admin` group. Every server action checks it again. The admin view shows KPIs, a purchase funnel, A/B results, orders (paid → shipped) and review moderation.
 - **Consent and analytics.** Nothing is tracked before opt-in, and the consent cookie is checked on the server too. Events are stored as anonymous daily counters. Purchases are counted by the webhook, per A/B arm.
-- **SEO.** Canonical URLs, Open Graph images generated with `next/og`, and `ProductGroup` JSON-LD with per-variant offers, shipping and return policy. Ratings are only included when real reviews exist. The site also has Breadcrumb and FAQ JSON-LD, a sitemap and robots.txt. Filtered collection URLs are `noindex` and point their canonical to the category.
+- **SEO.** Canonical URLs, Open Graph images generated with `next/og`, and `ProductGroup` JSON-LD with per-variant offers, shipping and return policy. Ratings are only included when real reviews exist. The site also has Breadcrumb and FAQ JSON-LD, a sitemap and robots.txt. Filtered collection URLs share the category page's canonical URL.
 - **Accessibility.** WCAG 2.2 AA. Native `<dialog>` drawers give focus trapping and Escape for free, radio groups make up the variant pickers, the skip link is the first tab stop, focus is visible, reduced motion is respected and touch targets are at least 24 px. Playwright runs axe on the key pages and walks the purchase flow with only the keyboard.
 
 ### Performance
 
-Mobile Lighthouse (simulated phone, production build) for the home page, the collection and a product page: performance 95–96, and 100 for accessibility, best practices and SEO. Fonts are self-hosted through `next/font`, CSS is inlined, the main product image is preloaded, and the shop pages ship about 120 kB of JavaScript. The admin sign-in bundle loads only on the admin pages.
+Mobile Lighthouse on the live site (simulated phone): performance 97 on the home page and a product page, 100 for accessibility, best practices and SEO. See the changelog for the collection page. Fonts are self-hosted through `next/font`, CSS is inlined, the main product image is preloaded, and the shop pages ship about 120 kB of JavaScript. The admin sign-in bundle loads only on the admin pages.
 
 ### Tests
 

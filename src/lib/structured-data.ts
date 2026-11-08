@@ -107,7 +107,7 @@ export function storeJsonLd() {
   };
 }
 
-export const categoryBreadcrumb = (c: Category) => ({ name: c.name, path: `/kollektion?kategori=${c.id}` });
+export const categoryBreadcrumb = (c: Category) => ({ name: c.name, path: `/kollektion/${c.id}` });
 
 /** Renders JSON-LD safely: "<" is escaped so content can't close the script tag. */
 export function jsonLdScript(data: unknown) {

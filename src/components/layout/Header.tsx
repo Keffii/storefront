@@ -6,7 +6,7 @@ import styles from "./Header.module.css";
 
 export const navLinks = [
   { href: "/kollektion", label: "Alla produkter" },
-  ...categories.map((c) => ({ href: `/kollektion?kategori=${c.id}`, label: c.name })),
+  ...categories.map((c) => ({ href: `/kollektion/${c.id}`, label: c.name })),
 ];
 
 export function Header() {

@@ -21,7 +21,7 @@ export function Footer() {
             </li>
             {categories.map((c) => (
               <li key={c.id}>
-                <Link href={`/kollektion?kategori=${c.id}`}>{c.name}</Link>
+                <Link href={`/kollektion/${c.id}`}>{c.name}</Link>
               </li>
             ))}
           </ul>

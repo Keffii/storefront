@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Drawer";
-import { SORTS, toQuery, type Filters, type PriceRangeId, type SortId } from "@/lib/catalog";
+import { collectionHref, SORTS, type Filters, type PriceRangeId, type SortId } from "@/lib/catalog";
 import type { CategoryId } from "@/lib/types";
 import styles from "./CollectionFilters.module.css";
 
@@ -26,23 +26,29 @@ interface Props {
 }
 
 /**
- * Filter and sort controls. Every change navigates to a new URL, which the
- * server renders; the URL is the only state. On phones the filters live in
- * a drawer, on wide screens in a sidebar.
+ * Filter and sort controls; the URL is the only state. Choosing a category
+ * navigates to that category's static page. Other filters update the query
+ * string in place (history.pushState), which Next.js reflects in
+ * useSearchParams, so results change instantly and Back undoes a filter.
+ * On phones the filters live in a drawer, on wide screens in a sidebar.
  */
 export function CollectionFilters(props: Props) {
   const { resultCount, activeCount } = props;
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
-  // Optimistic copy of the filters so controls respond instantly while the
-  // server renders the new URL; it re-syncs when the new props arrive.
+  // Optimistic copy so a category click responds while the next page loads.
   const [filters, setFilters] = useState(props.filters);
   useEffect(() => setFilters(props.filters), [props.filters]);
 
   function go(next: Filters) {
     setFilters(next);
-    startTransition(() => router.push(`/kollektion${toQuery(next)}`, { scroll: false }));
+    const href = collectionHref(next);
+    if (next.category !== props.filters.category) {
+      startTransition(() => router.push(href, { scroll: false }));
+    } else {
+      window.history.pushState(null, "", href);
+    }
   }
 
   return (

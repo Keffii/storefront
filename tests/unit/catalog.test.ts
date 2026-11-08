@@ -1,31 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { categories, products } from "@/data/products";
-import { activeFilterCount, allColors, applyFilters, facetCounts, parseFilters, toQuery, type Filters } from "@/lib/catalog";
+import { products } from "@/data/products";
+import { activeFilterCount, allColors, applyFilters, collectionHref, facetCounts, parseFilters, toQuery, type Filters } from "@/lib/catalog";
 import { validateReview } from "@/lib/reviews";
 import { findVariant, selectOption, soldOutValues, stockLevel } from "@/lib/variants";
 
-const catIds = categories.map((c) => c.id);
 const colorIds = allColors(products).map((c) => c.id);
-const parse = (q: Record<string, string>) => parseFilters(q, catIds, colorIds);
+const parse = (q: Record<string, string>, category: Filters["category"] = null) => parseFilters(q, colorIds, category);
 const none: Filters = { category: null, colors: [], price: null, inStock: false, sort: "rekommenderat" };
 
 describe("filters in the URL", () => {
   it("parses valid parameters and ignores invalid ones", () => {
-    expect(parse({ kategori: "vaser", farg: "krita,bogus,krita", pris: "0-500", ilager: "1", sortera: "namn" })).toEqual({
+    expect(parse({ farg: "krita,bogus,krita", pris: "0-500", ilager: "1", sortera: "namn" }, "vaser")).toEqual({
       category: "vaser",
       colors: ["krita"],
       price: "0-500",
       inStock: true,
       sort: "namn",
     });
-    expect(parse({ kategori: "bilar", sortera: "random" })).toEqual(none);
+    expect(parse({ pris: "bilar", sortera: "random" })).toEqual(none);
   });
 
   it("round-trips through the query string", () => {
     const f: Filters = { category: "belysning", colors: ["krita", "grafit"], price: "1500-", inStock: true, sort: "pris-fallande" };
     const q = Object.fromEntries(new URLSearchParams(toQuery(f).slice(1)));
-    expect(parse(q)).toEqual({ ...f, colors: ["grafit", "krita"] });
+    expect(parse(q, "belysning")).toEqual({ ...f, colors: ["grafit", "krita"] });
     expect(toQuery(none)).toBe("");
+    expect(collectionHref(f)).toBe("/kollektion/belysning?farg=grafit%2Ckrita&pris=1500-&ilager=1&sortera=pris-fallande");
+    expect(collectionHref(none)).toBe("/kollektion");
   });
 
   it("filters by category, colour and stock", () => {

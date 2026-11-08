@@ -7,6 +7,17 @@ const nextConfig: NextConfig = {
     inlineCss: true,
   },
   poweredByHeader: false,
+  async redirects() {
+    // Old category links (?kategori=) moved to /kollektion/<kategori>.
+    return [
+      {
+        source: "/kollektion",
+        has: [{ type: "query", key: "kategori", value: "(?<kategori>belysning|vaser|mobler|bordsartiklar)" }],
+        destination: "/kollektion/:kategori",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

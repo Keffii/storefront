@@ -81,7 +81,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </li>
             {category && (
               <li>
-                <Link href={`/kollektion?kategori=${category.id}`}>{category.name}</Link>
+                <Link href={`/kollektion/${category.id}`}>{category.name}</Link>
               </li>
             )}
             <li aria-current="page">{product.name}</li>

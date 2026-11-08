@@ -8,7 +8,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
     <ul role="list" className={styles.grid}>
       {categories.map((c) => (
         <li key={c.id}>
-          <Link href={`/kollektion?kategori=${c.id}`} className={styles.tile}>
+          <Link href={`/kollektion/${c.id}`} className={styles.tile}>
             <div className={styles.media}>
               <Image
                 src={c.image.src}

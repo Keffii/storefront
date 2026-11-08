@@ -1,9 +1,10 @@
 /**
- * Collection filtering and sorting. The URL is the state: every filter is a
- * query parameter, so filtered views are shareable, bookmarkable,
- * back-button friendly and server-rendered.
+ * Collection filtering and sorting. The URL is the state, so every view is
+ * shareable, bookmarkable and back-button friendly. The category is part of
+ * the path (statically generated, cached at the CDN, indexable); the other
+ * filters are query parameters applied in the browser.
  *
- *   /kollektion?kategori=belysning&farg=grafit,krita&pris=0-1000&ilager=1&sortera=pris-stigande
+ *   /kollektion/belysning?farg=grafit,krita&pris=500-1500&ilager=1&sortera=pris-stigande
  */
 import type { CategoryId, OptionValue, Product } from "./types";
 
@@ -37,8 +38,7 @@ type Params = Record<string, string | string[] | undefined>;
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-export function parseFilters(params: Params, categoryIds: readonly string[], colorIds: readonly string[]): Filters {
-  const category = first(params.kategori);
+export function parseFilters(params: Params, colorIds: readonly string[], category: CategoryId | null = null): Filters {
   const colors = (first(params.farg) ?? "")
     .split(",")
     .map((c) => c.trim())
@@ -46,7 +46,7 @@ export function parseFilters(params: Params, categoryIds: readonly string[], col
   const price = first(params.pris);
   const sort = first(params.sortera);
   return {
-    category: category && categoryIds.includes(category) ? (category as CategoryId) : null,
+    category,
     colors: [...new Set(colors)],
     price: PRICE_RANGES.some((r) => r.id === price) ? (price as PriceRangeId) : null,
     inStock: first(params.ilager) === "1",
@@ -54,10 +54,9 @@ export function parseFilters(params: Params, categoryIds: readonly string[], col
   };
 }
 
-/** Builds the query string for a filter state, omitting defaults. */
+/** Query string for the non-category filters, omitting defaults. */
 export function toQuery(f: Filters): string {
   const q = new URLSearchParams();
-  if (f.category) q.set("kategori", f.category);
   if (f.colors.length) q.set("farg", [...f.colors].sort().join(","));
   if (f.price) q.set("pris", f.price);
   if (f.inStock) q.set("ilager", "1");
@@ -65,6 +64,13 @@ export function toQuery(f: Filters): string {
   const s = q.toString();
   return s ? `?${s}` : "";
 }
+
+/** Full URL for a filter state: category in the path, the rest in the query. */
+export function collectionHref(f: Filters): string {
+  return `/kollektion${f.category ? `/${f.category}` : ""}${toQuery(f)}`;
+}
+
+export const categoryHref = (id: CategoryId) => `/kollektion/${id}`;
 
 const minPrice = (p: Product) => Math.min(...p.variants.map((v) => v.price));
 const colorIdsOf = (p: Product) => p.options.find((o) => o.id === "color")?.values.map((v) => v.id) ?? [];

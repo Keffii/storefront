@@ -85,10 +85,11 @@ export default function AboutProjectPage() {
             </dd>
           </div>
           <div>
-            <dt>Filter som sparas i adressen</dt>
+            <dt>Kategorier som egna sidor, filter i adressen</dt>
             <dd>
-              Varje filtrerad vy har en egen länk som går att dela, bokmärka och gå tillbaka till. Sidan renderas på
-              servern, så sökmotorer ser samma innehåll som besökaren.
+              Varje kategori är en egen sida som byggs i förväg och cachas nära besökaren, så den laddar snabbt och
+              syns i sökmotorer. Färg, pris och sortering läggs i adressen, så varje filtrerad vy har en länk som går att
+              dela och bakåtknappen tar bort det senaste filtret.
             </dd>
           </div>
           <div>

@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/"), lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: absoluteUrl("/kollektion"), lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     ...categories.map((c) => ({
-      url: absoluteUrl(`/kollektion?kategori=${c.id}`),
+      url: absoluteUrl(`/kollektion/${c.id}`),
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.7,

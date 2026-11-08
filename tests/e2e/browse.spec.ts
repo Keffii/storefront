@@ -29,19 +29,26 @@ test("filters and sorting live in the URL", async ({ page, isMobile }) => {
   if (isMobile) await page.getByRole("button", { name: /Filtrera/ }).click();
   const panel = isMobile ? page.getByRole("dialog", { name: "Filtrera" }) : page.getByRole("complementary", { name: "Filter" });
   await panel.getByRole("radio", { name: "Vaser" }).check();
-  await expect(page).toHaveURL(/kategori=vaser/);
-  if (isMobile) await page.getByRole("button", { name: /Visa 1 produkt/ }).click();
+  await expect(page).toHaveURL(/\/kollektion\/vaser/);
+  // A category is its own page, so choosing one navigates (and closes the phone drawer).
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Vaser");
+  await expect(page.getByRole("dialog", { name: "Filtrera" })).toBeHidden();
   await expect(page.getByRole("article")).toHaveCount(1);
 
   await page.getByRole("combobox").selectOption("pris-fallande");
   await expect(page).toHaveURL(/sortera=pris-fallande/);
 
   // An impossible combination shows the empty state.
-  await page.goto("/kollektion?kategori=vaser&farg=grafit");
+  await page.goto("/kollektion/vaser?farg=grafit");
   await expect(page.getByText("Inga produkter matchar filtren")).toBeVisible();
   await page.getByRole("link", { name: "Visa alla produkter" }).click();
   await expect(page).toHaveURL(/\/kollektion$/);
+});
+
+test("old ?kategori= links redirect to the category page", async ({ page }) => {
+  await page.goto("/kollektion?kategori=belysning");
+  await expect(page).toHaveURL(/\/kollektion\/belysning/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Belysning");
 });
 
 test("the sticky buy bar appears after scrolling past the buy button", async ({ page }) => {

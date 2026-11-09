@@ -27,8 +27,21 @@ export async function publicImageDataUri(src: string): Promise<string | null> {
   }
 }
 
-/** Shared layout: text on the left, product image on a cream panel to the right. */
-export function OgLayout({ eyebrow, title, subtitle, image }: { eyebrow: string; title: string; subtitle: string; image: string | null }) {
+/** Shared layout: text on the left, a product image on a cream panel (or a full photo) to the right. */
+export function OgLayout({
+  eyebrow,
+  title,
+  subtitle,
+  image,
+  fill = false,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  image: string | null;
+  /** The image is a 600x630 photo that fills the right half edge to edge. */
+  fill?: boolean;
+}) {
   return (
     <div style={{ display: "flex", width: "100%", height: "100%", background: "#ffffff", color: "#1f1f1f" }}>
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 600, padding: 64 }}>
@@ -40,9 +53,9 @@ export function OgLayout({ eyebrow, title, subtitle, image }: { eyebrow: string;
         </div>
         <div style={{ fontSize: 18, color: "#6b6b6b" }}>Portfolio demo: inga riktiga produkter eller betalningar</div>
       </div>
-      <div style={{ display: "flex", width: 600, height: 630, background: "#f7f4ef", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ display: "flex", width: 600, height: 630, background: fill ? "#0c0605" : "#f7f4ef", alignItems: "center", justifyContent: "center" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {image && <img src={image} width={600} height={600} alt="" />}
+        {image && <img src={image} width={600} height={fill ? 630 : 600} alt="" />}
       </div>
     </div>
   );

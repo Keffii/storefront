@@ -2,7 +2,7 @@
 
 [Svenska](#svenska) · [English](#english)
 
-**Live:** https://main.d9wg0b1285wyg.amplifyapp.com
+**Live:** https://objekt.live
 
 A complete web shop built as a portfolio project: Next.js and TypeScript on AWS Amplify, Stripe Checkout in test mode, DynamoDB, Cognito and SES. The brand and products are made up and no real payments are taken. Everything else works the way it would in a real shop.
 

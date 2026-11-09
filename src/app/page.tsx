@@ -3,6 +3,7 @@ import { CategoryGrid } from "@/components/patterns/CategoryGrid";
 import { Hero } from "@/components/patterns/Hero";
 import { ProductGrid } from "@/components/patterns/ProductGrid";
 import Link from "next/link";
+import hero from "@/data/hero.json";
 import { categories, sets, site } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import { getCatalogWithStock } from "@/lib/server/catalog";
@@ -37,7 +38,7 @@ export default async function HomePage() {
         eyebrow="Nytt i belysning"
         title="Ljus som inte bländar"
         body="Halo har en kupad skärm som döljer glödlampan och dimras i tre steg."
-        image={{ src: "/images/hero.svg", alt: "En tänd bordslampa på en skänk i ett mörkt rum" }}
+        image={{ src: hero.src, alt: "En tänd Halo bordslampa på ett ekbord i ett mörkt rum" }}
         actions={
           <>
             <Button href="/produkter/halo-bordslampa" variant="inverse" size="lg">

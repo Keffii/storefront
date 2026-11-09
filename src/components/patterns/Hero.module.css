@@ -17,7 +17,7 @@
 .image {
   object-fit: cover;
   /* Phones: the lamp sits bottom right, under the text. */
-  object-position: 78% 100%;
+  object-position: 97% 100%;
   z-index: -2;
 }
 
@@ -64,7 +64,7 @@
     min-height: min(60svh, 560px);
   }
   .image {
-    object-position: 70% 100%;
+    object-position: 100% 100%;
   }
   /* Darken the left, where the text is, and leave the lamp's light alone. */
   .scrim {

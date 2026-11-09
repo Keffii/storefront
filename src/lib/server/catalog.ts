@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { unstable_cache } from "next/cache";
 import { products as seedProducts } from "@/data/products";
 import { withStock } from "@/lib/inventory";
@@ -26,6 +27,8 @@ async function readCatalog(): Promise<Product[] | null> {
   return items.sort((a, b) => (a as Product & { position?: number }).position! - (b as Product & { position?: number }).position!);
 }
 
+const seedVersion = createHash("sha1").update(JSON.stringify(seedProducts)).digest("hex").slice(0, 12);
+
 /** Every product, published or not. Cached; refreshed when the admin saves. */
 export const getAllProducts = unstable_cache(
   async (): Promise<Product[]> => {
@@ -41,7 +44,9 @@ export const getAllProducts = unstable_cache(
       return seedProducts;
     }
   },
-  ["catalog"],
+  // The data file's hash is part of the key: .next/cache survives rebuilds (Amplify keeps it
+  // between builds), so without it a deploy could keep serving the old catalogue.
+  ["catalog", seedVersion],
   { tags: [CATALOG_TAG], revalidate: 300 },
 );
 

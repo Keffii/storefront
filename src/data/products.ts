@@ -16,6 +16,7 @@ import type {
   SiteConfig,
   Variant,
 } from "@/lib/types";
+import photoList from "./photos.json";
 import range from "./range.json";
 
 export const site: SiteConfig = {
@@ -49,13 +50,32 @@ const color = {
 type ColorId = keyof typeof color;
 
 /** The three generated views for one colour of one product. */
+/** Photos made for the shop (see docs/IMAGE_PROMPTS.md); everything else uses the drawings. */
+const photos = photoList as string[];
+const photoSet = new Set(photos);
+const PLINTH_PHOTOS = new Set(["halo-bordslampa", "ovo-vas", "rund-pall", "lag-skal", "klar-karaff", "pelare-ljusstake"]);
+const hasPhotos = (slug: string) => photos.some((n) => n.startsWith(`${slug}-`));
+
 function images(slug: string, colorId: ColorId, objectName: string): ProductImage[] {
   const label = color[colorId].label.toLowerCase();
-  return [
-    { src: `/images/products/${slug}-${colorId}-1.svg`, alt: `${objectName} i ${label}, framifrån`, width: 1200, height: 1200 },
-    { src: `/images/products/${slug}-${colorId}-2.svg`, alt: `${objectName} i ${label} på en sockel`, width: 1200, height: 1200 },
-    { src: `/images/products/${slug}-${colorId}-3.svg`, alt: `${objectName} i ${label}, detalj`, width: 1200, height: 1200 },
-  ];
+  // The drawings and the six featured products' photos show a plinth; the other photos show a room.
+  const second = hasPhotos(slug) && !PLINTH_PHOTOS.has(slug) ? `${objectName} i ${label} i ett rum` : `${objectName} i ${label} på en sockel`;
+  const views = [`${objectName} i ${label}, framifrån`, second, `${objectName} i ${label}, detalj`];
+  const all = views.map((alt, i) => ({ name: `${slug}-${colorId}-${i + 1}`, alt }));
+  // A product with photos shows only its photos, never a mix of photo and drawing.
+  if (!hasPhotos(slug)) {
+    return all.map(({ name, alt }) => ({ src: `/images/products/${name}.svg`, alt, width: 1200, height: 1200 }));
+  }
+  const shot = all.filter(({ name }) => photoSet.has(name));
+  // A colour without its own photo yet borrows the drawing, so the gallery is never empty.
+  if (shot.length === 0) return [{ src: `/images/products/${all[0].name}.svg`, alt: all[0].alt, width: 1200, height: 1200 }];
+  return shot.map(({ name, alt }) => ({ src: `/images/products/${name}.webp`, alt, width: 1200, height: 1200 }));
+}
+
+/** One image by view number, falling back to the first when that view has no photo. */
+function imageAt(slug: string, colorId: ColorId, objectName: string, index: number): ProductImage {
+  const list = images(slug, colorId, objectName);
+  return list[index] ?? list[0];
 }
 
 /**
@@ -125,19 +145,19 @@ export const products: Product[] = [
         id: "ljus",
         title: "Ljus som inte bländar",
         body: "Skärmens kant går ner under ljuskällan, så du ser aldrig glödlampan när du sitter eller ligger bredvid.",
-        image: images("halo-bordslampa", "krita", "Halo bordslampa")[1],
+        image: imageAt("halo-bordslampa", "krita", "Halo bordslampa", 1),
       },
       {
         id: "dimmer",
         title: "Tre ljuslägen i foten",
         body: "Tryck en gång för fullt ljus, två för hälften och tre för ett svagt nattljus på 15 procent. Lampan minns inte läget, så den startar alltid på fullt.",
-        image: images("halo-bordslampa", "grafit", "Halo bordslampa")[2],
+        image: imageAt("halo-bordslampa", "grafit", "Halo bordslampa", 2),
       },
       {
         id: "material",
         title: "Pulverlackerat stål",
         body: "Skärm och fot är gjorda i stål med en matt pulverlack som tål stötar och är lätt att torka av. Foten är tung nog att stå stadigt även med den stora skärmen.",
-        image: images("halo-bordslampa", "dimbla", "Halo bordslampa")[1],
+        image: imageAt("halo-bordslampa", "dimbla", "Halo bordslampa", 1),
       },
     ],
     comparison: {
@@ -205,13 +225,13 @@ export const products: Product[] = [
         id: "handgjord",
         title: "Handdrejad",
         body: "Varje vas formas för hand på drejskiva. Därför skiljer sig form och glasyr lite mellan två vaser.",
-        image: images("ovo-vas", "krita", "Ovo vas")[1],
+        image: imageAt("ovo-vas", "krita", "Ovo vas", 1),
       },
       {
         id: "tat",
         title: "Vattentät glasyr",
         body: "Vasen är glaserad både in- och utvändigt, så den tål vatten utan att lämna ringar på bordet.",
-        image: images("ovo-vas", "olivgron", "Ovo vas")[2],
+        image: imageAt("ovo-vas", "olivgron", "Ovo vas", 2),
       },
     ],
     specs: [
@@ -255,13 +275,13 @@ export const products: Product[] = [
         id: "massiv",
         title: "Massiv ask",
         body: "Sits och ben är gjorda i massivt askträ, oljat i Sand eller betsat i Grafit. Ytan går att slipa och olja om efter några år.",
-        image: images("rund-pall", "sand", "Rund pall")[1],
+        image: imageAt("rund-pall", "sand", "Rund pall", 1),
       },
       {
         id: "stabil",
         title: "Stabil på ojämna golv",
         body: "Tre ben står alltid stadigt, även på gamla trägolv där en fyrbent pall skulle vicka.",
-        image: images("rund-pall", "grafit", "Rund pall")[2],
+        image: imageAt("rund-pall", "grafit", "Rund pall", 2),
       },
     ],
     specs: [
@@ -296,7 +316,7 @@ export const products: Product[] = [
         id: "disk",
         title: "Tål diskmaskin",
         body: "Glasyren tål diskmaskin och mikrovågsugn, så skålen kan användas varje dag.",
-        image: images("lag-skal", "grafit", "Låg skål")[1],
+        image: imageAt("lag-skal", "grafit", "Låg skål", 1),
       },
     ],
     specs: [
@@ -329,7 +349,7 @@ export const products: Product[] = [
         id: "pip",
         title: "Droppfri pip",
         body: "Pipens kant är slipad så att vattnet släpper rent och inte rinner ner längs utsidan.",
-        image: images("klar-karaff", "klar", "Klar karaff")[1],
+        image: imageAt("klar-karaff", "klar", "Klar karaff", 1),
       },
     ],
     specs: [
@@ -359,7 +379,7 @@ export const products: Product[] = [
         id: "tung",
         title: "Står stadigt",
         body: "Ljusstaken väger 600 gram och har en filtad undersida som skyddar bordsskivan.",
-        image: images("pelare-ljusstake", "grafit", "Pelare ljusstake")[1],
+        image: imageAt("pelare-ljusstake", "grafit", "Pelare ljusstake", 1),
       },
     ],
     specs: [
@@ -489,25 +509,25 @@ export const categories: Category[] = [
     id: "belysning",
     name: "Belysning",
     description: "Tak-, golv- och bordslampor",
-    image: images("kupol-taklampa", "krita", "Kupol taklampa")[0],
+    image: imageAt("kupol-taklampa", "krita", "Kupol taklampa", 0),
   },
   {
     id: "vaser",
     name: "Vaser",
     description: "Vaser och krukor",
-    image: images("flaskvas", "olivgron", "Flaskvas")[0],
+    image: imageAt("flaskvas", "olivgron", "Flaskvas", 0),
   },
   {
     id: "mobler",
     name: "Möbler",
     description: "Bord, bänkar och speglar",
-    image: images("sidobord", "sand", "Sidobord")[0],
+    image: imageAt("sidobord", "sand", "Sidobord", 0),
   },
   {
     id: "bordsartiklar",
     name: "Bordsartiklar",
     description: "Tallrikar, muggar och glas",
-    image: images("mugg", "terrakotta", "Mugg")[0],
+    image: imageAt("mugg", "terrakotta", "Mugg", 0),
   },
 ];
 

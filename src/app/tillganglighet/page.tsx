@@ -42,7 +42,7 @@ export default function AccessibilityPage() {
       <section>
         <h2>Kända brister</h2>
         <ul>
-          <li>Produktbilderna är genererade illustrationer. Alternativtexterna beskriver färg och vinkel men inte detaljer som en riktig produktbild skulle visa.</li>
+          <li>Produktbilderna är AI-genererade. Alternativtexterna beskriver produkt, färg och vy (framifrån, i ett rum eller i detalj) men inte varje detalj i bilden.</li>
           <li>Stripes kassa och Klarnas flöde är tredjepartstjänster som vi inte kan ändra. Stripe arbetar enligt WCAG men vi har inte testat kassan själva.</li>
           <li>Kartor över ombud finns inte; ombuden visas bara som en lista med adresser.</li>
           <li>Inget fullständigt skärmläsartest är gjort, se ovan.</li>

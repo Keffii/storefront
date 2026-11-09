@@ -21,7 +21,7 @@ export default function AboutProjectPage() {
         <p className="caption">Om projektet</p>
         <h1 className={styles.title}>En webbutik byggd för att visa hur jag arbetar</h1>
         <p className={styles.lead}>
-          Objekt är en påhittad butik. Varumärket och produkterna finns inte, bilderna är genererade och alla
+          Objekt är en påhittad butik. Varumärket och produkterna finns inte, produktbilderna är AI-genererade och alla
           betalningar går mot Stripes testläge. Allt annat fungerar som i en riktig butik: varukorgen, kassan,
           orderhanteringen och recensionerna.
         </p>

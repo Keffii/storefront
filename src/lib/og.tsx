@@ -17,6 +17,8 @@ export async function publicImageDataUri(src: string): Promise<string | null> {
     }
   }
   try {
+    // next/og can't decode WebP; the photo import keeps a JPEG copy next to each first view.
+    if (src.endsWith(".webp")) src = src.replace(/\.webp$/, ".jpg");
     const file = await readFile(join(process.cwd(), "public", src));
     const type = src.endsWith(".svg") ? "image/svg+xml" : src.endsWith(".png") ? "image/png" : "image/jpeg";
     return `data:${type};base64,${file.toString("base64")}`;

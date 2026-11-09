@@ -11,6 +11,9 @@ test("security headers are set", async ({ request }) => {
 });
 
 test("nothing on the main pages breaks the Content Security Policy", async ({ page, baseURL }) => {
+  // Seven pages, each waiting for the network to go quiet. On a fresh CI server
+  // every product photo is optimised on first view, which can take longer than 30 s.
+  test.slow();
   const violations: string[] = [];
   let current = "";
   page.on("console", (m) => {

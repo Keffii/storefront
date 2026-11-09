@@ -14,7 +14,9 @@ interface HeroProps {
 export function Hero({ eyebrow, title, body, image, actions }: HeroProps) {
   return (
     <section className={styles.hero}>
-      <Image src={image.src} alt={image.alt} fill priority sizes="100vw" className={styles.image} />
+      {/* Served as is: the banner is a 22 kB WebP, and on phones it shows a slice several
+          screens wide, so a "100vw" size would load a small version and blur the lamp. */}
+      <Image src={image.src} alt={image.alt} fill priority unoptimized className={styles.image} />
       <div className={styles.scrim} aria-hidden="true" />
       <div className={`container ${styles.content}`}>
         {eyebrow && <p className={`caption ${styles.eyebrow}`}>{eyebrow}</p>}

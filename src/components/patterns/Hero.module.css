@@ -16,8 +16,8 @@
 
 .image {
   object-fit: cover;
-  /* Phones: the lamp sits bottom right, under the text. */
-  object-position: 97% 100%;
+  /* Phones: the lamp sits right of centre, under the text. */
+  object-position: 70% 100%;
   z-index: -2;
 }
 
@@ -58,13 +58,20 @@
   margin-top: var(--space-6);
 }
 
+@media (min-width: 600px) {
+  .image {
+    object-position: 62% 60%;
+  }
+}
+
 @media (min-width: 960px) {
   .hero {
     align-items: center;
     min-height: min(60svh, 560px);
   }
   .image {
-    object-position: 100% 100%;
+    /* Puts the lamp in the right half, roughly under the content column's right side. */
+    object-position: 62% 60%;
   }
   /* Darken the left, where the text is, and leave the lamp's light alone. */
   .scrim {

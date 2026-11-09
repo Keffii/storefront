@@ -9,13 +9,17 @@ import { listOrders, type Order } from "./orders";
 
 /*
  * Customer data:
- *   CUSTOMER#<sub>  PROFILE   name, saved address, marketing consent
+ *   CUSTOMER#<sub>  PROFILE   name, saved address, marketing consent, cart reminders
+ *   CUSTOMER#<sub>  FAVORITES product slugs
+ *   CUSTOMER#<sub>  CART      saved cart for the reminder (see saved-carts.ts)
  *   ORDER#<id>      ORDER     gets customerSub + gsi2pk/gsi2sk when linked
  */
 export interface Profile {
   name: string;
   address: { line1: string; line2: string; postalCode: string; city: string };
   marketingConsent: { granted: boolean; at: string | null };
+  /** One reminder email when a cart is left behind (needs marketing consent). Default on. */
+  cartReminders?: boolean;
   stripeCustomerId?: string;
 }
 
@@ -96,7 +100,12 @@ export async function exportCustomerData(session: CustomerSession) {
   return {
     exportedAt: new Date().toISOString(),
     account: { email: session.email, emailVerified: session.emailVerified },
-    profile: { name: profile.name, address: profile.address, marketingConsent: profile.marketingConsent },
+    profile: {
+      name: profile.name,
+      address: profile.address,
+      marketingConsent: profile.marketingConsent,
+      cartReminders: profile.cartReminders !== false,
+    },
     orders: orders.map((o) => ({
       order: o.id.slice(-8).toUpperCase(),
       createdAt: o.createdAt,
@@ -130,7 +139,11 @@ export async function deleteCustomer(session: CustomerSession): Promise<void> {
   }
   await db().send(
     new TransactWriteCommand({
-      TransactItems: [{ Delete: { TableName: table(), Key: profileKey(session.sub) } }],
+      TransactItems: [
+        { Delete: { TableName: table(), Key: profileKey(session.sub) } },
+        { Delete: { TableName: table(), Key: { pk: `CUSTOMER#${session.sub}`, sk: "FAVORITES" } } },
+        { Delete: { TableName: table(), Key: { pk: `CUSTOMER#${session.sub}`, sk: "CART" } } },
+      ],
     }),
   );
   const poolId = (outputs as { auth?: { user_pool_id: string } }).auth?.user_pool_id;

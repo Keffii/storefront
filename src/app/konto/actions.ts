@@ -1,5 +1,6 @@
 "use server";
 
+import { deleteSavedCart } from "@/lib/server/saved-carts";
 import { revalidatePath } from "next/cache";
 import { requireCustomer } from "@/lib/server/auth";
 import { claimOrders, deleteCustomer, getProfile, saveProfile, type Profile } from "@/lib/server/customers";
@@ -25,6 +26,7 @@ export async function saveProfileAction(_: ProfileResult | null, formData: FormD
   const postalCode = clean(formData.get("postalCode"), 10).replace(/\s/g, "");
   if (postalCode && !/^\d{5}$/.test(postalCode)) return { ok: false, message: "Postnumret ska vara fem siffror." };
   const wantsMarketing = formData.get("marketing") === "on";
+  const wantsCartReminders = formData.get("cartReminders") === "on";
   const profile: Profile = {
     ...current,
     name: clean(formData.get("name"), 80),
@@ -39,8 +41,11 @@ export async function saveProfileAction(_: ProfileResult | null, formData: FormD
       wantsMarketing === current.marketingConsent.granted
         ? current.marketingConsent
         : { granted: wantsMarketing, at: new Date().toISOString() },
+    cartReminders: wantsCartReminders,
   };
   await saveProfile(session.sub, profile);
+  // A saved cart only exists while the customer wants reminders.
+  if (!wantsMarketing || !wantsCartReminders) await deleteSavedCart(session.sub);
   revalidatePath("/konto/uppgifter");
   return { ok: true };
 }

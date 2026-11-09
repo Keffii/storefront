@@ -101,7 +101,9 @@ export default function PrivacyPage() {
         <h3>Om du skapar ett konto</h3>
         <p>
           E-post och lösenord hanteras av Amazon Cognito (vi ser aldrig lösenordet). Namn, adress, favoriter och ditt val om
-          marknadsföring sparas på kontot. Du kan ladda ner allt och ta bort kontot under Mina uppgifter. När du tar bort kontot
+          marknadsföring sparas på kontot. Har du sagt ja till nyheter och inte stängt av påminnelser sparas också en kopia av varukorgen på kontot, så att vi kan
+          mejla en påminnelse om du lämnar varor kvar. Den tas bort när du handlar, när du stänger av påminnelserna och senast
+          efter två veckor. Du kan ladda ner allt och ta bort kontot under Mina uppgifter. När du tar bort kontot
           avidentifieras dina ordrar: namn, e-post och adress raderas, medan beloppen finns kvar för bokföringen.
         </p>
         <h3>Recensioner</h3>

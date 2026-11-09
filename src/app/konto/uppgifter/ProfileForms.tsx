@@ -47,6 +47,13 @@ export function ProfileForm({ profile, consentText }: { profile: Profile; consen
           )}
         </span>
       </label>
+      <label className={styles.check}>
+        <input type="checkbox" name="cartReminders" defaultChecked={profile.cartReminders !== false} />
+        <span>
+          Påminn mig en gång med e-post om jag lämnar varor i varukorgen. Gäller bara om du har sagt ja till nyheter
+          ovan.
+        </span>
+      </label>
       {state && (
         <p className={state.ok ? styles.ok : styles.error} role="status">
           {state.ok ? "Uppgifterna är sparade." : state.message}

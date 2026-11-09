@@ -8,6 +8,7 @@ import { issueGiftCard, redeemGiftCard } from "@/lib/server/gift-cards";
 import { decrementStock, INVENTORY_TAG } from "@/lib/server/inventory";
 import { createOrder, getOrder, markStockIssues, setOrderStatus, updateOrder, type Order, type OrderLine } from "@/lib/server/orders";
 import { reportMetric } from "@/lib/server/monitoring";
+import { deleteSavedCart } from "@/lib/server/saved-carts";
 import { stripe } from "@/lib/server/stripe";
 import { pickupPoints } from "@/lib/pickup-points";
 import { isShippingMethodId, shippingMethod } from "@/lib/shipping";
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
         if (created && session.payment_status === "paid") {
           await takeFromStock(order);
           await takeFromGiftCard(order);
+          await forgetSavedCart(order);
           await incrementMetric("purchase", session.metadata?.arm ?? null);
           await sendOrderConfirmation(order);
         }
@@ -66,6 +68,7 @@ export async function POST(req: NextRequest) {
           if (order) {
             await takeFromStock(order);
             await takeFromGiftCard(order);
+            await forgetSavedCart(order);
             await sendOrderConfirmation({ ...order, status: "paid" });
           }
           await incrementMetric("purchase", session.metadata?.arm ?? null);
@@ -92,6 +95,11 @@ export async function POST(req: NextRequest) {
  * conditional write refuses the second decrement and the order is flagged
  * for the admin instead of letting stock go negative.
  */
+/** A paid order means the saved cart did its job: no reminder for it. */
+async function forgetSavedCart(order: Order) {
+  if (order.customerSub) await deleteSavedCart(order.customerSub).catch(() => {});
+}
+
 async function takeFromStock(order: Order) {
   const issues: string[] = [];
   for (const l of order.lines) {

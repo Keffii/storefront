@@ -10,8 +10,9 @@ import { Topic } from "aws-cdk-lib/aws-sns";
 import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
 import { BlockPublicAccess, Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
 import { auth } from "./auth/resource";
+import { cartReminder } from "./functions/cart-reminder/resource";
 
-const backend = defineBackend({ auth });
+const backend = defineBackend({ auth, cartReminder });
 
 // Customers sign up themselves; admins are told apart only by the "admin"
 // group, which is assigned by hand and checked on every admin page and action.
@@ -166,6 +167,17 @@ if (process.env.AWS_BRANCH === "main" && process.env.AWS_APP_ID) {
     treatMissingData: TreatMissingData.NOT_BREACHING,
   }).addAlarmAction(new SnsAction(alerts));
 }
+
+// The hourly abandoned-cart reminder reads and marks saved carts and sends one email.
+const reminderFn = backend.cartReminder.resources.lambda;
+table.grantReadWriteData(reminderFn);
+backend.cartReminder.addEnvironment("STOREFRONT_TABLE", table.tableName);
+reminderFn.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["ses:SendEmail"],
+    resources: [`arn:aws:ses:${Stack.of(table).region}:${Stack.of(table).account}:identity/*`],
+  }),
+);
 
 backend.addOutput({
   custom: {

@@ -131,6 +131,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                         width={f.image.width}
                         height={f.image.height}
                         sizes="(min-width: 960px) 50vw, 100vw"
+                        // Below the fold: fetched after the gallery's first photo.
+                        fetchPriority="low"
                       />
                     </div>
                   )}

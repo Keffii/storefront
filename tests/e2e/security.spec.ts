@@ -11,8 +11,9 @@ test("security headers are set", async ({ request }) => {
 });
 
 test("nothing on the main pages breaks the Content Security Policy", async ({ page, baseURL }) => {
-  // Seven pages, each waiting for the network to go quiet. On a fresh CI server
-  // every product photo is optimised on first view, which can take longer than 30 s.
+  // Seven pages. Each waits for the load event and a moment for client code to
+  // run, not for "networkidle": on CI one image optimiser request occasionally
+  // stalls, and a single request that never ends would time out the whole test.
   test.slow();
   const violations: string[] = [];
   let current = "";
@@ -24,8 +25,8 @@ test("nothing on the main pages breaks the Content Security Policy", async ({ pa
 
   for (const path of ["/", "/kollektion", "/produkter/halo-bordslampa", "/kundservice", "/presentkort", "/konto/logga-in", "/sok?q=vas"]) {
     current = path;
-    await page.goto(path);
-    await page.waitForLoadState("networkidle");
+    await page.goto(path, { waitUntil: "load" });
+    await page.waitForTimeout(1000);
   }
   // Interactions that load more code: cart, search, quick add.
   current = "/produkter/ovo-vas (cart)";

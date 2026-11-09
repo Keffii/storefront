@@ -87,6 +87,8 @@ export function ProductGallery({ images, productName }: { images: ProductImage[]
                 width={img.width}
                 height={img.height}
                 priority={i === 0}
+                // The other slides are off screen; don't let them compete with the first photo.
+                fetchPriority={i === 0 ? undefined : "low"}
                 sizes="(min-width: 960px) 58vw, 100vw"
                 className={styles.image}
                 draggable={false}

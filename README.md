@@ -50,12 +50,3 @@ Next.js 15 (App Router, TypeScript) on AWS Amplify Gen 2, with DynamoDB, Cognito
 Every push runs lint, type checks, unit tests (Vitest), end-to-end and accessibility tests (Playwright and axe, desktop and phone), screenshot comparisons and Lighthouse budgets (accessibility and SEO 100, performance 90 or more).
 
 Design decisions are in [`docs/DECISIONS.md`](docs/DECISIONS.md) and the full change history in [`CHANGELOG.md`](CHANGELOG.md).
-
-## Run locally
-
-```bash
-npm install
-npm run dev
-```
-
-The shop runs without any keys; checkout, accounts and the admin say when they aren't configured.

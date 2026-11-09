@@ -58,6 +58,8 @@ test("declining keeps tracking off", async ({ page }) => {
 const pages = [
   "/",
   "/kollektion",
+  // A category has filters with no matches, which are styled differently.
+  "/kollektion/belysning",
   "/produkter/halo-bordslampa",
   "/om-projektet",
   "/kundservice",

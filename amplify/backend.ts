@@ -139,7 +139,9 @@ computeRole.addToPolicy(
 // AWS_BRANCH and AWS_APP_ID are set by Amplify during the build.
 if (process.env.AWS_BRANCH === "main" && process.env.AWS_APP_ID) {
   const alerts = new Topic(stack, "StorefrontAlerts", { displayName: "Objekt storefront alerts" });
-  alerts.addSubscription(new EmailSubscription(process.env.ALERT_EMAIL ?? "alerts@example.com"));
+  // The recipient comes from the ALERT_EMAIL environment variable in Amplify,
+  // so no address is kept in the repository.
+  if (process.env.ALERT_EMAIL) alerts.addSubscription(new EmailSubscription(process.env.ALERT_EMAIL));
 
   new Alarm(stack, "WebhookErrorsAlarm", {
     alarmName: "objekt-storefront-webhook-errors",

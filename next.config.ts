@@ -60,6 +60,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       { source: "/kontakt", destination: "/kundservice#kontakt", permanent: true },
+      // Favourites were removed; old links go to the collection.
+      { source: "/favoriter", destination: "/kollektion", permanent: true },
     ];
   },
   async headers() {

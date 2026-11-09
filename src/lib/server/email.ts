@@ -8,7 +8,7 @@ import { receiptPath, returnPath } from "@/lib/receipt-token";
 import { RETURN_REASONS, type OrderReturn } from "@/lib/returns";
 import { shippingMethod, trackingLink } from "@/lib/shipping";
 import { absoluteUrl } from "@/lib/site-url";
-import { vatIncluded } from "@/lib/vat";
+import { saleValue, vatIncluded } from "@/lib/vat";
 import { backend } from "./config";
 import type { GiftCard } from "./gift-cards";
 import { reportMetric } from "./monitoring";
@@ -83,7 +83,7 @@ ${o.discount ? row(`Rabatt${o.discountCode ? ` (${esc(o.discountCode)})` : ""}`,
 ${o.giftCard ? row(`Presentkort (${maskGiftCardCode(o.giftCard.code)})`, `−${formatPrice(o.giftCard.amount)}`) : ""}
 ${row("Frakt", o.shipping ? formatPrice(o.shipping) : "Fri")}
 ${row("Totalt", formatPrice(o.total), true)}
-${row("Varav moms (25 %)", formatPrice(vatIncluded(o.total)))}</table>`;
+${row("Varav moms (25 %)", formatPrice(vatIncluded(saleValue(o))))}</table>`;
 }
 
 function address(o: Order): string {
@@ -112,7 +112,7 @@ export function orderConfirmationEmail(o: Order) {
     "",
     ...o.lines.map((l) => `${l.quantity} × ${l.name}  ${formatPrice(l.total)}`),
     `Frakt: ${o.shipping ? formatPrice(o.shipping) : "Fri"}`,
-    `Totalt: ${formatPrice(o.total)} (varav moms ${formatPrice(vatIncluded(o.total))})`,
+    `Totalt: ${formatPrice(o.total)} (varav moms ${formatPrice(vatIncluded(saleValue(o)))})`,
     "",
     `Kvitto: ${absoluteUrl(receiptPath(o.id))}`,
     "",

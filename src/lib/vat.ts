@@ -15,3 +15,12 @@ export function vatIncluded(amountInclVat: Money): Money {
 export function amountExclVat(amountInclVat: Money): Money {
   return amountInclVat - vatIncluded(amountInclVat);
 }
+
+/**
+ * The VAT base of an order: what was charged plus any part paid with a gift
+ * card. A gift card is a means of payment, so the goods and shipping carry
+ * VAT on their full value.
+ */
+export function saleValue(order: { total: Money; giftCard?: { amount: Money } | null }): Money {
+  return order.total + (order.giftCard?.amount ?? 0);
+}

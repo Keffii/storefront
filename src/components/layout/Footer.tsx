@@ -44,9 +44,6 @@ export function Footer() {
             <li>
               <Link href="/frakt-och-returer">Frakt och returer</Link>
             </li>
-            <li>
-              <Link href="/favoriter">Favoriter</Link>
-            </li>
             <li className={styles.note}>
               Fri frakt över {formatPrice(site.freeShippingThreshold)} · {site.returnDays} dagars öppet köp
             </li>

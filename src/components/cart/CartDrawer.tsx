@@ -107,7 +107,9 @@ export function CartDrawer() {
         <Button size="lg" fullWidth onClick={startCheckout} disabled={checkout.status === "loading"}>
           {checkout.status === "loading" ? "Öppnar kassan …" : "Till kassan"}
         </Button>
-        <p className={styles.payNote}>Rabattkod anger du i kassan · Testläge, inga riktiga betalningar</p>
+        <p className={styles.payNote}>
+          {giftAmount > 0 ? "Testläge, inga riktiga betalningar" : "Rabattkod anger du i kassan · Testläge, inga riktiga betalningar"}
+        </p>
       </div>
     ) : undefined;
 

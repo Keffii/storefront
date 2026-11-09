@@ -27,14 +27,7 @@
     transform var(--duration-slow) var(--ease-out);
 }
 
-.hover {
-  opacity: 0;
-}
-
 @media (hover: hover) {
-  .link:hover .hover {
-    opacity: 1;
-  }
   .link:hover .image {
     transform: scale(1.02);
   }

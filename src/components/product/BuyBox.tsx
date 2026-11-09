@@ -4,7 +4,6 @@ import { itemFor, pushEcommerce } from "@/lib/datalayer";
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useCart } from "@/components/cart/CartProvider";
-import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { OptionPicker } from "@/components/ui/OptionPicker";
@@ -129,10 +128,7 @@ export function BuyBox({
       )}
 
       <div className={styles.titleBlock}>
-        <div className={styles.titleRow}>
-          <h1 className={styles.name}>{product.name}</h1>
-          <FavoriteButton slug={product.slug} name={product.name} variant="inline" />
-        </div>
+        <h1 className={styles.name}>{product.name}</h1>
         <p className={styles.tagline}>{product.tagline}</p>
         {rating}
       </div>
@@ -192,6 +188,7 @@ export function BuyBox({
                   className={styles.checkbox}
                   checked={checked}
                   onChange={() => toggleAddOn(a.product.slug)}
+                  aria-label={`Lägg till ${a.product.name} för ${formatPrice(a.variant.price - a.discount)}`}
                 />
                 <span className={styles.addOnImage}>
                   <Image src={a.variant.images[0].src} alt="" width={56} height={56} sizes="56px" />

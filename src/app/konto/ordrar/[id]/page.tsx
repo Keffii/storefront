@@ -15,7 +15,7 @@ import { getSession } from "@/lib/server/auth";
 import { getCatalogWithStock } from "@/lib/server/catalog";
 import { isDbConfigured } from "@/lib/server/config";
 import { getOrder } from "@/lib/server/orders";
-import { vatIncluded } from "@/lib/vat";
+import { saleValue, vatIncluded } from "@/lib/vat";
 import { AccountHeader } from "../../AccountNav";
 import { ReorderButton } from "./ReorderButton";
 import styles from "../../konto.module.css";
@@ -108,7 +108,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             )}
             <div>
               <dt>Varav moms (25 %)</dt>
-              <dd>{formatPrice(vatIncluded(order.total))}</dd>
+              <dd>{formatPrice(vatIncluded(saleValue(order)))}</dd>
             </div>
           </dl>
           <div className={styles.actions}>

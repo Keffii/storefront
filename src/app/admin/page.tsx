@@ -11,7 +11,7 @@ import { isDbConfigured } from "@/lib/server/config";
 import { readMetrics } from "@/lib/server/metrics";
 import { listOrders } from "@/lib/server/orders";
 import { listRecentReviews } from "@/lib/server/reviews";
-import { markShipped, removeReview } from "./actions";
+import { removeReview } from "./actions";
 import { STATUS_LABELS } from "./status";
 import styles from "./admin.module.css";
 
@@ -118,7 +118,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           Köptratt, senaste {metrics.days} dagarna
         </h2>
         <p className={styles.note}>
-          Räknas bara för besökare som godkänt statistik. Köp räknas av Stripe-webhooken.
+          Räknas bara för besökare som godkänt statistik. Köp räknas av Stripe-webhooken. Procenten är andelen av
+          produktvisningarna, så ett steg kan inte visa mer än 100 % av ett annat.
         </p>
         <ol role="list" className={styles.funnel}>
           {FUNNEL.map((step, i) => {
@@ -128,11 +129,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               <li key={step.event}>
                 <span className={styles.funnelLabel}>{step.label}</span>
                 <span className={styles.funnelBar}>
-                  <span style={{ width: top ? `${Math.max(2, (value / top) * 100)}%` : "0%" }} />
+                  <span style={{ width: top ? `${Math.min(100, Math.max(2, (value / top) * 100))}%` : "0%" }} />
                 </span>
                 <span className={styles.funnelValue}>
                   {value}
-                  {i > 0 && <small> ({pct(value, metrics.totals[FUNNEL[i - 1].event])})</small>}
+                  {i > 0 && <small> ({pct(Math.min(value, top), top)})</small>}
                 </span>
               </li>
             );
@@ -220,12 +221,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                     </td>
                     <td>
                       {o.status === "paid" && (
-                        <form action={markShipped}>
-                          <input type="hidden" name="id" value={o.id} />
-                          <Button type="submit" variant="secondary">
-                            Markera skickad
-                          </Button>
-                        </form>
+                        // Shipping needs a carrier and tracking number, entered on the order page.
+                        <Button href={`/admin/ordrar/${o.id}`} variant="secondary">
+                          Skicka
+                        </Button>
                       )}
                     </td>
                   </tr>

@@ -12,7 +12,7 @@ import { giftCardReduction, maskGiftCardCode, normaliseGiftCardCode } from "@/li
 import { getGiftCard, isUsable } from "@/lib/server/gift-cards";
 import { requestOrigin } from "@/lib/server/origin";
 import { ensureWelcomeCode } from "@/lib/server/promotions";
-import { stripe } from "@/lib/server/stripe";
+import { checkoutBranding, stripe } from "@/lib/server/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
       ...customer,
       mode: "payment",
       locale: "sv",
+      branding_settings: checkoutBranding,
       currency: "sek",
       // The shop takes card and Klarna, whatever else the Stripe dashboard enables.
       allowed_payment_method_types: ["card", "klarna"],

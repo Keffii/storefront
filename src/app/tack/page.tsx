@@ -91,11 +91,17 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
                 <span>
                   {li.quantity} × {li.description}
                 </span>
-                <span>{formatPrice(li.amount_total)}</span>
+                <span>{formatPrice(li.amount_subtotal)}</span>
               </li>
             ))}
           </ul>
           <dl className={styles.totals}>
+            {(session.total_details?.amount_discount ?? 0) > 0 && (
+              <div>
+                <dt>{session.metadata?.giftCardCode ? "Presentkort" : "Rabatt"}</dt>
+                <dd>−{formatPrice(session.total_details!.amount_discount)}</dd>
+              </div>
+            )}
             <div>
               <dt>Frakt</dt>
               <dd>{session.shipping_cost?.amount_total ? formatPrice(session.shipping_cost.amount_total) : "Fri"}</dd>
@@ -106,7 +112,7 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
             </div>
             <div>
               <dt>Varav moms (25 %)</dt>
-              <dd>{formatPrice(vatIncluded(session.amount_total ?? 0))}</dd>
+              <dd>{formatPrice(vatIncluded((session.amount_total ?? 0) + (Number(session.metadata?.giftCardAmount) || 0)))}</dd>
             </div>
           </dl>
         </section>

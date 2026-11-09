@@ -15,7 +15,7 @@ test("nothing is tracked until the visitor accepts statistics", async ({ page })
   await expect(page).toHaveURL(/variant=krita/);
   expect(events).toHaveLength(0);
 
-  await banner.getByRole("button", { name: "Godkänn statistik" }).click();
+  await banner.getByRole("button", { name: "Godkänn", exact: true }).click();
   await expect(banner).toBeHidden();
   await page.getByRole("radio", { name: "Dimblå" }).check({ force: true });
   await expect.poll(() => events.some((e) => e.includes("variant_picked"))).toBe(true);
@@ -31,7 +31,7 @@ test("dataLayer stays empty before consent and gets GA4 ecommerce events after",
   await page.keyboard.press("Escape");
   expect(await page.evaluate(() => window.dataLayer ?? [])).toEqual([]);
 
-  await page.getByRole("region", { name: "Cookies" }).getByRole("button", { name: "Godkänn statistik" }).click();
+  await page.getByRole("region", { name: "Cookies" }).getByRole("button", { name: "Godkänn", exact: true }).click();
   await page.getByRole("button", { name: /Lägg i varukorgen/ }).first().click();
   const layer = (await page.evaluate(() => window.dataLayer ?? [])) as Record<string, unknown>[];
   const add = layer.find((e) => e.event === "add_to_cart") as { ecommerce: { currency: string; value: number; items: Record<string, unknown>[] } };
@@ -49,7 +49,7 @@ test("declining keeps tracking off", async ({ page }) => {
   const events: string[] = [];
   page.on("request", (r) => r.url().includes("/api/events") && events.push(r.url()));
   await page.goto("/produkter/ovo-vas");
-  await page.getByRole("button", { name: "Endast nödvändiga" }).click();
+  await page.getByRole("button", { name: "Avböj", exact: true }).click();
   await page.getByRole("button", { name: /Lägg i varukorgen/ }).first().click();
   await page.waitForTimeout(500);
   expect(events).toHaveLength(0);
@@ -108,4 +108,20 @@ test("the whole purchase path works with the keyboard", async ({ page, baseURL, 
   await expect(cart.locator(":focus")).toHaveCount(1);
   await page.keyboard.press("Escape");
   await expect(cart).toBeHidden();
+});
+
+test("cookie preferences can be managed per category", async ({ page }) => {
+  await page.goto("/");
+  const banner = page.getByRole("region", { name: "Cookies" });
+  await banner.getByRole("button", { name: "Hantera inställningar" }).click();
+  const stats = banner.getByRole("switch");
+  await expect(stats).not.toBeChecked();
+  await stats.check();
+  await banner.getByRole("button", { name: "Spara mina val" }).click();
+  await expect(banner).toBeHidden();
+  expect((await page.context().cookies()).find((c) => c.name === "objekt_consent")?.value).toBe("all");
+  // Reopened from the footer, the switch shows the saved choice.
+  await page.getByRole("button", { name: "Cookie-inställningar" }).click();
+  await page.getByRole("region", { name: "Cookies" }).getByRole("button", { name: "Hantera inställningar" }).click();
+  await expect(page.getByRole("region", { name: "Cookies" }).getByRole("switch")).toBeChecked();
 });

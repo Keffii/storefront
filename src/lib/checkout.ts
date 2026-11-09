@@ -30,7 +30,7 @@ export function toCheckoutLineItems(cart: PricedCart): CheckoutLineItem[] {
     });
     if (l.discountedUnits === 0) return [item(l.quantity, l.unitPrice)];
     const perUnitDiscount = l.discount / l.discountedUnits;
-    const items = [item(l.discountedUnits, l.unitPrice - perUnitDiscount, l.discountKind === "set" ? " (setpris)" : " (paketpris)")];
+    const items = [item(l.discountedUnits, l.unitPrice - perUnitDiscount, l.discountKind === "set" ? ", setpris" : ", paketpris")];
     const rest = l.quantity - l.discountedUnits;
     if (rest > 0) items.push(item(rest, l.unitPrice));
     return items;

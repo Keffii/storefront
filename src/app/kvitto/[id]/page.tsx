@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/format";
 import { isValidReceiptToken } from "@/lib/receipt-token";
 import { isDbConfigured } from "@/lib/server/config";
 import { getOrder } from "@/lib/server/orders";
-import { amountExclVat, vatIncluded } from "@/lib/vat";
+import { amountExclVat, saleValue, vatIncluded } from "@/lib/vat";
 import { PrintButton } from "./PrintButton";
 import styles from "./kvitto.module.css";
 
@@ -35,7 +35,8 @@ export default async function ReceiptPage({
   const order = await getOrder(id);
   if (!order) notFound();
 
-  const vat = vatIncluded(order.total);
+  const base = saleValue(order);
+  const vat = vatIncluded(base);
 
   return (
     <div className={`container ${styles.page}`}>
@@ -119,12 +120,18 @@ export default async function ReceiptPage({
         <dl className={styles.totals}>
           <div>
             <dt>Belopp exkl. moms</dt>
-            <dd>{formatPrice(amountExclVat(order.total))}</dd>
+            <dd>{formatPrice(amountExclVat(base))}</dd>
           </div>
           <div>
             <dt>Moms 25 %</dt>
             <dd>{formatPrice(vat)}</dd>
           </div>
+          {order.giftCard ? (
+            <div>
+              <dt>Betalt med presentkort</dt>
+              <dd>{formatPrice(order.giftCard.amount)}</dd>
+            </div>
+          ) : null}
           <div className={styles.total}>
             <dt>Att betala</dt>
             <dd>{formatPrice(order.total)}</dd>

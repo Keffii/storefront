@@ -144,7 +144,7 @@ export function priceCart(
 
 /**
  * Set prices: for every complete set in the cart (one of each product), the
- * set's saving is spread over its lines in whole öre, so the sum is exact
+ * set's saving is spread over its lines in whole kronor, so the sum is exact
  * and Stripe can charge each line. Lines that already have a bundle
  * discount don't take part, so two discounts never stack on one unit.
  */
@@ -159,7 +159,9 @@ function applySetPrices(lines: PricedLine[], sets: ProductSet[]) {
     if (count < 1 || saving <= 0) continue;
     let left = saving;
     ms.forEach((m, i) => {
-      const share = i === ms.length - 1 ? left : Math.round((saving * m.unitPrice) / full);
+      // Whole kronor per line (prices are in öre), the last line takes the rest,
+      // so the cart shows 153 kr rather than 153,47 kr and the sum stays exact.
+      const share = i === ms.length - 1 ? left : Math.min(left, Math.round((saving * m.unitPrice) / full / 100) * 100);
       left -= share;
       m.discount = share * count;
       m.discountedUnits = count;

@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GIFT_CARD_AMOUNTS } from "@/lib/gift-cards";
 import { formatPrice } from "@/lib/format";
+import { getSession } from "@/lib/server/auth";
 import { isStripeConfigured } from "@/lib/server/config";
 import { requestOrigin } from "@/lib/server/origin";
 import { clientKey, rateLimit } from "@/lib/server/ratelimit";
-import { stripe } from "@/lib/server/stripe";
+import { checkoutBranding, stripe } from "@/lib/server/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,14 @@ export async function POST(req: NextRequest) {
   }
 
   const origin = requestOrigin(req);
+  // Signed-in customers don't have to type their email again.
+  const account = await getSession().catch(() => null);
   try {
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
+      ...(account ? { customer_email: account.email } : {}),
       locale: "sv",
+      branding_settings: checkoutBranding,
       currency: "sek",
       allowed_payment_method_types: ["card", "klarna"],
       line_items: [

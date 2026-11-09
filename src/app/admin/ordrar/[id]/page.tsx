@@ -291,7 +291,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <label className={styles.check}>
                 <input type="checkbox" required />
                 <span>
-                  Avbryt ordern. Kunden får tillbaka {formatPrice(order.total - refunded)} och varorna läggs tillbaka i lager.
+                  Avbryt ordern. Kunden får tillbaka {formatPrice(order.total - refunded)}
+                  {order.giftCard && !order.giftCardIssue ? `, ${formatPrice(order.giftCard.amount)} läggs tillbaka på presentkortet` : ""} och
+                  varorna läggs tillbaka i lager.
                 </span>
               </label>
               <Button type="submit" variant="secondary">

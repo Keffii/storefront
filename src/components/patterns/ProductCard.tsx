@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { QuickAdd } from "./QuickAdd";
 import { RatingLine } from "@/components/reviews/RatingLine";
 import { Badge } from "@/components/ui/Badge";
@@ -44,15 +43,16 @@ export function ProductCard({
   const [hovered, setHovered] = useState<string | null>(null);
   const activeColor = hovered ?? selected;
   const variant = (activeColor && variantForColor(product, activeColor)) || defaultVariant;
-  const linkVariant = selected ? variantForColor(product, selected) : undefined;
+  // The card links to the colour the visitor is looking at.
+  const linkVariant = activeColor ? variantForColor(product, activeColor) : undefined;
   const href = `/produkter/${product.slug}${linkVariant ? `?variant=${linkVariant.id}` : ""}`;
-  const [front, alt] = variant.images;
-  const showAltOnHover = !activeColor && alt;
+  const front = variant.images[0];
 
   return (
-    <article className={styles.card}>
+    // A hovered colour stays shown while the pointer is anywhere on the card,
+    // so moving from a swatch to the picture doesn't flip it back.
+    <article className={styles.card} onMouseLeave={() => setHovered(null)}>
       {/* Outside the link: a button can't sit inside an <a>. */}
-      <FavoriteButton slug={product.slug} name={product.name} />
       {inStock && <QuickAdd product={product} />}
       <Link href={href} className={styles.link}>
         <div className={styles.media}>
@@ -67,16 +67,6 @@ export function ProductCard({
             fetchPriority={priority ? "high" : undefined}
             className={styles.image}
           />
-          {showAltOnHover && (
-            <Image
-              src={alt.src}
-              alt=""
-              width={alt.width}
-              height={alt.height}
-              sizes="(min-width: 1080px) 25vw, (min-width: 720px) 33vw, 50vw"
-              className={`${styles.image} ${styles.hover}`}
-            />
-          )}
           {product.badges.length > 0 && (
             <div className={styles.badges}>
               {product.badges.map((b) => (
@@ -97,7 +87,6 @@ export function ProductCard({
             role="list"
             className={styles.swatches}
             aria-label={`Färger för ${product.name}`}
-            onMouseLeave={() => setHovered(null)}
           >
             {colors.map((c) => {
               const soldOut = !product.variants.some((v) => v.options.color === c.id && v.stock > 0);

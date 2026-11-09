@@ -5,7 +5,9 @@ import type { CategoryId } from "@/lib/types";
 import { CollectionPage } from "../CollectionPage";
 
 export const revalidate = 600;
-export const dynamicParams = false;
+// No `dynamicParams = false`: with it, Next.js 15 throws NoFallbackError and
+// serves a 404 when a paid order revalidates the stock tag. Unknown
+// categories still get a 404 from notFound() below.
 
 export function generateStaticParams() {
   return categories.map((c) => ({ kategori: c.id }));

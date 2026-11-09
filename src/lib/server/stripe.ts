@@ -13,3 +13,16 @@ export function stripe(): Stripe {
   client ??= new Stripe(stripeConfig.secretKey, { appInfo: { name: "objekt-storefront-demo" } });
   return client;
 }
+
+/**
+ * Stripe Checkout in the shop's look, set per session so it doesn't depend
+ * on the dashboard: white page, graphite buttons, square corners and the
+ * shop's name instead of the account name.
+ */
+export const checkoutBranding = {
+  display_name: "Objekt",
+  background_color: "#ffffff",
+  button_color: "#1f1f1f",
+  border_style: "rectangular",
+  font_family: "inter",
+} satisfies Stripe.Checkout.SessionCreateParams.BrandingSettings;

@@ -119,6 +119,11 @@ describe("set prices", () => {
     expect(priceCart(breakfast.slice(0, 2)).discount).toBe(0);
   });
 
+  it("splits the saving in whole kronor per line", () => {
+    const c = priceCart(breakfast);
+    expect(c.lines.map((l) => l.total)).toEqual([15300, 13100, 21500]);
+  });
+
   it("splits into whole-öre Stripe lines that add up to the cart", () => {
     const cart = priceCart([...breakfast, { ...breakfast[0], quantity: 1 }]);
     const items = toCheckoutLineItems(cart);

@@ -6,7 +6,7 @@ import { MIN_CARD_PAYMENT } from "@/lib/gift-cards";
 import { useDelivery } from "./deliveryStore";
 import styles from "./GiftCardField.module.css";
 
-type Check = { status: "idle" | "checking" } | { status: "ok"; balance: number } | { status: "error"; message: string };
+type Check = { status: "idle" | "checking" } | { status: "ok"; balance: number; code: string } | { status: "error"; message: string };
 
 async function checkCode(code: string): Promise<Check> {
   try {
@@ -15,9 +15,9 @@ async function checkCode(code: string): Promise<Check> {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ code }),
     });
-    const data = (await res.json().catch(() => ({}))) as { balance?: number; message?: string };
+    const data = (await res.json().catch(() => ({}))) as { balance?: number; code?: string; message?: string };
     return res.ok && typeof data.balance === "number"
-      ? { status: "ok", balance: data.balance }
+      ? { status: "ok", balance: data.balance, code: data.code ?? code }
       : { status: "error", message: data.message ?? "Koden kunde inte kontrolleras." };
   } catch {
     return { status: "error", message: "Ingen anslutning. Försök igen." };
@@ -82,7 +82,8 @@ export function GiftCardField({ onBalance }: { onBalance: (balance: number) => v
         setCheck({ status: "checking" });
         const c = await checkCode(input);
         setCheck(c);
-        if (c.status === "ok") setChoice({ giftCardCode: input.trim().toUpperCase() });
+        // Store the code in its standard form (OBJ-XXXX-XXXX), however it was typed.
+        if (c.status === "ok") setChoice({ giftCardCode: c.code });
       }}
     >
       <label htmlFor="gift-card-code" className={styles.label}>

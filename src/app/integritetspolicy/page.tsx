@@ -68,11 +68,6 @@ export default function PrivacyPage() {
                 <td>Tills du ändrar den</td>
               </tr>
               <tr>
-                <td><code>objekt.favorites.v1</code></td>
-                <td>Dina favoriter. Om du är inloggad sparas de även på kontot.</td>
-                <td>Tills du tar bort dem</td>
-              </tr>
-              <tr>
                 <td><code>objekt.purchase.…</code> (sessionStorage)</td>
                 <td>Att ett köp redan räknats i statistiken, så att en omladdning inte räknar det två gånger.</td>
                 <td>Tills fliken stängs</td>
@@ -100,7 +95,7 @@ export default function PrivacyPage() {
         </p>
         <h3>Om du skapar ett konto</h3>
         <p>
-          E-post och lösenord hanteras av Amazon Cognito (vi ser aldrig lösenordet). Namn, adress, favoriter och ditt val om
+          E-post och lösenord hanteras av Amazon Cognito (vi ser aldrig lösenordet). Namn, adress och ditt val om
           marknadsföring sparas på kontot. Har du sagt ja till nyheter och inte stängt av påminnelser sparas också en kopia av varukorgen på kontot, så att vi kan
           mejla en påminnelse om du lämnar varor kvar. Den tas bort när du handlar, när du stänger av påminnelserna och senast
           efter två veckor. Du kan ladda ner allt och ta bort kontot under Mina uppgifter. När du tar bort kontot

@@ -36,7 +36,7 @@ export function ReturnForm({ id, token, lines }: { id: string; token?: string; l
         {lines.map((l) => (
           <label key={l.index} className={styles.lineRow}>
             <span>{l.name}</span>
-            <select name={`qty-${l.index}`} defaultValue={lines.length === 1 ? String(l.left) : "0"} className={styles.select}>
+            <select name={`qty-${l.index}`} aria-label={`Antal att returnera: ${l.name}`} defaultValue={lines.length === 1 ? String(l.left) : "0"} className={styles.select}>
               {Array.from({ length: l.left + 1 }, (_, n) => (
                 <option key={n} value={n}>
                   {n} st

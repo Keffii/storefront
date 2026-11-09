@@ -35,11 +35,6 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
           </ul>
           <ul role="list" className={styles.secondary}>
             <li>
-              <Link href="/favoriter" onClick={() => setOpen(false)}>
-                Favoriter
-              </Link>
-            </li>
-            <li>
               <Link href="/konto/ordrar" onClick={() => setOpen(false)}>
                 Mitt konto
               </Link>

@@ -33,10 +33,17 @@ export function Header() {
           </ul>
         </nav>
 
+        {/* On phones the search moves left of the logo (two icons each side), see Header.module.css. */}
         <div className={styles.actions}>
-          <SearchDialog />
-          <AccountLink />
-          <CartButton />
+          <div className={styles.search}>
+            <SearchDialog />
+          </div>
+          <div className={styles.account}>
+            <AccountLink />
+          </div>
+          <div className={styles.cart}>
+            <CartButton />
+          </div>
         </div>
       </div>
     </header>

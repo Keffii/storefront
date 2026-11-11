@@ -2,9 +2,9 @@
 
 **Live:** https://objekt.live
 
-A complete Swedish web shop for a made-up homeware brand, built as a portfolio project. Everything works the way it would in a real shop, except that payments run in Stripe's test mode and the products don't exist.
+A complete Swedish web shop for a made-up homeware brand, built as a portfolio project. It works like a real shop, except that payments run in Stripe's test mode and the products don't exist.
 
-To try checkout, pay with the test card `4242 4242 4242 4242`, any future date and any CVC.
+To try checkout, pay with the test card `4242 4242 4242 4242`, any future date and any CVC. Order emails only reach verified addresses, because the shop's email sending is in test mode.
 
 ![Browsing to a product, picking a colour and adding it to the cart](docs/screenshots/demo.gif)
 
@@ -27,7 +27,7 @@ GitHub Actions runs the Vitest unit tests, Playwright end-to-end and visual test
 
 ## Run locally
 
-Requires Node 22.
+Uses Node 22, the version CI runs.
 
 ```bash
 cp .env.example .env.local
@@ -35,4 +35,4 @@ npm ci
 npm run dev
 ```
 
-All environment variables are optional. Without Stripe test keys, the shop still runs, and checkout, reviews and admin show that they aren't configured.
+All environment variables are optional. Without Stripe keys and an Amplify backend the shop still runs; checkout, accounts, reviews and the admin panel say they aren't configured.

@@ -29,7 +29,6 @@ A complete Swedish web shop for a made-up homeware brand, built as a portfolio p
 **Trust and compliance**
 - Cookie banner with equal "Godkänn" and "Avböj" buttons; analytics only after consent
 - Customer service with searchable FAQ, terms, a privacy policy that matches the code, and an accessibility statement
-- No countdowns, fake "was" prices or pop-ups
 
 ## Screenshots
 

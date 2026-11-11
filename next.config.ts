@@ -76,6 +76,9 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: contentSecurityPolicy() },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+          // The test site (NOINDEX=true) also says so in a header, which covers
+          // files and API responses that have no HTML meta tag.
+          ...(process.env.NOINDEX === "true" ? [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] : []),
         ],
       },
       {

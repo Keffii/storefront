@@ -15,8 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:visual": "playwright test -c playwright.visual.config.ts",
-    "lockcheck": "node scripts/check-lockfile.mjs"
+    "test:visual": "playwright test -c playwright.visual.config.ts"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.8.1",

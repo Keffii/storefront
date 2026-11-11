@@ -46,7 +46,3 @@ A complete Swedish web shop for a made-up homeware brand, built as a portfolio p
 ## Built with
 
 Next.js 15 (App Router, TypeScript) on AWS Amplify Gen 2, with DynamoDB, Cognito, S3 and CloudFront, SES for email and CloudWatch alarms. Payments through Stripe Checkout and signed webhooks.
-
-Every push runs lint, type checks, unit tests (Vitest), end-to-end and accessibility tests (Playwright and axe, desktop and phone), screenshot comparisons and Lighthouse budgets (accessibility and SEO 100, performance 90 or more). Only when all of them pass is the change deployed to objekt.live.
-
-Design decisions are in [`docs/DECISIONS.md`](docs/DECISIONS.md) and the full change history in [`CHANGELOG.md`](CHANGELOG.md).

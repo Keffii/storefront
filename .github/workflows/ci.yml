@@ -66,3 +66,22 @@ jobs:
             test-results/
             .lighthouseci/
           retention-days: 7
+
+  # Continuous deployment: objekt.live is only updated when every check above
+  # has passed. Pull requests never deploy; a manual run on main does (used
+  # after the visual baselines are updated).
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Start the Amplify deploy
+        env:
+          AMPLIFY_WEBHOOK_URL: ${{ secrets.AMPLIFY_WEBHOOK_URL }}
+        run: |
+          curl --fail --silent --show-error -X POST -H "Content-Type: application/json" -d '{}' "$AMPLIFY_WEBHOOK_URL" > /dev/null
+          echo "Deploy started for ${GITHUB_SHA::7}. Amplify builds and publishes it to https://objekt.live in about 6 minutes."

@@ -49,26 +49,23 @@ const color = {
 
 type ColorId = keyof typeof color;
 
-/** The three generated views for one colour of one product. */
-/** Photos made for the shop (see docs/IMAGE_PROMPTS.md); everything else uses the drawings. */
-const photos = photoList as string[];
-const photoSet = new Set(photos);
+/**
+ * Product photos (public/images/products/<slug>-<colour>-<view>.webp), listed in
+ * photos.json. View 1 is the product on its own,
+ * view 2 a plinth or room shot and view 3 a close-up; a colour shows the views
+ * it has photos for.
+ */
+const photoSet = new Set(photoList as string[]);
 const PLINTH_PHOTOS = new Set(["halo-bordslampa", "ovo-vas", "rund-pall", "lag-skal", "klar-karaff", "pelare-ljusstake"]);
-const hasPhotos = (slug: string) => photos.some((n) => n.startsWith(`${slug}-`));
 
 function images(slug: string, colorId: ColorId, objectName: string): ProductImage[] {
   const label = color[colorId].label.toLowerCase();
-  // The drawings and the six featured products' photos show a plinth; the other photos show a room.
-  const second = hasPhotos(slug) && !PLINTH_PHOTOS.has(slug) ? `${objectName} i ${label} i ett rum` : `${objectName} i ${label} på en sockel`;
+  const second = PLINTH_PHOTOS.has(slug) ? `${objectName} i ${label} på en sockel` : `${objectName} i ${label} i ett rum`;
   const views = [`${objectName} i ${label}, framifrån`, second, `${objectName} i ${label}, detalj`];
-  const all = views.map((alt, i) => ({ name: `${slug}-${colorId}-${i + 1}`, alt }));
-  // A product with photos shows only its photos, never a mix of photo and drawing.
-  if (!hasPhotos(slug)) {
-    return all.map(({ name, alt }) => ({ src: `/images/products/${name}.svg`, alt, width: 1200, height: 1200 }));
-  }
-  const shot = all.filter(({ name }) => photoSet.has(name));
-  // A colour without its own photo yet borrows the drawing, so the gallery is never empty.
-  if (shot.length === 0) return [{ src: `/images/products/${all[0].name}.svg`, alt: all[0].alt, width: 1200, height: 1200 }];
+  const shot = views
+    .map((alt, i) => ({ name: `${slug}-${colorId}-${i + 1}`, alt }))
+    .filter(({ name }) => photoSet.has(name));
+  if (shot.length === 0) throw new Error(`No photo for ${slug} in ${colorId}: add public/images/products/${slug}-${colorId}-1.webp and list it in photos.json`);
   return shot.map(({ name, alt }) => ({ src: `/images/products/${name}.webp`, alt, width: 1200, height: 1200 }));
 }
 

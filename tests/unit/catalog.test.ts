@@ -95,3 +95,16 @@ describe("validateReview", () => {
     if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(["body", "name", "rating"]);
   });
 });
+
+describe("product photos", () => {
+  it("every variant has at least one photo, and every photo file exists", async () => {
+    const { existsSync } = await import("node:fs");
+    const { products } = await import("@/data/products");
+    for (const p of products) {
+      for (const v of p.variants) {
+        expect(v.images.length, `${p.slug} ${v.id}`).toBeGreaterThan(0);
+        for (const img of v.images) expect(existsSync(`public${img.src}`), img.src).toBe(true);
+      }
+    }
+  });
+});

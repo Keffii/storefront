@@ -1,12 +1,16 @@
 name: Update visual baselines
 
-# Run by hand after an intended design change. Renders the screenshot
-# baselines on the same runner image as CI and commits them.
+# Run by hand on a pull request's branch after an intended design change:
+#   gh workflow run visual-baselines.yml --ref <branch>
+# Renders the screenshot baselines on the same runner image as CI, commits
+# them to that branch and starts CI again, since pushes made with the
+# workflow token don't trigger it. main is protected and never targeted.
 on:
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   update:
@@ -15,6 +19,12 @@ jobs:
     env:
       SITE_URL: http://localhost:3400
     steps:
+      - name: Refuse to run on main
+        if: github.ref_name == 'main'
+        run: |
+          echo "Run this on the pull request's branch, not on main."
+          exit 1
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -37,3 +47,6 @@ jobs:
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git commit -m "Update visual baselines"
           git push
+          gh workflow run ci.yml --ref "$GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ github.token }}

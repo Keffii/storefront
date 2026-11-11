@@ -4,44 +4,35 @@
 
 A complete Swedish web shop for a made-up homeware brand, built as a portfolio project. Everything works the way it would in a real shop, except that payments run in Stripe's test mode and the products don't exist.
 
+To try checkout, pay with the test card `4242 4242 4242 4242`, any future date and any CVC.
+
 ![Browsing to a product, picking a colour and adding it to the cart](docs/screenshots/demo.gif)
 
 ## What it does
 
-**Shopping**
-- 34 products with colour and size variants, AI-generated product photos for every colour, and a gallery with zoom
-- Search with instant results, category pages, filters and sorting kept in the URL, quick add from product cards
-- Add-ons at a bundle price, sets at a set price, "Passar bra med" and recently viewed products
-- Back-in-stock alerts for sold-out variants, and reviews marked "Verifierat köp"
-
-**Checkout and after**
-- Cart drawer with free-shipping progress, pickup point, home or express delivery with delivery dates
-- Stripe Checkout with card and Klarna, discount codes and gift cards (buy, redeem, partial balances)
-- Order confirmation and receipts with Swedish VAT, order tracking, self-service returns and refunds
-- Customer accounts with order history, "Köp igen", data export and account deletion
-- Emails for every step: confirmation, shipping with tracking, returns, refunds, gift cards and an abandoned-cart reminder (only with marketing consent)
-
-**Admin**
-- Products, images and stock, edited live without a deploy
-- Orders with shipping and tracking, returns, partial and full refunds through Stripe, cancellations with restock
-- Gift cards, review moderation, a sales funnel and an A/B test
-
-**Trust and compliance**
-- Cookie banner with equal "Godkänn" and "Avböj" buttons; analytics only after consent
-- Customer service with searchable FAQ, terms, a privacy policy that matches the code, and an accessibility statement
-
-## Screenshots
-
-| Home | Product |
-| --- | --- |
-| ![Home page](docs/screenshots/home.webp) | ![Product page](docs/screenshots/product.webp) |
-
-| Collection with filters | Cart |
-| --- | --- |
-| ![Collection page](docs/screenshots/collection.webp) | ![Cart drawer](docs/screenshots/cart.webp) |
+- 34 products with colour and size variants, instant search, and filters kept in the URL
+- Stripe Checkout with card and Klarna, plus discount codes and gift cards
+- Order tracking, self-service returns and refunds, and an email for every step
+- Customer accounts with order history, data export and account deletion
+- An admin panel for live stock, orders, refunds and review moderation
+- A cookie banner with equal accept and decline buttons, so analytics only run after consent
 
 ![The shop on a phone: home, product and category pages](docs/screenshots/phone.webp)
 
 ## Built with
 
-Next.js 15 (App Router, TypeScript) on AWS Amplify Gen 2, with DynamoDB, Cognito, S3 and CloudFront, SES for email and CloudWatch alarms. Payments through Stripe Checkout and signed webhooks.
+Next.js 15 (App Router, TypeScript) on AWS Amplify Gen 2, with DynamoDB, Cognito, S3 and CloudFront, SES for email and CloudWatch alarms. Payments go through Stripe Checkout and signed webhooks.
+
+GitHub Actions runs the Vitest unit tests, Playwright end-to-end and visual tests, and Lighthouse CI.
+
+## Run locally
+
+Requires Node 22.
+
+```bash
+cp .env.example .env.local
+npm ci
+npm run dev
+```
+
+All environment variables are optional. Without Stripe test keys, the shop still runs, and checkout, reviews and admin show that they aren't configured.

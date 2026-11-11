@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
   workflow_dispatch:
 
@@ -67,21 +67,24 @@ jobs:
             .lighthouseci/
           retention-days: 7
 
-  # Continuous deployment: objekt.live is only updated when every check above
-  # has passed. Pull requests never deploy; a manual run on main does (used
-  # after the visual baselines are updated).
+  # Continuous deployment: each branch has its own Amplify environment, and it
+  # is only updated when every check above has passed. develop deploys to the
+  # test site, main (changed only through release pull requests) to
+  # objekt.live. Pull requests and other branches never deploy.
   deploy:
     needs: test
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     concurrency:
-      group: deploy-production
+      group: deploy-${{ github.ref_name }}
       cancel-in-progress: false
     steps:
       - name: Start the Amplify deploy
         env:
-          AMPLIFY_WEBHOOK_URL: ${{ secrets.AMPLIFY_WEBHOOK_URL }}
+          AMPLIFY_WEBHOOK_URL: ${{ github.ref == 'refs/heads/main' && secrets.AMPLIFY_WEBHOOK_URL || secrets.AMPLIFY_WEBHOOK_URL_DEVELOP }}
+          SITE: ${{ github.ref == 'refs/heads/main' && 'https://objekt.live' || 'https://develop.d9wg0b1285wyg.amplifyapp.com' }}
         run: |
           curl --fail --silent --show-error -X POST -H "Content-Type: application/json" -d '{}' "$AMPLIFY_WEBHOOK_URL" > /dev/null
-          echo "Deploy started for ${GITHUB_SHA::7}. Amplify builds and publishes it to https://objekt.live in about 6 minutes."
+          echo "Deploy started for ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}. Amplify publishes it to $SITE in about 6 minutes."

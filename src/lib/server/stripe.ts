@@ -4,11 +4,14 @@ import { stripeConfig } from "./config";
 
 let client: Stripe | null = null;
 
+/** True for test-mode secret and restricted keys; live keys of any kind are refused. */
+export const isStripeTestKey = (key: string) => /^(sk|rk)_test_/.test(key);
+
 export function stripe(): Stripe {
   if (!stripeConfig.secretKey) throw new Error("Stripe is not configured");
-  if (stripeConfig.secretKey.startsWith("sk_live_")) {
-    // This is a portfolio demo: refuse live keys outright.
-    throw new Error("Live Stripe keys are not allowed in this demo");
+  if (!isStripeTestKey(stripeConfig.secretKey)) {
+    // This is a portfolio demo: only test-mode secret or restricted keys.
+    throw new Error("Only Stripe test keys (sk_test_ or rk_test_) are allowed in this demo");
   }
   client ??= new Stripe(stripeConfig.secretKey, { appInfo: { name: "objekt-storefront-demo" } });
   return client;

@@ -12,9 +12,13 @@ import { giftCardReduction, maskGiftCardCode, normaliseGiftCardCode } from "@/li
 import { getGiftCard, isUsable } from "@/lib/server/gift-cards";
 import { requestOrigin } from "@/lib/server/origin";
 import { ensureWelcomeCode } from "@/lib/server/promotions";
+import { clientKey, rateLimit } from "@/lib/server/ratelimit";
 import { checkoutBranding, stripe } from "@/lib/server/stripe";
 
 export const dynamic = "force-dynamic";
+
+const CHECKOUT_LIMIT = 10;
+const CHECKOUT_WINDOW_SECONDS = 600;
 
 /**
  * Creates a Stripe Checkout Session. The browser only sends product and
@@ -29,6 +33,15 @@ export async function POST(req: NextRequest) {
           "Betalningar är inte aktiverade i demon än. Resten av butiken fungerar som vanligt.",
       },
       { status: 503 },
+    );
+  }
+
+  // Before any Stripe or database work: at most 10 checkout attempts per
+  // visitor in 10 minutes, so the endpoint can't be used to flood Stripe.
+  if (isDbConfigured() && !(await rateLimit("checkout", clientKey(req), CHECKOUT_LIMIT, CHECKOUT_WINDOW_SECONDS))) {
+    return NextResponse.json(
+      { message: "För många försök att öppna kassan. Vänta några minuter och försök igen." },
+      { status: 429 },
     );
   }
 

@@ -1,14 +1,13 @@
 "use server";
 
 import { headers } from "next/headers";
-import { createHash } from "node:crypto";
 import { STATUS_LABELS } from "@/app/admin/status";
 import { returnPath } from "@/lib/receipt-token";
 import { canStartReturn, type OrderEvent } from "@/lib/returns";
 import { trackingLink } from "@/lib/shipping";
-import { hashSalt, isDbConfigured } from "@/lib/server/config";
+import { isDbConfigured } from "@/lib/server/config";
 import { listOrders } from "@/lib/server/orders";
-import { rateLimit } from "@/lib/server/ratelimit";
+import { clientKeyFromHeaders, rateLimit } from "@/lib/server/ratelimit";
 
 export type TrackResult =
   | {
@@ -42,8 +41,7 @@ export async function trackOrderAction(_: TrackResult | null, formData: FormData
   if (!isDbConfigured()) return notFound;
 
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const key = createHash("sha256").update(hashSalt + ip).digest("hex").slice(0, 32);
+  const key = clientKeyFromHeaders(h);
   if (!(await rateLimit("track", key, 20, 3600))) return { ok: false, message: "För många försök. Försök igen om en stund." };
 
   const order = (await listOrders(500)).find(

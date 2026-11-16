@@ -18,6 +18,8 @@ jobs:
     timeout-minutes: 20
     env:
       SITE_URL: http://localhost:3400
+      # Receipt links need a real secret in production mode; this test value is only used in CI.
+      RECEIPT_SECRET: ci-only-receipt-secret-for-tests-0123456789
     steps:
       - name: Refuse to run on main
         if: github.ref_name == 'main'

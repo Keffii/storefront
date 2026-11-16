@@ -41,6 +41,8 @@ export const metadata: Metadata = {
   description: `${site.tagline} En portfoliobutik: inga riktiga produkter eller betalningar.`,
   openGraph: { type: "website", locale: "sv_SE", siteName: site.brandName },
   twitter: { card: "summary_large_image" },
+  // NOINDEX=true on the test site keeps it out of search engines.
+  ...(process.env.NOINDEX === "true" ? { robots: { index: false, follow: false } } : {}),
 };
 
 export const viewport: Viewport = {

@@ -4,10 +4,35 @@ import type { NextRequest } from "next/server";
 import { hashSalt } from "./config";
 import { db, table, UpdateCommand } from "./db";
 
-/** The client IP, hashed with a salt so no raw IP address is ever stored. */
+type HeaderReader = { get(name: string): string | null };
+
+/**
+ * The visitor's IP address, from a header the visitor can't forge.
+ *
+ * On Amplify every request passes CloudFront, which sets
+ * CloudFront-Viewer-Address to the connecting address and port
+ * ("203.0.113.7:46532", or IPv6 without brackets). X-Forwarded-For is not
+ * safe: its first entries are whatever the visitor sent, and its last entry
+ * is CloudFront's own edge server, not the visitor. It is only a fallback
+ * outside CloudFront (local runs), together with X-Real-IP.
+ */
+export function clientIp(headers: HeaderReader): string {
+  const viewer = headers.get("cloudfront-viewer-address")?.trim();
+  if (viewer) {
+    const port = viewer.lastIndexOf(":");
+    return port > 0 ? viewer.slice(0, port) : viewer;
+  }
+  const forwarded = headers.get("x-forwarded-for")?.split(",").map((s) => s.trim()).filter(Boolean);
+  return forwarded?.at(-1) || headers.get("x-real-ip")?.trim() || "unknown";
+}
+
+/** A salted hash of the visitor's IP, so no raw IP address is ever stored. */
+export function clientKeyFromHeaders(headers: HeaderReader): string {
+  return createHash("sha256").update(hashSalt + clientIp(headers)).digest("hex").slice(0, 32);
+}
+
 export function clientKey(req: NextRequest): string {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
-  return createHash("sha256").update(hashSalt + ip).digest("hex").slice(0, 32);
+  return clientKeyFromHeaders(req.headers);
 }
 
 /**

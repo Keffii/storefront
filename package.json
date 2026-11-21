@@ -12,10 +12,10 @@
     "pretypecheck": "node scripts/ensure-outputs.mjs",
     "typecheck": "tsc --noEmit",
     "pretest": "node scripts/ensure-outputs.mjs",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "test:visual": "playwright test -c playwright.visual.config.ts"
+    "test": "vitest run --config tests/vitest.config.ts",
+    "test:watch": "vitest --config tests/vitest.config.ts",
+    "test:e2e": "playwright test -c tests/playwright.config.ts",
+    "test:visual": "playwright test -c tests/playwright.visual.config.ts"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.8.1",

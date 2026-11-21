@@ -67,11 +67,46 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
+/* The button sits beside the quantity stepper when there is room for its
+   label, and takes its own full-width row under the stepper when there isn't
+   (the buy box is narrowest on desktop between 960 and 1280 px). */
 .addButton {
-  flex: 1;
+  flex: 1 1 14rem;
+}
+
+@media (max-width: 480px) {
+  .addButton {
+    flex-basis: 11.5rem;
+  }
+}
+
+/* Two classes so this wins over the button's own size padding. */
+.actions .addButton {
+  padding-inline: var(--space-4);
+  container-type: inline-size;
+}
+
+.addLabel {
+  display: flex;
+  justify-content: center;
+  column-gap: 0.5em;
+  line-height: 1.25;
+}
+
+/* Too narrow for the label and the price on one line: price on its own line. */
+@container (max-width: 17.5rem) {
+  .addLabel {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .addDot {
+    display: none;
+  }
 }
 
 .addOns {

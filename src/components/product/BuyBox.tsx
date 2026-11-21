@@ -109,11 +109,22 @@ export function BuyBox({
     variant.price * quantity +
     addOns.filter((a) => chosenAddOns.has(a.product.slug)).reduce((s, a) => s + (a.variant.price - a.discount) * quantity, 0);
 
-  const buttonLabel = soldOut
-    ? "Slutsåld"
-    : arm === "B"
-      ? `Lägg i varukorgen · ${formatPrice(lineTotal)}`
-      : "Lägg i varukorgen";
+  // The price drops to its own line when the button is too narrow for both.
+  const buttonLabel = soldOut ? (
+    "Slutsåld"
+  ) : arm === "B" ? (
+    <span className={styles.addLabel}>
+      <span>Lägg i varukorgen</span>
+      <span>
+        <span className={styles.addDot} aria-hidden="true">
+          ·{" "}
+        </span>
+        {formatPrice(lineTotal)}
+      </span>
+    </span>
+  ) : (
+    "Lägg i varukorgen"
+  );
 
   const delivery = <DeliveryEstimate soldOut={soldOut} />;
 

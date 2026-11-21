@@ -31,7 +31,21 @@ describe("search", () => {
     expect(slugs("xyzzy")).toEqual([]);
   });
 
-  it("matches word prefixes, not the middle of words", () => {
-    expect(slugs("ampa")).toEqual([]);
+  it("finds Swedish compounds by a word inside them", () => {
+    const lamps = ["halo-bordslampa", "kupol-taklampa", "liten-vagglampa", "staende-golvlampa", "led-glodlampa", "bordslampa-mini"];
+    expect(slugs("lampa")).toEqual(expect.arrayContaining(lamps));
+    expect(slugs("LAMPA")).toEqual(slugs("lampa"));
+  });
+
+  it("ranks word-start matches above matches inside a word", () => {
+    const vas = slugs("vas");
+    expect(vas.slice(0, 2)).toEqual(expect.arrayContaining(["bred-vas", "ovo-vas"]));
+    expect(vas).toEqual(expect.arrayContaining(["flaskvas", "glasvas"]));
+    expect(vas.indexOf("ovo-vas")).toBeLessThan(vas.indexOf("flaskvas"));
+  });
+
+  it("keeps short queries to word starts", () => {
+    expect(slugs("ek").sort()).toEqual(["serveringsbricka", "sidobord", "vagghylla", "vaggspegel"]);
+    expect(slugs("amp")).toEqual([]);
   });
 });

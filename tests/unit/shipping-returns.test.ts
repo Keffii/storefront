@@ -13,7 +13,7 @@ import {
   validateReturn,
   type OrderReturn,
 } from "@/lib/returns";
-import { normaliseTrackingNumber, shippingFee, shippingMethod, trackingLink } from "@/lib/shipping";
+import { checkoutDeliveryEstimate, normaliseTrackingNumber, shippingFee, shippingMethod, trackingLink } from "@/lib/shipping";
 import type { Order } from "@/lib/server/orders";
 
 const bowl = { slug: "lag-skal", variantId: "krita", quantity: 1 }; // 395 kr
@@ -43,6 +43,19 @@ describe("shipping methods", () => {
 
   it("falls back to ombud for unknown ids", () => {
     expect(shippingMethod("drone").id).toBe("ombud");
+  });
+});
+
+describe("checkout delivery estimate", () => {
+  it("promises the same working days at Stripe Checkout as on the site", () => {
+    const days = (id: string) => {
+      const e = checkoutDeliveryEstimate(shippingMethod(id));
+      return [e.minimum.value, e.maximum.value];
+    };
+    expect(days("ombud")).toEqual([site.deliveryDays.min, site.deliveryDays.max]);
+    expect(days("hem")).toEqual([2, 4]);
+    expect(days("express")).toEqual([1, 1]);
+    expect(checkoutDeliveryEstimate(shippingMethod("ombud")).maximum.unit).toBe("business_day");
   });
 });
 

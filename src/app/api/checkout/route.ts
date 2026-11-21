@@ -6,7 +6,7 @@ import { getLiveProducts } from "@/lib/server/catalog";
 import { getProfile, saveProfile } from "@/lib/server/customers";
 import { parseCheckoutBody, parseDelivery, toCheckoutLineItems } from "@/lib/checkout";
 import { pickupPoints } from "@/lib/pickup-points";
-import { shippingMethod } from "@/lib/shipping";
+import { checkoutDeliveryEstimate, shippingMethod } from "@/lib/shipping";
 import { isDbConfigured, isStripeConfigured } from "@/lib/server/config";
 import { giftCardReduction, maskGiftCardCode, normaliseGiftCardCode } from "@/lib/gift-cards";
 import { getGiftCard, isUsable } from "@/lib/server/gift-cards";
@@ -117,10 +117,7 @@ export async function POST(req: NextRequest) {
             type: "fixed_amount",
             display_name: pickupPoint ? `${method.label}: ${pickupPoint.name}` : method.label,
             fixed_amount: { amount: cart.shipping, currency: "sek" },
-            delivery_estimate: {
-              minimum: { unit: "business_day", value: method.minDays },
-              maximum: { unit: "business_day", value: method.maxDays + 1 },
-            },
+            delivery_estimate: checkoutDeliveryEstimate(method),
           },
         },
       ],

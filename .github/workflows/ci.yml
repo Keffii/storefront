@@ -86,7 +86,6 @@ jobs:
       - name: Start the Amplify deploy
         env:
           AMPLIFY_WEBHOOK_URL: ${{ github.ref == 'refs/heads/main' && secrets.AMPLIFY_WEBHOOK_URL || secrets.AMPLIFY_WEBHOOK_URL_DEVELOP }}
-          SITE: ${{ github.ref == 'refs/heads/main' && 'https://objekt.live' || 'https://develop.d9wg0b1285wyg.amplifyapp.com' }}
         run: |
           curl --fail --silent --show-error -X POST -H "Content-Type: application/json" -d '{}' "$AMPLIFY_WEBHOOK_URL" > /dev/null
-          echo "Deploy started for ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}. Amplify publishes it to $SITE in about 6 minutes."
+          echo "Deploy started for ${GITHUB_SHA::7} on ${GITHUB_REF_NAME}; Amplify publishes it in about 6 minutes."

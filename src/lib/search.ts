@@ -30,13 +30,26 @@ function index(p: Product): Indexed {
   return {
     product: p,
     name: fold(p.name),
-    words: fold([p.tagline, category?.name ?? "", category?.description ?? "", material, ...colors].join(" ")),
+    words: fold([p.tagline, p.slug, category?.name ?? "", category?.description ?? "", material, ...colors].join(" ")),
   };
 }
 
+/** Shorter terms only match at the start of a word, so "ek" finds oak, not "rektangulär". */
+const MIN_INFIX = 4;
+
+/** 3 = the text starts with the term, 2 = a word does, 1 = inside a word (compounds: "lampa" in "bordslampa"), 0 = no match. */
+function matchLevel(text: string, term: string): number {
+  if (text.startsWith(term)) return 3;
+  if (text.includes(` ${term}`)) return 2;
+  if (term.length >= MIN_INFIX && text.includes(term)) return 1;
+  return 0;
+}
+
 /**
- * Every query word must match somewhere (as a word prefix). Name matches rank
- * above matches in the tagline, category, colour or material.
+ * Every query word must match somewhere: at the start of a word, or inside a
+ * word for terms of four letters or more, since Swedish writes compounds as one
+ * word. Name matches rank above matches in the tagline, category, colour or
+ * material, and word-start matches rank above matches inside a word.
  */
 export function searchProducts(products: Product[], query: string, limit = 50): Product[] {
   const terms = fold(query).split(" ").filter(Boolean);
@@ -46,13 +59,14 @@ export function searchProducts(products: Product[], query: string, limit = 50): 
     let score = 0;
     let all = true;
     for (const t of terms) {
-      const inName = new RegExp(`(^| )${t}`).test(item.name);
-      const inWords = new RegExp(`(^| )${t}`).test(item.words);
+      const inName = matchLevel(item.name, t);
+      const inWords = matchLevel(item.words, t);
       if (!inName && !inWords) {
         all = false;
         break;
       }
-      score += inName ? (item.name.startsWith(t) ? 6 : 4) : 1;
+      // Word-start anywhere beats inside a word; within each, name beats the rest.
+      score += Math.max([0, 1, 4, 6][inName], [0, 0.5, 2, 2][inWords]);
     }
     if (all) scored.push({ product: item.product, score });
   }

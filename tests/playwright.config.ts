@@ -8,11 +8,13 @@ const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
  * Set E2E_BASE_URL to run the same suite against a deployed site.
  */
 export default defineConfig({
-  testDir: "tests/e2e",
+  // Paths are relative to this file; results and reports stay at the project root.
+  testDir: "e2e",
+  outputDir: "../test-results",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
+  reporter: process.env.CI ? [["github"], ["html", { open: "never", outputFolder: "../playwright-report" }]] : "list",
   use: {
     baseURL,
     locale: "sv-SE",
@@ -27,6 +29,7 @@ export default defineConfig({
     ? undefined
     : {
         command: `npm run start -- -p ${PORT}`,
+        cwd: "..",
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

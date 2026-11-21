@@ -10,11 +10,13 @@ const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
  * intended design change.
  */
 export default defineConfig({
-  testDir: "tests/visual",
+  // Paths are relative to this file; results and reports stay at the project root.
+  testDir: "visual",
+  outputDir: "../test-results",
   snapshotPathTemplate: "{testDir}/__screenshots__/{projectName}/{arg}{ext}",
   fullyParallel: true,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [["github"], ["html", { open: "never", outputFolder: "playwright-visual-report" }]] : "list",
+  reporter: process.env.CI ? [["github"], ["html", { open: "never", outputFolder: "../playwright-visual-report" }]] : "list",
   expect: {
     // An absolute pixel budget: baselines come from the same runner image, so
     // real noise is tiny, and a ratio would let a changed heading slip through
@@ -34,6 +36,7 @@ export default defineConfig({
     ? undefined
     : {
         command: `npm run start -- -p ${PORT}`,
+        cwd: "..",
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

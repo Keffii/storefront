@@ -68,6 +68,18 @@ export function shippingFee(method: ShippingMethod, amount: Money, isEmpty = fal
   return method.fee;
 }
 
+/**
+ * The delivery estimate Stripe Checkout shows next to the shipping option. It
+ * uses the same working days the shop promises, so "1–3 vardagar" on the site
+ * is "1–3 arbetsdagar" at checkout.
+ */
+export function checkoutDeliveryEstimate(method: ShippingMethod) {
+  return {
+    minimum: { unit: "business_day" as const, value: method.minDays },
+    maximum: { unit: "business_day" as const, value: method.maxDays },
+  };
+}
+
 /* ---------- Carriers ---------- */
 
 export type CarrierId = "postnord" | "dhl" | "budbee";

@@ -184,6 +184,28 @@
   text-align: right;
 }
 
+/* A narrow buy box puts the price under the name so the text keeps its width. */
+.addOns {
+  container-type: inline-size;
+}
+
+@container (max-width: 22rem) {
+  .addOn {
+    grid-template-columns: auto 56px 1fr;
+    row-gap: var(--space-1);
+  }
+
+  .checkbox,
+  .addOnImage {
+    grid-row: span 2;
+  }
+
+  .addOnPrice {
+    grid-column: 3;
+    text-align: left;
+  }
+}
+
 .trust {
   display: grid;
   grid-template-columns: 1fr 1fr;
